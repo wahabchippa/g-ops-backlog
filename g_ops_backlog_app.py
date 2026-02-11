@@ -160,7 +160,7 @@ def get_display_columns():
             'vendor', 'item_name', 'total_order_line_amount', 'qc_approved_at', 
             'product_brand', 'QC or zone', 'Order Type']
 
-def display_orders_page(df, title, subtitle, color_class):
+def display_orders_page(df, title, subtitle):
     """Display orders in a professional table format"""
     
     # Header
@@ -178,18 +178,18 @@ def display_orders_page(df, title, subtitle, color_class):
     # Filters row
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
-        search = st.text_input("🔍 Search by Order #, Customer, Fleek ID", "", key=f"search_{title}")
+        search = st.text_input("Search by Order #, Customer, Fleek ID", "", key=f"search_{title}")
     with col2:
         if 'customer_country' in df.columns:
             countries = ['All Countries'] + sorted(df['customer_country'].dropna().unique().tolist())
-            country = st.selectbox("🌍 Country", countries, key=f"country_{title}")
+            country = st.selectbox("Country", countries, key=f"country_{title}")
         else:
             country = "All Countries"
     with col3:
         st.write("")
         st.write("")
         csv = df.to_csv(index=False)
-        st.download_button("📥 Export CSV", csv, f"{title.lower().replace(' ', '_')}.csv", "text/csv", key=f"csv_{title}")
+        st.download_button("Download CSV", csv, f"orders_export.csv", "text/csv", key=f"csv_{title}")
     
     # Apply filters
     filtered_df = df.copy()
@@ -206,7 +206,7 @@ def display_orders_page(df, title, subtitle, color_class):
     available_cols = [col for col in display_cols if col in filtered_df.columns]
     
     # Stats row
-    st.markdown(f"**📊 Showing {len(filtered_df):,} orders**")
+    st.write(f"**Showing {len(filtered_df):,} orders**")
     
     # Display table
     if not filtered_df.empty:
@@ -231,197 +231,223 @@ def main():
     approved_df = df[df['latest_status'] == 'QC_APPROVED'].copy() if 'latest_status' in df.columns else pd.DataFrame()
     
     # PK Zone - NORMAL ORDERS ONLY (QC Approved)
-    pk_zone_normal = approved_df[
-        (approved_df['QC or zone'] == 'PK Zone') & 
-        (approved_df['Order Type'] == 'Normal Order')
-    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
+    pk_zone_normal = pd.DataFrame()
+    if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
+        pk_zone_normal = approved_df[
+            (approved_df['QC or zone'] == 'PK Zone') & 
+            (approved_df['Order Type'] == 'Normal Order')
+        ]
     
     # QC Center - NORMAL ORDERS ONLY (QC Approved)
-    qc_center_normal = approved_df[
-        (approved_df['QC or zone'] == 'PK QC Center') & 
-        (approved_df['Order Type'] == 'Normal Order')
-    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
+    qc_center_normal = pd.DataFrame()
+    if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
+        qc_center_normal = approved_df[
+            (approved_df['QC or zone'] == 'PK QC Center') & 
+            (approved_df['Order Type'] == 'Normal Order')
+        ]
     
     # AI Orders - PK Zone (QC Approved)
-    ai_pk_zone = approved_df[
-        (approved_df['QC or zone'] == 'PK Zone') & 
-        (approved_df['Order Type'] == 'AI Order')
-    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
+    ai_pk_zone = pd.DataFrame()
+    if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
+        ai_pk_zone = approved_df[
+            (approved_df['QC or zone'] == 'PK Zone') & 
+            (approved_df['Order Type'] == 'AI Order')
+        ]
     
     # AI Orders - QC Center (QC Approved)
-    ai_qc_center = approved_df[
-        (approved_df['QC or zone'] == 'PK QC Center') & 
-        (approved_df['Order Type'] == 'AI Order')
-    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
+    ai_qc_center = pd.DataFrame()
+    if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
+        ai_qc_center = approved_df[
+            (approved_df['QC or zone'] == 'PK QC Center') & 
+            (approved_df['Order Type'] == 'AI Order')
+        ]
+    
+    # Counts
+    pk_zone_count = len(pk_zone_normal)
+    qc_center_count = len(qc_center_normal)
+    ai_pk_count = len(ai_pk_zone)
+    ai_qc_count = len(ai_qc_center)
+    total_approved = len(approved_df)
+    total_ai = ai_pk_count + ai_qc_count
     
     # Sidebar
     with st.sidebar:
-        st.markdown("""
-        <div style="text-align: center; padding: 1.5rem 0;">
-            <h1 style="color: white; font-size: 1.6rem; margin: 0;">📦 G-Ops Backlog</h1>
-            <p style="color: #b8d4e8; font-size: 0.85rem; margin-top: 0.3rem;">Operations Management</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("## G-Ops Backlog")
+        st.markdown("Operations Management Tool")
         
         st.markdown("---")
         
         # Refresh button
-        if st.button("🔄 Refresh Data", use_container_width=True):
+        if st.button("Refresh Data"):
             st.cache_data.clear()
             st.rerun()
         
         st.markdown("---")
         
         # Dashboard button
-        if st.button("🏠 Dashboard", use_container_width=True):
+        if st.button("Dashboard"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
         
         st.markdown("---")
-        st.markdown("### 📊 Quick Stats")
-        st.markdown(f"""
-        <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
-            <p style="margin: 0.3rem 0;"><strong>🟢 PK Zone:</strong> {len(pk_zone_normal):,}</p>
-            <p style="margin: 0.3rem 0;"><strong>🔵 QC Center:</strong> {len(qc_center_normal):,}</p>
-            <p style="margin: 0.3rem 0;"><strong>🟡 AI Zone:</strong> {len(ai_pk_zone):,}</p>
-            <p style="margin: 0.3rem 0;"><strong>🔴 AI QC:</strong> {len(ai_qc_center):,}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("### Approved Orders")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            pk_btn_label = f"PK Zone ({pk_zone_count})"
+            if st.button(pk_btn_label, key="side_pk"):
+                st.session_state.current_view = 'pk_zone'
+                st.rerun()
+        with col2:
+            qc_btn_label = f"QC Center ({qc_center_count})"
+            if st.button(qc_btn_label, key="side_qc"):
+                st.session_state.current_view = 'qc_center'
+                st.rerun()
         
         st.markdown("---")
-        st.markdown(f"""
-        <div style="text-align: center; padding: 0.5rem 0;">
-            <p style="color: #b8d4e8; font-size: 0.7rem;">
-                Last Updated<br>
-                {datetime.now().strftime('%Y-%m-%d %H:%M')}
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("### AI Orders")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            ai_pk_label = f"AI Zone ({ai_pk_count})"
+            if st.button(ai_pk_label, key="side_ai_pk"):
+                st.session_state.current_view = 'ai_pk_zone'
+                st.rerun()
+        with col2:
+            ai_qc_label = f"AI QC ({ai_qc_count})"
+            if st.button(ai_qc_label, key="side_ai_qc"):
+                st.session_state.current_view = 'ai_qc_center'
+                st.rerun()
+        
+        st.markdown("---")
+        now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        st.markdown(f"Last Updated: {now}")
     
     # Main content based on current view
     if st.session_state.current_view == 'dashboard':
         # Dashboard Header
         st.markdown("""
         <div class="main-header">
-            <h1>📦 G-Ops Backlog Dashboard</h1>
+            <h1>G-Ops Backlog Dashboard</h1>
             <p>Real-time Operations Tracking & Management</p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Normal Orders Section
-        st.markdown('<div class="section-title">🏭 Approved Orders (Normal Orders Only)</div>', unsafe_allow_html=True)
+        # Summary Stats
+        st.markdown("### Approved Orders Summary")
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            if st.button(f"🟢 PK Zone
-
-{len(pk_zone_normal):,} Orders", key="btn_pk_zone", use_container_width=True):
-                st.session_state.current_view = 'pk_zone'
-                st.rerun()
             st.markdown(f"""
-            <div class="clickable-card card-green" onclick="document.querySelector('[data-testid=\"btn_pk_zone\"]').click()">
-                <h3>🟢 PK Zone</h3>
-                <div class="value">{len(pk_zone_normal):,}</div>
-                <div class="subtitle">Normal Approved Orders</div>
+            <div class="clickable-card">
+                <h3>TOTAL APPROVED</h3>
+                <div class="value" style="color: #2d5a87;">{total_approved:,}</div>
+                <div class="subtitle">All QC Approved Orders</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
-            if st.button(f"🔵 QC Center
-
-{len(qc_center_normal):,} Orders", key="btn_qc_center", use_container_width=True):
-                st.session_state.current_view = 'qc_center'
-                st.rerun()
             st.markdown(f"""
-            <div class="clickable-card card-blue">
-                <h3>🔵 QC Center</h3>
-                <div class="value">{len(qc_center_normal):,}</div>
-                <div class="subtitle">Normal Approved Orders</div>
+            <div class="clickable-card card-green">
+                <h3>PK ZONE</h3>
+                <div class="value">{pk_zone_count:,}</div>
+                <div class="subtitle">Zone Approved Orders</div>
             </div>
             """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="clickable-card card-blue">
+                <h3>QC CENTER</h3>
+                <div class="value">{qc_center_count:,}</div>
+                <div class="subtitle">QC Center Approved Orders</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown(f"""
+            <div class="clickable-card card-yellow">
+                <h3>AI ORDERS</h3>
+                <div class="value">{total_ai:,}</div>
+                <div class="subtitle">AI Approved Orders</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Quick Access Section
+        st.markdown("### Quick Access")
+        
+        # Normal Orders Section
+        st.markdown("#### Approved Orders (Normal Orders Only)")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button(f"PK Zone - {pk_zone_count} Orders", key="btn_pk_zone", use_container_width=True):
+                st.session_state.current_view = 'pk_zone'
+                st.rerun()
+        
+        with col2:
+            if st.button(f"QC Center - {qc_center_count} Orders", key="btn_qc_center", use_container_width=True):
+                st.session_state.current_view = 'qc_center'
+                st.rerun()
         
         st.markdown("---")
         
         # AI Orders Section
-        st.markdown('<div class="section-title">🤖 AI Orders (Approved)</div>', unsafe_allow_html=True)
+        st.markdown("#### AI Orders (Approved)")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button(f"🟡 AI PK Zone
-
-{len(ai_pk_zone):,} Orders", key="btn_ai_zone", use_container_width=True):
+            if st.button(f"AI PK Zone - {ai_pk_count} Orders", key="btn_ai_zone", use_container_width=True):
                 st.session_state.current_view = 'ai_pk_zone'
                 st.rerun()
-            st.markdown(f"""
-            <div class="clickable-card card-yellow">
-                <h3>🟡 AI PK Zone</h3>
-                <div class="value">{len(ai_pk_zone):,}</div>
-                <div class="subtitle">AI Approved Orders</div>
-            </div>
-            """, unsafe_allow_html=True)
         
         with col2:
-            if st.button(f"🔴 AI QC Center
-
-{len(ai_qc_center):,} Orders", key="btn_ai_qc", use_container_width=True):
+            if st.button(f"AI QC Center - {ai_qc_count} Orders", key="btn_ai_qc", use_container_width=True):
                 st.session_state.current_view = 'ai_qc_center'
                 st.rerun()
-            st.markdown(f"""
-            <div class="clickable-card card-red">
-                <h3>🔴 AI QC Center</h3>
-                <div class="value">{len(ai_qc_center):,}</div>
-                <div class="subtitle">AI Approved Orders</div>
-            </div>
-            """, unsafe_allow_html=True)
         
         st.markdown("---")
         
         # Instructions
-        st.markdown("""
-        <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 10px; margin-top: 1rem;">
-            <p style="color: #666; font-size: 1.1rem; margin: 0;">
-                👆 Click on any card above to view detailed orders
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("Click on any button above to view detailed orders")
     
     elif st.session_state.current_view == 'pk_zone':
-        if st.button("← Back to Dashboard", key="back_pk"):
+        if st.button("Back to Dashboard", key="back_pk"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(pk_zone_normal, "🟢 PK Zone - Normal Approved Orders", 
-                          f"Showing {len(pk_zone_normal):,} normal orders from PK Zone", "green")
+        display_orders_page(pk_zone_normal, "PK Zone - Normal Approved Orders", 
+                          f"Showing {pk_zone_count:,} normal orders from PK Zone")
     
     elif st.session_state.current_view == 'qc_center':
-        if st.button("← Back to Dashboard", key="back_qc"):
+        if st.button("Back to Dashboard", key="back_qc"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(qc_center_normal, "🔵 QC Center - Normal Approved Orders", 
-                          f"Showing {len(qc_center_normal):,} normal orders from QC Center", "blue")
+        display_orders_page(qc_center_normal, "QC Center - Normal Approved Orders", 
+                          f"Showing {qc_center_count:,} normal orders from QC Center")
     
     elif st.session_state.current_view == 'ai_pk_zone':
-        if st.button("← Back to Dashboard", key="back_ai_pk"):
+        if st.button("Back to Dashboard", key="back_ai_pk"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(ai_pk_zone, "🟡 AI Orders - PK Zone", 
-                          f"Showing {len(ai_pk_zone):,} AI orders from PK Zone", "yellow")
+        display_orders_page(ai_pk_zone, "AI Orders - PK Zone", 
+                          f"Showing {ai_pk_count:,} AI orders from PK Zone")
     
     elif st.session_state.current_view == 'ai_qc_center':
-        if st.button("← Back to Dashboard", key="back_ai_qc"):
+        if st.button("Back to Dashboard", key="back_ai_qc"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(ai_qc_center, "🔴 AI Orders - QC Center", 
-                          f"Showing {len(ai_qc_center):,} AI orders from QC Center", "red")
+        display_orders_page(ai_qc_center, "AI Orders - QC Center", 
+                          f"Showing {ai_qc_count:,} AI orders from QC Center")
     
     # Footer
     st.markdown("---")
-    st.markdown(f"""
-    <div style="text-align: center; color: #666; font-size: 0.8rem; padding: 1rem 0;">
-        G-Ops Backlog Tool | Data Source: Google Sheets | Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-    </div>
-    """, unsafe_allow_html=True)
+    now_footer = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    st.caption(f"G-Ops Backlog Tool | Data Source: Google Sheets | Updated: {now_footer}")
 
 if __name__ == "__main__":
     main()
