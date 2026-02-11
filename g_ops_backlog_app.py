@@ -34,76 +34,64 @@ st.markdown("""
         margin-top: 0.5rem;
     }
     
-    /* Dashboard cards */
-    .metric-card {
+    /* Clickable metric cards */
+    .clickable-card {
         background: white;
         padding: 1.5rem;
         border-radius: 12px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         border-left: 4px solid #2d5a87;
-        transition: transform 0.2s;
+        transition: all 0.3s;
         cursor: pointer;
         margin-bottom: 1rem;
+        text-align: center;
     }
-    .metric-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }
-    .metric-card h3 {
+    .clickable-card h3 {
         color: #1e3a5f;
-        font-size: 0.9rem;
+        font-size: 1rem;
         margin: 0;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    .metric-card .value {
-        color: #2d5a87;
-        font-size: 2rem;
+    .clickable-card .value {
+        font-size: 2.5rem;
         font-weight: 700;
         margin: 0.5rem 0;
     }
-    .metric-card .subtitle {
+    .clickable-card .subtitle {
         color: #666;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
     
-    /* Zone cards */
-    .zone-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 1.2rem;
-        border-radius: 10px;
-        text-align: center;
-        border: 1px solid #dee2e6;
-        margin: 0.5rem 0;
-    }
-    .zone-card.pk-zone {
-        border-left: 4px solid #28a745;
-    }
-    .zone-card.qc-center {
-        border-left: 4px solid #17a2b8;
-    }
-    .zone-card.ai-zone {
-        border-left: 4px solid #ffc107;
-    }
-    .zone-card.ai-qc {
-        border-left: 4px solid #dc3545;
-    }
+    /* Card colors */
+    .card-green { border-left-color: #28a745; }
+    .card-green .value { color: #28a745; }
+    
+    .card-blue { border-left-color: #17a2b8; }
+    .card-blue .value { color: #17a2b8; }
+    
+    .card-yellow { border-left-color: #ffc107; }
+    .card-yellow .value { color: #ffc107; }
+    
+    .card-red { border-left-color: #dc3545; }
+    .card-red .value { color: #dc3545; }
     
     /* Sidebar styling */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1e3a5f 0%, #2d5a87 100%);
     }
-    [data-testid="stSidebar"] .stMarkdown h2 {
-        color: white !important;
-        font-size: 1.1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
-        padding-bottom: 0.5rem;
+    [data-testid="stSidebar"] .stMarkdown {
+        color: white;
     }
-    [data-testid="stSidebar"] label {
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: white !important;
+    }
+    [data-testid="stSidebar"] p {
         color: #b8d4e8 !important;
-    }
-    [data-testid="stSidebar"] .stRadio label {
-        color: white !important;
     }
     
     /* Button styling */
@@ -112,38 +100,42 @@ st.markdown("""
         color: white;
         border: none;
         border-radius: 8px;
-        padding: 0.5rem 1rem;
+        padding: 0.6rem 1.2rem;
         font-weight: 600;
         transition: all 0.3s;
+        width: 100%;
     }
     .stButton > button:hover {
         background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
     }
     
-    /* Data table styling */
-    .dataframe {
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    
-    /* Filter section */
-    .filter-section {
-        background: rgba(255,255,255,0.1);
-        padding: 1rem;
-        border-radius: 10px;
-        margin: 1rem 0;
-    }
-    
-    /* Back button */
-    .back-btn {
-        background: #6c757d;
+    /* Page header */
+    .page-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        text-decoration: none;
-        display: inline-block;
-        margin-bottom: 1rem;
+    }
+    .page-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+    }
+    .page-header p {
+        margin: 0.5rem 0 0 0;
+        color: #b8d4e8;
+    }
+    
+    /* Section titles */
+    .section-title {
+        color: #1e3a5f;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 1.5rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -162,27 +154,20 @@ def load_dump_data():
         st.error(f"Error loading data: {e}")
         return pd.DataFrame()
 
-def get_approved_orders(df):
-    """Get only QC_APPROVED orders"""
-    if 'latest_status' not in df.columns:
-        return pd.DataFrame()
-    return df[df['latest_status'] == 'QC_APPROVED'].copy()
-
 def get_display_columns():
     """Get columns to display in tables"""
     return ['order_number', 'fleek_id', 'customer_name', 'customer_country', 
             'vendor', 'item_name', 'total_order_line_amount', 'qc_approved_at', 
             'product_brand', 'QC or zone', 'Order Type']
 
-def display_orders_page(df, title, subtitle, search_term=""):
+def display_orders_page(df, title, subtitle, color_class):
     """Display orders in a professional table format"""
     
     # Header
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); 
-                padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
-        <h2 style="color: white; margin: 0;">{title}</h2>
-        <p style="color: #b8d4e8; margin: 0.5rem 0 0 0;">{subtitle}</p>
+    <div class="page-header">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -190,10 +175,10 @@ def display_orders_page(df, title, subtitle, search_term=""):
         st.info("No orders found.")
         return
     
-    # Search filter
+    # Filters row
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
-        search = st.text_input("🔍 Search by Order #, Customer, Fleek ID", search_term, key=f"search_{title}")
+        search = st.text_input("🔍 Search by Order #, Customer, Fleek ID", "", key=f"search_{title}")
     with col2:
         if 'customer_country' in df.columns:
             countries = ['All Countries'] + sorted(df['customer_country'].dropna().unique().tolist())
@@ -204,7 +189,7 @@ def display_orders_page(df, title, subtitle, search_term=""):
         st.write("")
         st.write("")
         csv = df.to_csv(index=False)
-        st.download_button("📥 Export CSV", csv, f"{title.lower().replace(' ', '_')}.csv", "text/csv")
+        st.download_button("📥 Export CSV", csv, f"{title.lower().replace(' ', '_')}.csv", "text/csv", key=f"csv_{title}")
     
     # Apply filters
     filtered_df = df.copy()
@@ -242,24 +227,39 @@ def main():
         st.error("Unable to load data. Please check connection.")
         return
     
-    # Get approved orders only
-    approved_df = get_approved_orders(df)
+    # Filter: QC_APPROVED only
+    approved_df = df[df['latest_status'] == 'QC_APPROVED'].copy() if 'latest_status' in df.columns else pd.DataFrame()
     
-    # Calculate counts
-    pk_zone_approved = approved_df[approved_df['QC or zone'] == 'PK Zone'] if 'QC or zone' in approved_df.columns else pd.DataFrame()
-    qc_center_approved = approved_df[approved_df['QC or zone'] == 'PK QC Center'] if 'QC or zone' in approved_df.columns else pd.DataFrame()
+    # PK Zone - NORMAL ORDERS ONLY (QC Approved)
+    pk_zone_normal = approved_df[
+        (approved_df['QC or zone'] == 'PK Zone') & 
+        (approved_df['Order Type'] == 'Normal Order')
+    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
     
-    # AI Orders (Approved only)
-    ai_orders = approved_df[approved_df['Order Type'] == 'AI Order'] if 'Order Type' in approved_df.columns else pd.DataFrame()
-    ai_pk_zone = ai_orders[ai_orders['QC or zone'] == 'PK Zone'] if not ai_orders.empty and 'QC or zone' in ai_orders.columns else pd.DataFrame()
-    ai_qc_center = ai_orders[ai_orders['QC or zone'] == 'PK QC Center'] if not ai_orders.empty and 'QC or zone' in ai_orders.columns else pd.DataFrame()
+    # QC Center - NORMAL ORDERS ONLY (QC Approved)
+    qc_center_normal = approved_df[
+        (approved_df['QC or zone'] == 'PK QC Center') & 
+        (approved_df['Order Type'] == 'Normal Order')
+    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
+    
+    # AI Orders - PK Zone (QC Approved)
+    ai_pk_zone = approved_df[
+        (approved_df['QC or zone'] == 'PK Zone') & 
+        (approved_df['Order Type'] == 'AI Order')
+    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
+    
+    # AI Orders - QC Center (QC Approved)
+    ai_qc_center = approved_df[
+        (approved_df['QC or zone'] == 'PK QC Center') & 
+        (approved_df['Order Type'] == 'AI Order')
+    ] if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns else pd.DataFrame()
     
     # Sidebar
     with st.sidebar:
         st.markdown("""
-        <div style="text-align: center; padding: 1rem 0;">
-            <h1 style="color: white; font-size: 1.5rem; margin: 0;">📦 G-Ops Backlog</h1>
-            <p style="color: #b8d4e8; font-size: 0.8rem;">Operations Management Tool</p>
+        <div style="text-align: center; padding: 1.5rem 0;">
+            <h1 style="color: white; font-size: 1.6rem; margin: 0;">📦 G-Ops Backlog</h1>
+            <p style="color: #b8d4e8; font-size: 0.85rem; margin-top: 0.3rem;">Operations Management</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -271,42 +271,26 @@ def main():
             st.rerun()
         
         st.markdown("---")
-        st.markdown("## 📋 Navigation")
         
-        # Navigation buttons
+        # Dashboard button
         if st.button("🏠 Dashboard", use_container_width=True):
             st.session_state.current_view = 'dashboard'
             st.rerun()
         
         st.markdown("---")
-        st.markdown("## 🏭 Approved Orders")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button(f"🟢 PK Zone\n({len(pk_zone_approved):,})", use_container_width=True):
-                st.session_state.current_view = 'pk_zone'
-                st.rerun()
-        with col2:
-            if st.button(f"🔵 QC Center\n({len(qc_center_approved):,})", use_container_width=True):
-                st.session_state.current_view = 'qc_center'
-                st.rerun()
-        
-        st.markdown("---")
-        st.markdown("## 🤖 AI Orders (Approved)")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button(f"🟡 AI Zone\n({len(ai_pk_zone):,})", use_container_width=True):
-                st.session_state.current_view = 'ai_pk_zone'
-                st.rerun()
-        with col2:
-            if st.button(f"🔴 AI QC\n({len(ai_qc_center):,})", use_container_width=True):
-                st.session_state.current_view = 'ai_qc_center'
-                st.rerun()
+        st.markdown("### 📊 Quick Stats")
+        st.markdown(f"""
+        <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
+            <p style="margin: 0.3rem 0;"><strong>🟢 PK Zone:</strong> {len(pk_zone_normal):,}</p>
+            <p style="margin: 0.3rem 0;"><strong>🔵 QC Center:</strong> {len(qc_center_normal):,}</p>
+            <p style="margin: 0.3rem 0;"><strong>🟡 AI Zone:</strong> {len(ai_pk_zone):,}</p>
+            <p style="margin: 0.3rem 0;"><strong>🔴 AI QC:</strong> {len(ai_qc_center):,}</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         st.markdown("---")
         st.markdown(f"""
-        <div style="text-align: center; padding: 1rem 0;">
+        <div style="text-align: center; padding: 0.5rem 0;">
             <p style="color: #b8d4e8; font-size: 0.7rem;">
                 Last Updated<br>
                 {datetime.now().strftime('%Y-%m-%d %H:%M')}
@@ -324,136 +308,117 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Summary Stats
-        st.markdown("### 📊 Approved Orders Summary")
+        # Normal Orders Section
+        st.markdown('<div class="section-title">🏭 Approved Orders (Normal Orders Only)</div>', unsafe_allow_html=True)
         
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2 = st.columns(2)
         
         with col1:
+            if st.button(f"🟢 PK Zone
+
+{len(pk_zone_normal):,} Orders", key="btn_pk_zone", use_container_width=True):
+                st.session_state.current_view = 'pk_zone'
+                st.rerun()
             st.markdown(f"""
-            <div class="metric-card">
-                <h3>Total Approved</h3>
-                <div class="value">{len(approved_df):,}</div>
-                <div class="subtitle">All QC Approved Orders</div>
+            <div class="clickable-card card-green" onclick="document.querySelector('[data-testid=\"btn_pk_zone\"]').click()">
+                <h3>🟢 PK Zone</h3>
+                <div class="value">{len(pk_zone_normal):,}</div>
+                <div class="subtitle">Normal Approved Orders</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
+            if st.button(f"🔵 QC Center
+
+{len(qc_center_normal):,} Orders", key="btn_qc_center", use_container_width=True):
+                st.session_state.current_view = 'qc_center'
+                st.rerun()
             st.markdown(f"""
-            <div class="metric-card" style="border-left-color: #28a745;">
-                <h3>🟢 PK Zone</h3>
-                <div class="value" style="color: #28a745;">{len(pk_zone_approved):,}</div>
-                <div class="subtitle">Zone Approved Orders</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(f"""
-            <div class="metric-card" style="border-left-color: #17a2b8;">
+            <div class="clickable-card card-blue">
                 <h3>🔵 QC Center</h3>
-                <div class="value" style="color: #17a2b8;">{len(qc_center_approved):,}</div>
-                <div class="subtitle">QC Center Approved Orders</div>
+                <div class="value">{len(qc_center_normal):,}</div>
+                <div class="subtitle">Normal Approved Orders</div>
             </div>
             """, unsafe_allow_html=True)
         
-        with col4:
+        st.markdown("---")
+        
+        # AI Orders Section
+        st.markdown('<div class="section-title">🤖 AI Orders (Approved)</div>', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button(f"🟡 AI PK Zone
+
+{len(ai_pk_zone):,} Orders", key="btn_ai_zone", use_container_width=True):
+                st.session_state.current_view = 'ai_pk_zone'
+                st.rerun()
             st.markdown(f"""
-            <div class="metric-card" style="border-left-color: #ffc107;">
-                <h3>🤖 AI Orders</h3>
-                <div class="value" style="color: #ffc107;">{len(ai_orders):,}</div>
+            <div class="clickable-card card-yellow">
+                <h3>🟡 AI PK Zone</h3>
+                <div class="value">{len(ai_pk_zone):,}</div>
+                <div class="subtitle">AI Approved Orders</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            if st.button(f"🔴 AI QC Center
+
+{len(ai_qc_center):,} Orders", key="btn_ai_qc", use_container_width=True):
+                st.session_state.current_view = 'ai_qc_center'
+                st.rerun()
+            st.markdown(f"""
+            <div class="clickable-card card-red">
+                <h3>🔴 AI QC Center</h3>
+                <div class="value">{len(ai_qc_center):,}</div>
                 <div class="subtitle">AI Approved Orders</div>
             </div>
             """, unsafe_allow_html=True)
         
         st.markdown("---")
         
-        # Quick Access Cards
-        st.markdown("### 🚀 Quick Access")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### 🏭 Approved Orders by Zone")
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                st.markdown(f"""
-                <div class="zone-card pk-zone">
-                    <h4 style="color: #28a745; margin: 0;">🟢 PK Zone</h4>
-                    <p style="font-size: 1.8rem; font-weight: bold; margin: 0.5rem 0; color: #28a745;">{len(pk_zone_approved):,}</p>
-                    <p style="font-size: 0.8rem; color: #666; margin: 0;">Approved Orders</p>
-                </div>
-                """, unsafe_allow_html=True)
-            with c2:
-                st.markdown(f"""
-                <div class="zone-card qc-center">
-                    <h4 style="color: #17a2b8; margin: 0;">🔵 QC Center</h4>
-                    <p style="font-size: 1.8rem; font-weight: bold; margin: 0.5rem 0; color: #17a2b8;">{len(qc_center_approved):,}</p>
-                    <p style="font-size: 0.8rem; color: #666; margin: 0;">Approved Orders</p>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("#### 🤖 AI Orders by Zone")
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                st.markdown(f"""
-                <div class="zone-card ai-zone">
-                    <h4 style="color: #ffc107; margin: 0;">🟡 AI PK Zone</h4>
-                    <p style="font-size: 1.8rem; font-weight: bold; margin: 0.5rem 0; color: #ffc107;">{len(ai_pk_zone):,}</p>
-                    <p style="font-size: 0.8rem; color: #666; margin: 0;">AI Zone Orders</p>
-                </div>
-                """, unsafe_allow_html=True)
-            with c2:
-                st.markdown(f"""
-                <div class="zone-card ai-qc">
-                    <h4 style="color: #dc3545; margin: 0;">🔴 AI QC Center</h4>
-                    <p style="font-size: 1.8rem; font-weight: bold; margin: 0.5rem 0; color: #dc3545;">{len(ai_qc_center):,}</p>
-                    <p style="font-size: 0.8rem; color: #666; margin: 0;">AI QC Orders</p>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        st.markdown("---")
+        # Instructions
         st.markdown("""
-        <div style="text-align: center; padding: 2rem; color: #666;">
-            <p>👈 Use the sidebar to view detailed order lists</p>
-            <p style="font-size: 0.8rem;">Click on any filter to see orders with full details</p>
+        <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 10px; margin-top: 1rem;">
+            <p style="color: #666; font-size: 1.1rem; margin: 0;">
+                👆 Click on any card above to view detailed orders
+            </p>
         </div>
         """, unsafe_allow_html=True)
     
     elif st.session_state.current_view == 'pk_zone':
-        if st.button("← Back to Dashboard"):
+        if st.button("← Back to Dashboard", key="back_pk"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(pk_zone_approved, "🟢 PK Zone Approved Orders", 
-                          f"Showing {len(pk_zone_approved):,} approved orders from PK Zone")
+        display_orders_page(pk_zone_normal, "🟢 PK Zone - Normal Approved Orders", 
+                          f"Showing {len(pk_zone_normal):,} normal orders from PK Zone", "green")
     
     elif st.session_state.current_view == 'qc_center':
-        if st.button("← Back to Dashboard"):
+        if st.button("← Back to Dashboard", key="back_qc"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(qc_center_approved, "🔵 QC Center Approved Orders", 
-                          f"Showing {len(qc_center_approved):,} approved orders from QC Center")
+        display_orders_page(qc_center_normal, "🔵 QC Center - Normal Approved Orders", 
+                          f"Showing {len(qc_center_normal):,} normal orders from QC Center", "blue")
     
     elif st.session_state.current_view == 'ai_pk_zone':
-        if st.button("← Back to Dashboard"):
+        if st.button("← Back to Dashboard", key="back_ai_pk"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
         display_orders_page(ai_pk_zone, "🟡 AI Orders - PK Zone", 
-                          f"Showing {len(ai_pk_zone):,} AI approved orders from PK Zone")
+                          f"Showing {len(ai_pk_zone):,} AI orders from PK Zone", "yellow")
     
     elif st.session_state.current_view == 'ai_qc_center':
-        if st.button("← Back to Dashboard"):
+        if st.button("← Back to Dashboard", key="back_ai_qc"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
         display_orders_page(ai_qc_center, "🔴 AI Orders - QC Center", 
-                          f"Showing {len(ai_qc_center):,} AI approved orders from QC Center")
+                          f"Showing {len(ai_qc_center):,} AI orders from QC Center", "red")
     
     # Footer
     st.markdown("---")
     st.markdown(f"""
-    <div style="text-align: center; color: #666; font-size: 0.8rem;">
+    <div style="text-align: center; color: #666; font-size: 0.8rem; padding: 1rem 0;">
         G-Ops Backlog Tool | Data Source: Google Sheets | Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
     </div>
     """, unsafe_allow_html=True)
