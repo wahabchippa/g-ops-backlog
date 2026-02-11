@@ -17,37 +17,21 @@ def get_sheet_url(sheet_name):
     return f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={sheet_name.replace(' ', '%20')}"
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def load_approved_orders():
-    """Load Approved Orders from Google Sheet"""
+def load_dump_data():
+    """Load all data from Dump tab"""
     try:
-        url = get_sheet_url("Approved Orders")
+        url = get_sheet_url("Dump")
         df = pd.read_csv(url)
         return df
     except Exception as e:
-        st.error(f"Error loading Approved Orders: {e}")
+        st.error(f"Error loading Dump data: {e}")
         return pd.DataFrame()
 
-@st.cache_data(ttl=300)
-def load_handover_orders():
-    """Load Handover Orders from Google Sheet"""
-    try:
-        url = get_sheet_url("Handover Orders")
-        df = pd.read_csv(url)
-        return df
-    except Exception as e:
-        st.error(f"Error loading Handover Orders: {e}")
+def filter_by_status(df, status):
+    """Filter dataframe by latest_status"""
+    if df.empty or 'latest_status' not in df.columns:
         return pd.DataFrame()
-
-@st.cache_data(ttl=300)
-def load_freight_orders():
-    """Load Freight Orders from Google Sheet"""
-    try:
-        url = get_sheet_url("Freight Orders")
-        df = pd.read_csv(url)
-        return df
-    except Exception as e:
-        st.error(f"Error loading Freight Orders: {e}")
-        return pd.DataFrame()
+    return df[df['latest_status'] == status].copy()
 
 def display_dataframe_with_filters(df, key_prefix):
     """Display dataframe with search and filters"""
@@ -56,7 +40,7 @@ def display_dataframe_with_filters(df, key_prefix):
         return
     
     # Search box
-    search_term = st.text_input("🔍 Search (Order ID, Customer Name, Email)", key=f"{key_prefix}_search")
+    search_term = st.text_input("🔍 Search (Order Number, Customer Name, Fleek ID)", key=f"{key_prefix}_search")
     
     # Apply search filter
     if search_term:
@@ -71,15 +55,41 @@ def display_dataframe_with_filters(df, key_prefix):
             df = df[df['customer_country'] == selected_country]
     
     # Display metrics
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Total Orders", len(df))
+        st.metric("📊 Total Orders", len(df))
     with col2:
         if 'customer_country' in df.columns:
-            st.metric("Countries", df['customer_country'].nunique())
+            st.metric("🌍 Countries", df['customer_country'].nunique())
+    with col3:
+        if 'total_order_line_amount' in df.columns:
+            total_value = df['total_order_line_amount'].astype(str).str.replace(',', '').astype(float).sum()
+            st.metric("💰 Total Value", f"${total_value:,.2f}")
     
-    # Display dataframe
-    st.dataframe(df, use_container_width=True, height=400)
+    # Select columns to display
+    display_cols = ['order_number', 'fleek_id', 'customer_name', 'customer_country', 
+                    'total_order_line_amount', 'vendor', 'item_name', 'latest_status_date']
+    
+    # Filter to only existing columns
+    display_cols = [col for col in display_cols if col in df.columns]
+    
+    # Add status-specific date columns
+    if key_prefix == "approved" and 'qc_approved_at' in df.columns:
+        display_cols.insert(4, 'qc_approved_at')
+    elif key_prefix == "handover" and 'logistics_partner_handedover_at' in df.columns:
+        display_cols.insert(4, 'logistics_partner_handedover_at')
+        if 'logistics_partner_name' in df.columns:
+            display_cols.insert(5, 'logistics_partner_name')
+    elif key_prefix == "freight" and 'freight_at' in df.columns:
+        display_cols.insert(4, 'freight_at')
+        if 'logistics_partner_name' in df.columns:
+            display_cols.insert(5, 'logistics_partner_name')
+        if 'flight_number' in df.columns:
+            display_cols.insert(6, 'flight_number')
+    
+    # Display dataframe with selected columns
+    df_display = df[display_cols] if display_cols else df
+    st.dataframe(df_display, use_container_width=True, height=400)
     
     # Export button
     csv = df.to_csv(index=False)
@@ -94,6 +104,10 @@ def display_dataframe_with_filters(df, key_prefix):
 # Main app
 st.title("📦 G-Ops Backlog Tool")
 
+# Load all data from Dump
+with st.spinner("Loading data from Dump..."):
+    df_all = load_dump_data()
+
 # Sidebar
 with st.sidebar:
     st.header("⚙️ Controls")
@@ -102,34 +116,47 @@ with st.sidebar:
         st.rerun()
     
     st.divider()
+    
+    # Show summary counts
+    st.header("📊 Current Status")
+    if not df_all.empty and 'latest_status' in df_all.columns:
+        approved_count = len(df_all[df_all['latest_status'] == 'QC_APPROVED'])
+        handover_count = len(df_all[df_all['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER'])
+        freight_count = len(df_all[df_all['latest_status'] == 'FREIGHT'])
+        
+        st.metric("📦 Approved", approved_count)
+        st.metric("🚚 Handover", handover_count)
+        st.metric("✈️ Freight", freight_count)
+    
+    st.divider()
     st.caption("Last Updated:")
     st.caption(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     st.divider()
-    st.caption("Data Source: Google Sheets")
+    st.caption("Data Source: Google Sheets (Dump)")
     st.caption(f"[View Sheet](https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit)")
 
 # Tabs
-tab1, tab2, tab3 = st.tabs(["✅ Approved Orders", "🚚 Handover to Logistics", "📦 Freight Tracking"])
+tab1, tab2, tab3 = st.tabs(["📦 Approved Orders", "🚚 Handover Orders", "✈️ Freight Orders"])
 
 with tab1:
-    st.header("✅ Approved Orders")
-    st.caption("Orders that are QC approved but not yet handed over to logistics")
-    df_approved = load_approved_orders()
+    st.header("📦 Approved Orders")
+    st.caption("Orders with status: QC_APPROVED")
+    df_approved = filter_by_status(df_all, 'QC_APPROVED')
     display_dataframe_with_filters(df_approved, "approved")
 
 with tab2:
-    st.header("🚚 Handover to Logistics")
-    st.caption("Orders handed over to logistics partner but not yet in freight")
-    df_handover = load_handover_orders()
+    st.header("🚚 Handover Orders")
+    st.caption("Orders with status: HANDED_OVER_TO_LOGISTICS_PARTNER")
+    df_handover = filter_by_status(df_all, 'HANDED_OVER_TO_LOGISTICS_PARTNER')
     display_dataframe_with_filters(df_handover, "handover")
 
 with tab3:
-    st.header("📦 Freight Tracking")
-    st.caption("Orders currently in freight/transit")
-    df_freight = load_freight_orders()
+    st.header("✈️ Freight Orders")
+    st.caption("Orders with status: FREIGHT")
+    df_freight = filter_by_status(df_all, 'FREIGHT')
     display_dataframe_with_filters(df_freight, "freight")
 
 # Footer
 st.divider()
-st.caption("G-Ops Backlog Tool | Data refreshes every 5 minutes | Click 'Refresh Data' for latest")
+st.caption("G-Ops Backlog Tool | Data auto-filters from Dump tab by latest_status | Click 'Refresh Data' for latest")
