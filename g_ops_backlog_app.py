@@ -15,127 +15,212 @@ st.markdown("""
 <style>
     /* Main page styling */
     .main-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-        padding: 2rem;
-        border-radius: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
         margin-bottom: 2rem;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
     }
     .main-header h1 {
         color: white;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         margin: 0;
-        font-weight: 700;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     .main-header p {
-        color: #b8d4e8;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
+        color: rgba(255,255,255,0.9);
+        font-size: 1.2rem;
+        margin-top: 0.8rem;
+        font-weight: 400;
     }
     
-    /* Clickable metric cards */
-    .clickable-card {
+    /* Section container */
+    .section-container {
         background: white;
+        border-radius: 16px;
         padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    /* Section header */
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f2f5;
+    }
+    .section-icon {
+        width: 50px;
+        height: 50px;
         border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        border-left: 4px solid #2d5a87;
-        transition: all 0.3s;
-        cursor: pointer;
-        margin-bottom: 1rem;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 1rem;
     }
-    .clickable-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    .clickable-card h3 {
-        color: #1e3a5f;
-        font-size: 1rem;
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .clickable-card .value {
-        font-size: 2.5rem;
+    .section-icon.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .section-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .section-title {
+        font-size: 1.4rem;
         font-weight: 700;
-        margin: 0.5rem 0;
+        color: #1a1a2e;
+        margin: 0;
     }
-    .clickable-card .subtitle {
+    .section-subtitle {
+        font-size: 0.9rem;
         color: #666;
-        font-size: 0.85rem;
+        margin: 0;
     }
     
-    /* Card colors */
-    .card-green { border-left-color: #28a745; }
-    .card-green .value { color: #28a745; }
+    /* Order cards */
+    .order-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 14px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        border-color: transparent;
+    }
+    .order-card.normal {
+        border-left: 4px solid #28a745;
+    }
+    .order-card.normal:hover {
+        background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+    }
+    .order-card.ai {
+        border-left: 4px solid #ffc107;
+    }
+    .order-card.ai:hover {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffffff 100%);
+    }
     
-    .card-blue { border-left-color: #17a2b8; }
-    .card-blue .value { color: #17a2b8; }
+    .order-card .card-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+    .order-card.normal .card-label { color: #28a745; }
+    .order-card.ai .card-label { color: #d39e00; }
     
-    .card-yellow { border-left-color: #ffc107; }
-    .card-yellow .value { color: #ffc107; }
+    .order-card .card-value {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin: 0.3rem 0;
+    }
+    .order-card.normal .card-value { color: #1e7e34; }
+    .order-card.ai .card-value { color: #d39e00; }
     
-    .card-red { border-left-color: #dc3545; }
-    .card-red .value { color: #dc3545; }
+    .order-card .card-desc {
+        font-size: 0.85rem;
+        color: #666;
+    }
     
     /* Sidebar styling */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e3a5f 0%, #2d5a87 100%);
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
     }
-    [data-testid="stSidebar"] .stMarkdown {
-        color: white;
-    }
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+    [data-testid="stSidebar"] * {
         color: white !important;
     }
-    [data-testid="stSidebar"] p {
-        color: #b8d4e8 !important;
+    [data-testid="stSidebar"] .stButton > button {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.4);
     }
     
-    /* Button styling */
+    /* Main content buttons */
     .stButton > button {
-        background: linear-gradient(135deg, #2d5a87 0%, #1e3a5f 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        border-radius: 8px;
-        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        padding: 0.8rem 1.5rem;
         font-weight: 600;
         transition: all 0.3s;
-        width: 100%;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
     
-    /* Page header */
+    /* Page header for detail pages */
     .page-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 16px;
         margin-bottom: 1.5rem;
         color: white;
     }
     .page-header h2 {
         margin: 0;
         font-size: 1.8rem;
+        font-weight: 700;
     }
     .page-header p {
         margin: 0.5rem 0 0 0;
-        color: #b8d4e8;
+        opacity: 0.9;
     }
     
-    /* Section titles */
-    .section-title {
-        color: #1e3a5f;
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin: 1.5rem 0 1rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e9ecef;
+    /* Stats bar */
+    .stats-bar {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+    .stat-item {
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    /* Hide default streamlit elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -163,7 +248,6 @@ def get_display_columns():
 def display_orders_page(df, title, subtitle):
     """Display orders in a professional table format"""
     
-    # Header
     st.markdown(f"""
     <div class="page-header">
         <h2>{title}</h2>
@@ -205,10 +289,8 @@ def display_orders_page(df, title, subtitle):
     display_cols = get_display_columns()
     available_cols = [col for col in display_cols if col in filtered_df.columns]
     
-    # Stats row
     st.write(f"**Showing {len(filtered_df):,} orders**")
     
-    # Display table
     if not filtered_df.empty:
         display_df = filtered_df[available_cols].copy() if available_cols else filtered_df.copy()
         st.dataframe(display_df, use_container_width=True, hide_index=True, height=500)
@@ -230,100 +312,69 @@ def main():
     # Filter: QC_APPROVED only
     approved_df = df[df['latest_status'] == 'QC_APPROVED'].copy() if 'latest_status' in df.columns else pd.DataFrame()
     
-    # PK Zone - NORMAL ORDERS ONLY (QC Approved)
+    # PK Zone Orders
     pk_zone_normal = pd.DataFrame()
+    pk_zone_ai = pd.DataFrame()
     if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
         pk_zone_normal = approved_df[
             (approved_df['QC or zone'] == 'PK Zone') & 
             (approved_df['Order Type'] == 'Normal Order')
         ]
+        pk_zone_ai = approved_df[
+            (approved_df['QC or zone'] == 'PK Zone') & 
+            (approved_df['Order Type'] == 'AI Order')
+        ]
     
-    # QC Center - NORMAL ORDERS ONLY (QC Approved)
+    # QC Center Orders
     qc_center_normal = pd.DataFrame()
+    qc_center_ai = pd.DataFrame()
     if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
         qc_center_normal = approved_df[
             (approved_df['QC or zone'] == 'PK QC Center') & 
             (approved_df['Order Type'] == 'Normal Order')
         ]
-    
-    # AI Orders - PK Zone (QC Approved)
-    ai_pk_zone = pd.DataFrame()
-    if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
-        ai_pk_zone = approved_df[
-            (approved_df['QC or zone'] == 'PK Zone') & 
-            (approved_df['Order Type'] == 'AI Order')
-        ]
-    
-    # AI Orders - QC Center (QC Approved)
-    ai_qc_center = pd.DataFrame()
-    if 'QC or zone' in approved_df.columns and 'Order Type' in approved_df.columns:
-        ai_qc_center = approved_df[
+        qc_center_ai = approved_df[
             (approved_df['QC or zone'] == 'PK QC Center') & 
             (approved_df['Order Type'] == 'AI Order')
         ]
     
     # Counts
-    pk_zone_count = len(pk_zone_normal)
-    qc_center_count = len(qc_center_normal)
-    ai_pk_count = len(ai_pk_zone)
-    ai_qc_count = len(ai_qc_center)
-    total_approved = len(approved_df)
-    total_ai = ai_pk_count + ai_qc_count
+    pk_normal_count = len(pk_zone_normal)
+    pk_ai_count = len(pk_zone_ai)
+    qc_normal_count = len(qc_center_normal)
+    qc_ai_count = len(qc_center_ai)
     
     # Sidebar
     with st.sidebar:
-        st.markdown("## G-Ops Backlog")
-        st.markdown("Operations Management Tool")
+        st.markdown("### G-Ops Backlog")
+        st.caption("Operations Management Tool")
         
         st.markdown("---")
         
-        # Refresh button
-        if st.button("Refresh Data"):
+        if st.button("Refresh Data", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
         
-        st.markdown("---")
-        
-        # Dashboard button
-        if st.button("Dashboard"):
+        if st.button("Dashboard", use_container_width=True):
             st.session_state.current_view = 'dashboard'
             st.rerun()
         
         st.markdown("---")
-        st.markdown("### Approved Orders")
+        st.markdown("#### Quick Stats")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            pk_btn_label = f"PK Zone ({pk_zone_count})"
-            if st.button(pk_btn_label, key="side_pk"):
-                st.session_state.current_view = 'pk_zone'
-                st.rerun()
-        with col2:
-            qc_btn_label = f"QC Center ({qc_center_count})"
-            if st.button(qc_btn_label, key="side_qc"):
-                st.session_state.current_view = 'qc_center'
-                st.rerun()
+        st.markdown(f"""
+        **PK Zone**  
+        Normal: {pk_normal_count:,} | AI: {pk_ai_count:,}
         
-        st.markdown("---")
-        st.markdown("### AI Orders")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            ai_pk_label = f"AI Zone ({ai_pk_count})"
-            if st.button(ai_pk_label, key="side_ai_pk"):
-                st.session_state.current_view = 'ai_pk_zone'
-                st.rerun()
-        with col2:
-            ai_qc_label = f"AI QC ({ai_qc_count})"
-            if st.button(ai_qc_label, key="side_ai_qc"):
-                st.session_state.current_view = 'ai_qc_center'
-                st.rerun()
+        **QC Center**  
+        Normal: {qc_normal_count:,} | AI: {qc_ai_count:,}
+        """)
         
         st.markdown("---")
         now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        st.markdown(f"Last Updated: {now}")
+        st.caption(f"Updated: {now}")
     
-    # Main content based on current view
+    # Main content
     if st.session_state.current_view == 'dashboard':
         # Dashboard Header
         st.markdown("""
@@ -333,116 +384,116 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Summary Stats
-        st.markdown("### Approved Orders Summary")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown(f"""
-            <div class="clickable-card">
-                <h3>TOTAL APPROVED</h3>
-                <div class="value" style="color: #2d5a87;">{total_approved:,}</div>
-                <div class="subtitle">All QC Approved Orders</div>
+        # ========== PK ZONE SECTION ==========
+        st.markdown("""
+        <div class="section-container">
+            <div class="section-header">
+                <div class="section-icon green">🏭</div>
+                <div>
+                    <h3 class="section-title">PK Zone Orders</h3>
+                    <p class="section-subtitle">Approved orders from Pakistan Zone</p>
+                </div>
             </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-            <div class="clickable-card card-green">
-                <h3>PK ZONE</h3>
-                <div class="value">{pk_zone_count:,}</div>
-                <div class="subtitle">Zone Approved Orders</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(f"""
-            <div class="clickable-card card-blue">
-                <h3>QC CENTER</h3>
-                <div class="value">{qc_center_count:,}</div>
-                <div class="subtitle">QC Center Approved Orders</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col4:
-            st.markdown(f"""
-            <div class="clickable-card card-yellow">
-                <h3>AI ORDERS</h3>
-                <div class="value">{total_ai:,}</div>
-                <div class="subtitle">AI Approved Orders</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # Quick Access Section
-        st.markdown("### Quick Access")
-        
-        # Normal Orders Section
-        st.markdown("#### Approved Orders (Normal Orders Only)")
+        """, unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button(f"PK Zone - {pk_zone_count} Orders", key="btn_pk_zone", use_container_width=True):
-                st.session_state.current_view = 'pk_zone'
+            st.markdown(f"""
+            <div class="order-card normal">
+                <div class="card-label">Normal Orders</div>
+                <div class="card-value">{pk_normal_count:,}</div>
+                <div class="card-desc">Click to view details</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("View Normal Orders", key="pk_normal_btn", use_container_width=True):
+                st.session_state.current_view = 'pk_zone_normal'
                 st.rerun()
         
         with col2:
-            if st.button(f"QC Center - {qc_center_count} Orders", key="btn_qc_center", use_container_width=True):
-                st.session_state.current_view = 'qc_center'
+            st.markdown(f"""
+            <div class="order-card ai">
+                <div class="card-label">AI Orders</div>
+                <div class="card-value">{pk_ai_count:,}</div>
+                <div class="card-desc">Click to view details</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("View AI Orders", key="pk_ai_btn", use_container_width=True):
+                st.session_state.current_view = 'pk_zone_ai'
                 st.rerun()
         
-        st.markdown("---")
+        st.markdown("</div>", unsafe_allow_html=True)
         
-        # AI Orders Section
-        st.markdown("#### AI Orders (Approved)")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # ========== QC CENTER SECTION ==========
+        st.markdown("""
+        <div class="section-container">
+            <div class="section-header">
+                <div class="section-icon blue">🏢</div>
+                <div>
+                    <h3 class="section-title">QC Center Orders</h3>
+                    <p class="section-subtitle">Approved orders from QC Center</p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button(f"AI PK Zone - {ai_pk_count} Orders", key="btn_ai_zone", use_container_width=True):
-                st.session_state.current_view = 'ai_pk_zone'
+            st.markdown(f"""
+            <div class="order-card normal">
+                <div class="card-label">Normal Orders</div>
+                <div class="card-value">{qc_normal_count:,}</div>
+                <div class="card-desc">Click to view details</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("View Normal Orders", key="qc_normal_btn", use_container_width=True):
+                st.session_state.current_view = 'qc_center_normal'
                 st.rerun()
         
         with col2:
-            if st.button(f"AI QC Center - {ai_qc_count} Orders", key="btn_ai_qc", use_container_width=True):
-                st.session_state.current_view = 'ai_qc_center'
+            st.markdown(f"""
+            <div class="order-card ai">
+                <div class="card-label">AI Orders</div>
+                <div class="card-value">{qc_ai_count:,}</div>
+                <div class="card-desc">Click to view details</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("View AI Orders", key="qc_ai_btn", use_container_width=True):
+                st.session_state.current_view = 'qc_center_ai'
                 st.rerun()
         
-        st.markdown("---")
-        
-        # Instructions
-        st.info("Click on any button above to view detailed orders")
+        st.markdown("</div>", unsafe_allow_html=True)
     
-    elif st.session_state.current_view == 'pk_zone':
-        if st.button("Back to Dashboard", key="back_pk"):
+    # Detail Pages
+    elif st.session_state.current_view == 'pk_zone_normal':
+        if st.button("Back to Dashboard"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(pk_zone_normal, "PK Zone - Normal Approved Orders", 
-                          f"Showing {pk_zone_count:,} normal orders from PK Zone")
+        display_orders_page(pk_zone_normal, "PK Zone - Normal Orders", 
+                          f"{pk_normal_count:,} approved normal orders from PK Zone")
     
-    elif st.session_state.current_view == 'qc_center':
-        if st.button("Back to Dashboard", key="back_qc"):
+    elif st.session_state.current_view == 'pk_zone_ai':
+        if st.button("Back to Dashboard"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(qc_center_normal, "QC Center - Normal Approved Orders", 
-                          f"Showing {qc_center_count:,} normal orders from QC Center")
+        display_orders_page(pk_zone_ai, "PK Zone - AI Orders", 
+                          f"{pk_ai_count:,} approved AI orders from PK Zone")
     
-    elif st.session_state.current_view == 'ai_pk_zone':
-        if st.button("Back to Dashboard", key="back_ai_pk"):
+    elif st.session_state.current_view == 'qc_center_normal':
+        if st.button("Back to Dashboard"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(ai_pk_zone, "AI Orders - PK Zone", 
-                          f"Showing {ai_pk_count:,} AI orders from PK Zone")
+        display_orders_page(qc_center_normal, "QC Center - Normal Orders", 
+                          f"{qc_normal_count:,} approved normal orders from QC Center")
     
-    elif st.session_state.current_view == 'ai_qc_center':
-        if st.button("Back to Dashboard", key="back_ai_qc"):
+    elif st.session_state.current_view == 'qc_center_ai':
+        if st.button("Back to Dashboard"):
             st.session_state.current_view = 'dashboard'
             st.rerun()
-        display_orders_page(ai_qc_center, "AI Orders - QC Center", 
-                          f"Showing {ai_qc_count:,} AI orders from QC Center")
+        display_orders_page(qc_center_ai, "QC Center - AI Orders", 
+                          f"{qc_ai_count:,} approved AI orders from QC Center")
     
     # Footer
     st.markdown("---")
