@@ -94,7 +94,7 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
 }
 
 .title-icon {
-    font-size: 3rem;
+    font-size: 3.5rem;
     filter: drop-shadow(0 4px 15px rgba(255,200,0,0.5));
     animation: pulse 2s ease-in-out infinite;
 }
@@ -105,21 +105,21 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
 }
 
 .main-title {
-    font-size: 2.8rem;
-    font-weight: 800;
+    font-size: 3.2rem;
+    font-weight: 900;
     background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin: 0;
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
     line-height: 1.1;
 }
 
 .subtitle {
     color: #666666;
-    font-size: 1rem;
-    margin-top: 10px;
+    font-size: 1.05rem;
+    margin-top: 12px;
     font-weight: 500;
 }
 
