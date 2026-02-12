@@ -13,6 +13,8 @@ if 'aging_bucket' not in st.session_state:
     st.session_state.aging_bucket = None
 if 'vendor_name' not in st.session_state:
     st.session_state.vendor_name = None
+if 'vendor_zone' not in st.session_state:
+    st.session_state.vendor_zone = None
 if 'handover_bucket' not in st.session_state:
     st.session_state.handover_bucket = None
 
@@ -133,6 +135,29 @@ if st.session_state.page == 'home':
         font-size: 2rem;
         font-weight: 800;
         color: #1e293b;
+    }
+    
+    /* Pivot Row Styling */
+    .pivot-row {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 4px;
+    }
+    
+    .pivot-label {
+        flex: 1;
+        font-weight: 500;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+    
+    .pivot-count {
+        font-weight: 700;
+        color: #1e293b;
+        min-width: 60px;
+        text-align: right;
     }
     
     /* Divider */
@@ -411,14 +436,21 @@ try:
         
         col1, col2 = st.columns(2)
         
-        # PK Zone Aging - Clickable
+        # PK Zone Aging - Clickable with visible labels
         with col1:
             st.markdown("##### 📍 PK Zone Normal")
+            # Table header
+            h1, h2 = st.columns([3, 1])
+            with h1:
+                st.markdown("**Aging Bucket**")
+            with h2:
+                st.markdown("**Count**")
+            
             for bucket in BUCKET_ORDER:
                 count = pk_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.text(bucket)
+                    st.markdown(f"<div style='padding: 6px 0; color: #475569; font-size: 0.9rem;'>{bucket}</div>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"pk_aging_{bucket}", use_container_width=True):
@@ -427,17 +459,24 @@ try:
                             st.session_state.aging_bucket = bucket
                             st.rerun()
                     else:
-                        st.text("0")
+                        st.markdown(f"<div style='padding: 8px; text-align: center; color: #94a3b8;'>0</div>", unsafe_allow_html=True)
             st.markdown(f"**Total: {len(pk_normal):,}**")
         
-        # QC Center Aging - Clickable
+        # QC Center Aging - Clickable with visible labels
         with col2:
             st.markdown("##### 🏢 QC Center Normal")
+            # Table header
+            h1, h2 = st.columns([3, 1])
+            with h1:
+                st.markdown("**Aging Bucket**")
+            with h2:
+                st.markdown("**Count**")
+            
             for bucket in BUCKET_ORDER:
                 count = qc_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.text(bucket)
+                    st.markdown(f"<div style='padding: 6px 0; color: #475569; font-size: 0.9rem;'>{bucket}</div>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"qc_aging_{bucket}", use_container_width=True):
@@ -446,33 +485,68 @@ try:
                             st.session_state.aging_bucket = bucket
                             st.rerun()
                     else:
-                        st.text("0")
+                        st.markdown(f"<div style='padding: 8px; text-align: center; color: #94a3b8;'>0</div>", unsafe_allow_html=True)
             st.markdown(f"**Total: {len(qc_normal):,}**")
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ VENDOR TABLE - CLICKABLE ============
-        st.markdown('<div class="section-header">🏪 PK Zone Vendors - Normal Orders</div>', unsafe_allow_html=True)
+        # ============ VENDOR TABLES - BOTH ZONES - CLICKABLE ============
+        st.markdown('<div class="section-header">🏪 Vendors - Normal Orders</div>', unsafe_allow_html=True)
         st.caption("🖱️ Click on order count to view vendor's orders")
         
-        vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
-        vendor_counts.columns = ['Vendor', 'Orders']
+        col1, col2 = st.columns(2)
         
-        # Display in 3 columns
-        cols = st.columns(3)
-        for i, (_, row) in enumerate(vendor_counts.iterrows()):
-            with cols[i % 3]:
+        # PK Zone Vendors
+        with col1:
+            st.markdown("##### 📍 PK Zone Vendors")
+            pk_vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
+            pk_vendor_counts.columns = ['Vendor', 'Orders']
+            
+            # Header
+            h1, h2 = st.columns([3, 1])
+            with h1:
+                st.markdown("**Vendor**")
+            with h2:
+                st.markdown("**Orders**")
+            
+            for i, (_, row) in enumerate(pk_vendor_counts.iterrows()):
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    vendor_display = row['Vendor'][:25] + "..." if len(str(row['Vendor'])) > 25 else row['Vendor']
-                    st.text(vendor_display)
+                    vendor_display = row['Vendor'][:30] + "..." if len(str(row['Vendor'])) > 30 else row['Vendor']
+                    st.markdown(f"<div style='padding: 6px 0; color: #475569; font-size: 0.85rem;'>{vendor_display}</div>", unsafe_allow_html=True)
                 with c2:
-                    if st.button(f"{row['Orders']}", key=f"vendor_{i}", use_container_width=True):
+                    if st.button(f"{row['Orders']}", key=f"pk_vendor_{i}", use_container_width=True):
                         st.session_state.page = 'vendor_detail'
                         st.session_state.vendor_name = row['Vendor']
+                        st.session_state.vendor_zone = 'PK Zone'
                         st.rerun()
+            st.markdown(f"**Total: {len(pk_vendor_counts)} vendors | {len(pk_normal):,} orders**")
         
-        st.markdown(f"**Total: {len(vendor_counts)} vendors | {len(pk_normal):,} orders**")
+        # QC Center Vendors
+        with col2:
+            st.markdown("##### 🏢 QC Center Vendors")
+            qc_vendor_counts = qc_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
+            qc_vendor_counts.columns = ['Vendor', 'Orders']
+            
+            # Header
+            h1, h2 = st.columns([3, 1])
+            with h1:
+                st.markdown("**Vendor**")
+            with h2:
+                st.markdown("**Orders**")
+            
+            for i, (_, row) in enumerate(qc_vendor_counts.iterrows()):
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    vendor_display = row['Vendor'][:30] + "..." if len(str(row['Vendor'])) > 30 else row['Vendor']
+                    st.markdown(f"<div style='padding: 6px 0; color: #475569; font-size: 0.85rem;'>{vendor_display}</div>", unsafe_allow_html=True)
+                with c2:
+                    if st.button(f"{row['Orders']}", key=f"qc_vendor_{i}", use_container_width=True):
+                        st.session_state.page = 'vendor_detail'
+                        st.session_state.vendor_name = row['Vendor']
+                        st.session_state.vendor_zone = 'PK QC Center'
+                        st.rerun()
+            st.markdown(f"**Total: {len(qc_vendor_counts)} vendors | {len(qc_normal):,} orders**")
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
@@ -482,22 +556,34 @@ try:
         
         handover_aging = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         
+        # Header
+        h1, h2, h3, h4 = st.columns(4)
+        with h1:
+            st.markdown("**Bucket**")
+            st.markdown("**Count**")
+        with h2:
+            st.markdown("**Bucket**")
+            st.markdown("**Count**")
+        with h3:
+            st.markdown("**Bucket**")
+            st.markdown("**Count**")
+        with h4:
+            st.markdown("**Bucket**")
+            st.markdown("**Count**")
+        
         # Display in 4 columns
         cols = st.columns(4)
         for i, bucket in enumerate(BUCKET_ORDER):
             count = handover_aging.get(bucket, 0)
             with cols[i % 4]:
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    st.text(bucket)
-                with c2:
-                    if count > 0:
-                        if st.button(f"{count}", key=f"handover_aging_{bucket}", use_container_width=True):
-                            st.session_state.page = 'handover_aging_detail'
-                            st.session_state.handover_bucket = bucket
-                            st.rerun()
-                    else:
-                        st.text("0")
+                st.markdown(f"<div style='padding: 4px 0; color: #475569; font-size: 0.85rem;'>{bucket}</div>", unsafe_allow_html=True)
+                if count > 0:
+                    if st.button(f"{count}", key=f"handover_aging_{bucket}", use_container_width=True):
+                        st.session_state.page = 'handover_aging_detail'
+                        st.session_state.handover_bucket = bucket
+                        st.rerun()
+                else:
+                    st.markdown(f"<div style='padding: 8px; text-align: center; color: #94a3b8;'>0</div>", unsafe_allow_html=True)
         
         st.markdown(f"**Total Handover: {len(handover):,} orders**")
 
@@ -539,8 +625,13 @@ try:
                 data = qc_normal[qc_normal['aging_bucket'] == bucket]
         elif page == 'vendor_detail':
             vendor = st.session_state.vendor_name
-            title = f"🏪 Vendor: {vendor}"
-            data = pk_normal[pk_normal['vendor'] == vendor]
+            zone = st.session_state.vendor_zone
+            icon = "📍" if zone == 'PK Zone' else "🏢"
+            title = f"{icon} {zone} Vendor: {vendor}"
+            if zone == 'PK Zone':
+                data = pk_normal[pk_normal['vendor'] == vendor]
+            else:
+                data = qc_normal[qc_normal['vendor'] == vendor]
         elif page == 'handover_aging_detail':
             bucket = st.session_state.handover_bucket
             title = f"🚚 Handover - {bucket} Aging"
