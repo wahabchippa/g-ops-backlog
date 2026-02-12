@@ -4,17 +4,223 @@ from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="📦", layout="wide")
 
-# Simple Dark Theme
+# Premium Mixed Dark Theme
 st.markdown("""
 <style>
-    .stApp { background-color: #0d1117; }
-    [data-testid="stAppViewContainer"] { background-color: #0d1117; }
-    [data-testid="stSidebar"] { background-color: #161b22; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Main Background - Dark Navy with subtle gradient */
+    .stApp {
+        background: linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0f0a1a 100%);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0f0a1a 100%);
+    }
+    
+    /* Sidebar - Darker with purple tint */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #12111a 0%, #0d0c14 100%);
+        border-right: 1px solid rgba(139, 92, 246, 0.1);
+    }
+    
+    [data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        color: #e2e8f0 !important;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        border-color: rgba(139, 92, 246, 0.4);
+        transform: translateX(4px);
+    }
+    
     #MainMenu, footer, header { visibility: hidden; }
-    h1, h2, h3, h4 { color: #f0f6fc !important; }
-    p, span, label { color: #c9d1d9 !important; }
-    [data-testid="stMetricValue"] { color: #f0f6fc !important; }
-    [data-testid="stMetricLabel"] { color: #8b949e !important; }
+    
+    /* Typography */
+    h1 {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    h2, h3, h4 {
+        color: #f1f5f9 !important;
+        font-weight: 600 !important;
+    }
+    
+    p, span, label {
+        color: #94a3b8 !important;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 2rem !important;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: #64748b !important;
+        font-weight: 500 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Metric containers */
+    [data-testid="stMetric"] {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 27, 46, 0.5) 100%);
+        border: 1px solid rgba(139, 92, 246, 0.15);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stMetric"]:hover {
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 50px rgba(139, 92, 246, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* Buttons - Main content */
+    .stButton > button {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white !important;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    /* Selectbox */
+    .stSelectbox > div > div {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 10px;
+        color: #e2e8f0;
+    }
+    
+    .stSelectbox > div > div:hover {
+        border-color: rgba(139, 92, 246, 0.4);
+    }
+    
+    .stSelectbox label {
+        color: #94a3b8 !important;
+    }
+    
+    /* Text Input */
+    .stTextInput > div > div > input {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 10px;
+        color: #e2e8f0;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: rgba(139, 92, 246, 0.5);
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+    }
+    
+    /* DataFrame */
+    [data-testid="stDataFrame"] {
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(139, 92, 246, 0.15);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    /* Download Button */
+    .stDownloadButton > button {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(251, 113, 133, 0.2) 100%);
+        border: 1px solid rgba(251, 146, 60, 0.3);
+        color: #fbbf24 !important;
+    }
+    
+    .stDownloadButton > button:hover {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(251, 113, 133, 0.3) 100%);
+        border-color: rgba(251, 146, 60, 0.5);
+    }
+    
+    /* Divider */
+    hr {
+        border-color: rgba(139, 92, 246, 0.15);
+        margin: 2rem 0;
+    }
+    
+    /* Subheader styling */
+    .stSubheader {
+        color: #f1f5f9 !important;
+    }
+    
+    /* Caption */
+    .stCaption {
+        color: #64748b !important;
+    }
+    
+    /* Markdown text */
+    .stMarkdown {
+        color: #94a3b8 !important;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    }
+    
+    /* Glow effects for sections */
+    .section-glow {
+        position: relative;
+    }
+    
+    .section-glow::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.5) 50%, transparent 100%);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -61,7 +267,7 @@ if 'vendor_name' not in st.session_state:
 if 'handover_bucket' not in st.session_state:
     st.session_state.handover_bucket = None
 
-# ============ SIDEBAR - Always visible ============
+# ============ SIDEBAR ============
 with st.sidebar:
     st.title("📦 Navigation")
     st.divider()
@@ -75,7 +281,7 @@ with st.sidebar:
         st.rerun()
     
     st.divider()
-    st.caption("Quick Links:")
+    st.caption("⚡ Quick Links")
     
     if st.button("🚚 Handover", use_container_width=True, key="sb_hand"):
         st.session_state.page = 'handover'
@@ -101,12 +307,10 @@ try:
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
                   (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))].copy()
     
-    # Aging for QC Approved
     approved['qc_date'] = approved['qc_approved_at'].apply(parse_date)
     approved['aging_days'] = (datetime.now() - approved['qc_date']).dt.days
     approved['aging_bucket'] = approved['aging_days'].apply(get_aging_bucket)
     
-    # Aging for Handover (based on logistics_partner_handedover_at)
     handover['handover_date'] = handover['logistics_partner_handedover_at'].apply(parse_date)
     handover['aging_days'] = (datetime.now() - handover['handover_date']).dt.days
     handover['aging_bucket'] = handover['aging_days'].apply(get_aging_bucket)
@@ -127,7 +331,7 @@ try:
     if st.session_state.page == 'home':
         
         st.title("📦 G-Ops Backlog Dashboard")
-        st.caption(f"Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
+        st.caption(f"✨ Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
         
         st.divider()
         
@@ -191,8 +395,8 @@ try:
         
         st.divider()
         
-        # ============ AGING PIVOT TABLES - NORMAL ORDERS ============
-        st.subheader("📊 Aging Analysis - Normal Orders (QC Approved)")
+        # ============ AGING PIVOT TABLES ============
+        st.subheader("📊 Aging Analysis - Normal Orders")
         st.caption("Select aging bucket to view orders")
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -283,7 +487,6 @@ try:
 
     # ===================== DETAIL PAGES =====================
     else:
-        # Back button at top
         if st.button("⬅️ Back to Dashboard", key="back_btn", type="primary"):
             st.session_state.page = 'home'
             st.rerun()
@@ -327,7 +530,7 @@ try:
             data = approved
         
         st.title(title)
-        st.caption(f"{len(data):,} orders")
+        st.caption(f"📋 {len(data):,} orders")
         
         st.divider()
         
