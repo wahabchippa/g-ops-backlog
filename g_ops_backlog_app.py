@@ -4,180 +4,299 @@ from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="📦", layout="wide")
 
-# Premium Mixed Dark Theme
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+# Session state
+if 'page' not in st.session_state:
+    st.session_state.page = 'home'
+
+# Dynamic Theme based on page
+if st.session_state.page == 'home':
+    # LIGHT THEME for Home
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * { font-family: 'Inter', sans-serif; }
     
     .stApp {
-        background: linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0f0a1a 100%);
-        font-family: 'Inter', sans-serif;
+        background: linear-gradient(145deg, #ffffff 0%, #f5f7fa 50%, #e8ecf1 100%);
     }
     
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0f0a1a 100%);
-    }
-    
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #12111a 0%, #0d0c14 100%);
-        border-right: 1px solid rgba(139, 92, 246, 0.1);
-    }
-    
-    [data-testid="stSidebar"] .stButton > button {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        color: #e2e8f0 !important;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
-    
-    [data-testid="stSidebar"] .stButton > button:hover {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
-        border-color: rgba(139, 92, 246, 0.4);
-        transform: translateX(4px);
-    }
-    
+    [data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer, header { visibility: hidden; }
     
-    h1 {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+    /* Beautiful Title */
+    .main-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        margin: 0;
+        letter-spacing: -0.5px;
     }
     
-    h2, h3, h4 {
-        color: #f1f5f9 !important;
+    .subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-top: 8px;
+        font-weight: 500;
+    }
+    
+    /* Dark Section Headers */
+    .section-header {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 30px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* Metric Cards */
+    .metric-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.08);
+        border: 1px solid #f1f5f9;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .metric-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+    
+    .metric-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #1e293b;
+    }
+    
+    /* Light Buttons with Hover Effect */
+    .stButton > button {
+        background: white !important;
+        color: #475569 !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        padding: 10px 24px !important;
         font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     
-    p, span, label {
-        color: #94a3b8 !important;
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+        color: white !important;
+        border-color: #1e293b !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(30,41,59,0.25);
     }
     
-    [data-testid="stMetricValue"] {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 2rem !important;
+    /* Clean Tables */
+    .aging-table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
     }
     
-    [data-testid="stMetricLabel"] {
-        color: #64748b !important;
-        font-weight: 500 !important;
+    .aging-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .aging-table th {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 14px 20px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
-    [data-testid="stMetric"] {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 27, 46, 0.5) 100%);
-        border: 1px solid rgba(139, 92, 246, 0.15);
+    .aging-table td {
+        padding: 12px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.95rem;
+    }
+    
+    .aging-table tr:hover {
+        background: #f8fafc;
+    }
+    
+    .aging-table tr:last-child td {
+        border-bottom: none;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        color: #1e293b;
+    }
+    
+    /* Info Cards */
+    .info-card {
+        background: white;
         border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.05);
-        transition: all 0.3s ease;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border-left: 5px solid;
+        border-image: linear-gradient(180deg, #667eea 0%, #764ba2 100%) 1;
     }
     
-    [data-testid="stMetric"]:hover {
-        border-color: rgba(139, 92, 246, 0.3);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 50px rgba(139, 92, 246, 0.1);
-        transform: translateY(-2px);
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        color: white !important;
-        border: none;
-        border-radius: 12px;
+    .info-title {
         font-weight: 600;
-        padding: 12px 24px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    
+    .info-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1e293b;
+    }
+    
+    /* Divider */
+    hr {
+        border: none;
+        border-top: 2px solid #e2e8f0;
+        margin: 35px 0;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    # DARK THEME for Detail Pages
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * { font-family: 'Inter', sans-serif; }
+    
+    .stApp {
+        background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 50%, #0c0a1d 100%);
+    }
+    
+    [data-testid="stHeader"] { background: transparent; }
+    #MainMenu, footer, header { visibility: hidden; }
+    
+    /* Page Title */
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 5px;
+    }
+    
+    .page-subtitle {
+        color: #94a3b8;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    /* Back Button */
+    .stButton > button {
+        background: rgba(255,255,255,0.05) !important;
+        color: #60a5fa !important;
+        border: 2px solid rgba(96,165,250,0.3) !important;
+        border-radius: 10px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
     }
     
     .stButton > button:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+        background: #60a5fa !important;
+        color: #0f172a !important;
+        border-color: #60a5fa !important;
         transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(96,165,250,0.3);
     }
     
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-    }
-    
-    .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
-        box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
-    }
-    
-    .stSelectbox > div > div {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        border-radius: 10px;
-        color: #e2e8f0;
-    }
-    
-    .stSelectbox > div > div:hover {
-        border-color: rgba(139, 92, 246, 0.4);
-    }
-    
-    .stSelectbox label {
-        color: #94a3b8 !important;
-    }
-    
+    /* Input Fields */
     .stTextInput > div > div > input {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        border-radius: 10px;
-        color: #e2e8f0;
+        background: rgba(30, 41, 59, 0.8) !important;
+        color: #f1f5f9 !important;
+        border: 2px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        font-size: 0.95rem !important;
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: rgba(139, 92, 246, 0.5);
-        box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        border-color: #60a5fa !important;
+        box-shadow: 0 0 20px rgba(96,165,250,0.2) !important;
     }
     
-    [data-testid="stDataFrame"] {
-        background: rgba(30, 41, 59, 0.4);
-        border: 1px solid rgba(139, 92, 246, 0.15);
-        border-radius: 12px;
-        overflow: hidden;
+    .stTextInput > div > div > input::placeholder {
+        color: #64748b !important;
     }
     
+    .stSelectbox > div > div {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border: 2px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 10px !important;
+    }
+    
+    .stSelectbox label, .stTextInput label {
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Download Button */
     .stDownloadButton > button {
-        background: linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(251, 113, 133, 0.2) 100%);
-        border: 1px solid rgba(251, 146, 60, 0.3);
-        color: #fbbf24 !important;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
     }
     
     .stDownloadButton > button:hover {
-        background: linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(251, 113, 133, 0.3) 100%);
-        border-color: rgba(251, 146, 60, 0.5);
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        box-shadow: 0 6px 20px rgba(16,185,129,0.3);
     }
     
-    hr {
-        border-color: rgba(139, 92, 246, 0.15);
-        margin: 2rem 0;
+    /* DataFrame */
+    [data-testid="stDataFrame"] {
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.1);
     }
     
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
+    /* Text Colors */
+    p, span, label, .stMarkdown { color: #e2e8f0 !important; }
     
-    ::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        border-radius: 4px;
-    }
-</style>
-""", unsafe_allow_html=True)
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%); border-radius: 4px; }
+    </style>
+    """, unsafe_allow_html=True)
 
+# Data Loading
 SHEET_ID = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
 
 @st.cache_data(ttl=300)
@@ -193,70 +312,25 @@ def parse_date(date_str):
 
 def get_aging_bucket(days):
     if pd.isna(days) or days < 0: return None
-    elif days == 0: return '0'
-    elif days == 1: return '1'
-    elif days == 2: return '2'
-    elif days == 3: return '3'
-    elif days == 4: return '4'
-    elif days == 5: return '5'
-    elif days <= 7: return '6-7'
-    elif days <= 10: return '8-10'
-    elif days <= 15: return '11-15'
-    elif days <= 20: return '16-20'
-    elif days <= 25: return '21-25'
-    elif days <= 30: return '26-30'
-    else: return '30+'
+    if days == 0: return "0 days"
+    if days == 1: return "1 day"
+    if days <= 5: return f"{int(days)} days"
+    elif days <= 7: return "6-7 days"
+    elif days <= 10: return "8-10 days"
+    elif days <= 15: return "11-15 days"
+    elif days <= 20: return "16-20 days"
+    elif days <= 25: return "21-25 days"
+    elif days <= 30: return "26-30 days"
+    else: return "30+ days"
 
-BUCKET_ORDER = ['0', '1', '2', '3', '4', '5', '6-7', '8-10', '11-15', '16-20', '21-25', '26-30', '30+']
-
-# Session state
-if 'page' not in st.session_state:
-    st.session_state.page = 'home'
-if 'aging_zone' not in st.session_state:
-    st.session_state.aging_zone = None
-if 'aging_bucket' not in st.session_state:
-    st.session_state.aging_bucket = None
-if 'vendor_name' not in st.session_state:
-    st.session_state.vendor_name = None
-if 'handover_bucket' not in st.session_state:
-    st.session_state.handover_bucket = None
-
-# ============ SIDEBAR ============
-with st.sidebar:
-    st.title("📦 Navigation")
-    st.divider()
-    
-    if st.button("🏠 Home Dashboard", use_container_width=True, key="sidebar_home"):
-        st.session_state.page = 'home'
-        st.rerun()
-    
-    if st.button("🔄 Refresh Data", use_container_width=True, key="sidebar_refresh"):
-        st.cache_data.clear()
-        st.rerun()
-    
-    st.divider()
-    st.caption("⚡ Quick Links")
-    
-    if st.button("🚚 Handover", use_container_width=True, key="sb_hand"):
-        st.session_state.page = 'handover'
-        st.rerun()
-    if st.button("📍 PK Zone Normal", use_container_width=True, key="sb_pkn"):
-        st.session_state.page = 'pk_normal'
-        st.rerun()
-    if st.button("📍 PK Zone AI", use_container_width=True, key="sb_pka"):
-        st.session_state.page = 'pk_ai'
-        st.rerun()
-    if st.button("🏢 QC Center Normal", use_container_width=True, key="sb_qcn"):
-        st.session_state.page = 'qc_normal'
-        st.rerun()
-    if st.button("🏢 QC Center AI", use_container_width=True, key="sb_qca"):
-        st.session_state.page = 'qc_ai'
-        st.rerun()
+BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
+                '6-7 days', '8-10 days', '11-15 days', '16-20 days', 
+                '21-25 days', '26-30 days', '30+ days']
 
 try:
     df = load_data()
     
-    # Prepare data
+    # Process Data
     approved = df[df['latest_status'] == 'QC_APPROVED'].copy()
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
                   (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))].copy()
@@ -276,251 +350,221 @@ try:
     qc_normal = qc_center[qc_center['Order Type'] == 'Normal Order']
     qc_ai = qc_center[qc_center['Order Type'] == 'AI Order']
     
-    display_cols = ['order_number', 'fleek_id', 'customer_name', 'customer_country', 
-                    'vendor', 'item_name', 'total_order_line_amount', 'qc_approved_at',
-                    'logistics_partner_handedover_at', 'logistics_partner_name',
-                    'QC or zone', 'Order Type', 'aging_days', 'aging_bucket']
+    DISPLAY_COLS = ['order_number', 'fleek_id', 'customer_name', 'customer_country', 
+                    'vendor', 'item_name', 'total_order_line_amount', 'product_brand',
+                    'logistics_partner_name', 'aging_days', 'aging_bucket']
 
-    # ===================== HOME PAGE =====================
+    # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
         
-        st.title("📦 G-Ops Backlog Dashboard")
-        st.caption(f"✨ Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
+        # Beautiful Title with Icon
+        st.markdown("""
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 3.5rem;">📦</span>
+                    <span class="main-title">G-Ops Backlog Dashboard</span>
+                </div>
+                <p class="subtitle">✨ Real-time operations tracking • Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        st.divider()
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Metrics
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Total Approved", f"{len(approved):,}")
-        c2.metric("PK Zone", f"{len(pk_zone):,}")
-        c3.metric("QC Center", f"{len(qc_center):,}")
-        c4.metric("Handover", f"{len(handover):,}")
+        # Summary Metrics
+        col1, col2, col3, col4 = st.columns(4)
+        metrics = [
+            (col1, "Total Approved", len(approved)),
+            (col2, "PK Zone", len(pk_zone)),
+            (col3, "QC Center", len(qc_center)),
+            (col4, "Handover", len(handover))
+        ]
+        for col, label, value in metrics:
+            with col:
+                st.markdown(f'''
+                    <div class="metric-card">
+                        <div class="metric-label">{label}</div>
+                        <div class="metric-value">{value:,}</div>
+                    </div>
+                ''', unsafe_allow_html=True)
         
-        st.divider()
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ HANDOVER SECTION ============
-        st.subheader("🚚 Handover to Logistics")
-        st.caption("Orders handed over to logistics partner (PK Zone + QC Center)")
-        col1, col2 = st.columns([1, 3])
+        # Handover Section
+        st.markdown('<div class="section-header">🚚 Handover to Logistics</div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([2, 1, 2])
         with col1:
-            st.metric("Handover Orders", f"{len(handover):,}")
+            st.markdown(f'''
+                <div class="info-card">
+                    <div class="info-title">Orders handed over to logistics partner</div>
+                    <div class="info-value">{len(handover):,}</div>
+                </div>
+            ''', unsafe_allow_html=True)
         with col2:
-            if st.button("View Handover Orders", key="v_handover"):
+            st.write("")
+            if st.button("View Orders", key="v_handover"):
                 st.session_state.page = 'handover'
                 st.rerun()
         
-        st.divider()
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ PK ZONE SECTION ============
-        st.subheader("📍 PK Zone Orders")
-        st.caption("QC Approved orders from PK Zone")
+        # PK Zone Section
+        st.markdown('<div class="section-header">📍 PK Zone Orders</div>', unsafe_allow_html=True)
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Normal Orders", f"{len(pk_normal):,}")
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Normal Orders</div><div class="metric-value">{len(pk_normal):,}</div></div>', unsafe_allow_html=True)
         with col2:
-            if st.button("View PK Normal", key="v_pk_n"):
+            st.write(""); st.write("")
+            if st.button("View", key="v_pk_n"):
                 st.session_state.page = 'pk_normal'
                 st.rerun()
         with col3:
-            st.metric("AI Orders", f"{len(pk_ai):,}")
+            st.markdown(f'<div class="metric-card"><div class="metric-label">AI Orders</div><div class="metric-value">{len(pk_ai):,}</div></div>', unsafe_allow_html=True)
         with col4:
-            if st.button("View PK AI", key="v_pk_a"):
+            st.write(""); st.write("")
+            if st.button("View", key="v_pk_a"):
                 st.session_state.page = 'pk_ai'
                 st.rerun()
         
-        st.divider()
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ QC CENTER SECTION ============
-        st.subheader("🏢 QC Center Orders")
-        st.caption("QC Approved orders from QC Center")
+        # QC Center Section
+        st.markdown('<div class="section-header">🏢 QC Center Orders</div>', unsafe_allow_html=True)
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Normal Orders", f"{len(qc_normal):,}")
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Normal Orders</div><div class="metric-value">{len(qc_normal):,}</div></div>', unsafe_allow_html=True)
         with col2:
-            if st.button("View QC Normal", key="v_qc_n"):
+            st.write(""); st.write("")
+            if st.button("View", key="v_qc_n"):
                 st.session_state.page = 'qc_normal'
                 st.rerun()
         with col3:
-            st.metric("AI Orders", f"{len(qc_ai):,}")
+            st.markdown(f'<div class="metric-card"><div class="metric-label">AI Orders</div><div class="metric-value">{len(qc_ai):,}</div></div>', unsafe_allow_html=True)
         with col4:
-            if st.button("View QC AI", key="v_qc_a"):
+            st.write(""); st.write("")
+            if st.button("View", key="v_qc_a"):
                 st.session_state.page = 'qc_ai'
                 st.rerun()
         
-        st.divider()
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ AGING PIVOT TABLES ============
-        st.subheader("📊 Aging Analysis - Normal Orders")
-        st.caption("Click on count to view orders for that aging bucket")
-        
-        pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+        # Aging Analysis Tables
+        st.markdown('<div class="section-header">📊 Aging Analysis - Normal Orders</div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
+        # PK Zone Aging
         with col1:
-            st.markdown("**📍 PK Zone Normal**")
+            st.markdown("##### 📍 PK Zone Normal")
+            pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+            table_html = '<div class="aging-table"><table><tr><th>Aging</th><th style="text-align:right;">Count</th></tr>'
             for bucket in BUCKET_ORDER:
-                count = pk_aging[bucket]
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    st.text(f"{bucket} days")
-                with c2:
-                    if count > 0:
-                        if st.button(f"{count}", key=f"pk_{bucket}", use_container_width=True):
-                            st.session_state.page = 'aging'
-                            st.session_state.aging_zone = 'PK Zone'
-                            st.session_state.aging_bucket = bucket
-                            st.rerun()
-                    else:
-                        st.text("0")
-            st.caption(f"**Total: {len(pk_normal):,}**")
+                count = pk_aging.get(bucket, 0)
+                table_html += f"<tr><td>{bucket}</td><td style='text-align:right;'>{count}</td></tr>"
+            table_html += f"<tr><td>Total</td><td style='text-align:right;'>{len(pk_normal):,}</td></tr></table></div>"
+            st.markdown(table_html, unsafe_allow_html=True)
         
+        # QC Center Aging
         with col2:
-            st.markdown("**🏢 QC Center Normal**")
+            st.markdown("##### 🏢 QC Center Normal")
+            qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+            table_html = '<div class="aging-table"><table><tr><th>Aging</th><th style="text-align:right;">Count</th></tr>'
             for bucket in BUCKET_ORDER:
-                count = qc_aging[bucket]
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    st.text(f"{bucket} days")
-                with c2:
-                    if count > 0:
-                        if st.button(f"{count}", key=f"qc_{bucket}", use_container_width=True):
-                            st.session_state.page = 'aging'
-                            st.session_state.aging_zone = 'PK QC Center'
-                            st.session_state.aging_bucket = bucket
-                            st.rerun()
-                    else:
-                        st.text("0")
-            st.caption(f"**Total: {len(qc_normal):,}**")
+                count = qc_aging.get(bucket, 0)
+                table_html += f"<tr><td>{bucket}</td><td style='text-align:right;'>{count}</td></tr>"
+            table_html += f"<tr><td>Total</td><td style='text-align:right;'>{len(qc_normal):,}</td></tr></table></div>"
+            st.markdown(table_html, unsafe_allow_html=True)
         
-        st.divider()
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ VENDOR TABLE ============
-        st.subheader("🏪 PK Zone Vendors - Normal Orders")
-        st.caption("Click on order count to view vendor's orders")
-        
+        # Vendor Table
+        st.markdown('<div class="section-header">🏪 PK Zone Vendors - Normal Orders</div>', unsafe_allow_html=True)
         vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         vendor_counts.columns = ['Vendor', 'Orders']
         
-        # Display vendors in 3 columns with clickable counts
-        cols = st.columns(3)
-        for i, (_, row) in enumerate(vendor_counts.iterrows()):
-            with cols[i % 3]:
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    st.text(row['Vendor'][:20] + "..." if len(row['Vendor']) > 20 else row['Vendor'])
-                with c2:
-                    if st.button(f"{row['Orders']}", key=f"vendor_{i}", use_container_width=True):
-                        st.session_state.page = 'vendor'
-                        st.session_state.vendor_name = row['Vendor']
-                        st.rerun()
+        table_html = '<div class="aging-table"><table><tr><th>Vendor</th><th style="text-align:right;">Orders</th></tr>'
+        for _, row in vendor_counts.iterrows():
+            table_html += f"<tr><td>{row['Vendor']}</td><td style='text-align:right;'>{row['Orders']}</td></tr>"
+        table_html += f"<tr><td>Total ({len(vendor_counts)} vendors)</td><td style='text-align:right;'>{len(pk_normal):,}</td></tr></table></div>"
+        st.markdown(table_html, unsafe_allow_html=True)
         
-        st.caption(f"**Total: {len(vendor_counts)} vendors | {len(pk_normal):,} orders**")
+        st.markdown("<hr>", unsafe_allow_html=True)
         
-        st.divider()
-        
-        # ============ HANDOVER AGING PIVOT ============
-        st.subheader("🚚 Handover Aging Analysis")
-        st.caption("Click on count to view handover orders for that aging bucket")
-        
+        # Handover Aging
+        st.markdown('<div class="section-header">🚚 Handover Aging Analysis</div>', unsafe_allow_html=True)
         handover_aging = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         
-        cols = st.columns(4)
-        for i, bucket in enumerate(BUCKET_ORDER):
-            count = handover_aging[bucket]
-            with cols[i % 4]:
-                c1, c2 = st.columns([2, 1])
-                with c1:
-                    st.text(f"{bucket} days")
-                with c2:
-                    if count > 0:
-                        if st.button(f"{count}", key=f"ho_{bucket}", use_container_width=True):
-                            st.session_state.page = 'handover_aging'
-                            st.session_state.handover_bucket = bucket
-                            st.rerun()
-                    else:
-                        st.text("0")
-        
-        st.caption(f"**Total Handover: {len(handover):,} orders**")
+        table_html = '<div class="aging-table"><table><tr><th>Aging</th><th style="text-align:right;">Count</th></tr>'
+        for bucket in BUCKET_ORDER:
+            count = handover_aging.get(bucket, 0)
+            table_html += f"<tr><td>{bucket}</td><td style='text-align:right;'>{count}</td></tr>"
+        table_html += f"<tr><td>Total</td><td style='text-align:right;'>{len(handover):,}</td></tr></table></div>"
+        st.markdown(table_html, unsafe_allow_html=True)
 
-    # ===================== DETAIL PAGES - FULL SCREEN =====================
+    # ==================== DETAIL PAGES (DARK) ====================
     else:
-        # Back button
-        if st.button("⬅️ Back to Dashboard", key="back_btn", type="primary"):
+        # Back Button
+        if st.button("← Back to Dashboard", key="back"):
             st.session_state.page = 'home'
             st.rerun()
         
-        st.divider()
+        st.write("")
         
-        # Determine data
-        if st.session_state.page == 'handover':
-            title = "🚚 Handover Orders"
-            data = handover
-        elif st.session_state.page == 'pk_normal':
-            title = "📍 PK Zone - Normal Orders"
-            data = pk_normal
-        elif st.session_state.page == 'pk_ai':
-            title = "📍 PK Zone - AI Orders"
-            data = pk_ai
-        elif st.session_state.page == 'qc_normal':
-            title = "🏢 QC Center - Normal Orders"
-            data = qc_normal
-        elif st.session_state.page == 'qc_ai':
-            title = "🏢 QC Center - AI Orders"
-            data = qc_ai
-        elif st.session_state.page == 'aging':
-            zone = st.session_state.aging_zone
-            bucket = st.session_state.aging_bucket
-            title = f"{'📍' if zone == 'PK Zone' else '🏢'} {zone} - {bucket} Days Aging"
-            if zone == 'PK Zone':
-                data = pk_normal[pk_normal['aging_bucket'] == bucket]
-            else:
-                data = qc_normal[qc_normal['aging_bucket'] == bucket]
-        elif st.session_state.page == 'handover_aging':
-            bucket = st.session_state.handover_bucket
-            title = f"🚚 Handover - {bucket} Days Aging"
-            data = handover[handover['aging_bucket'] == bucket]
-        elif st.session_state.page == 'vendor':
-            vendor = st.session_state.vendor_name
-            title = f"🏪 {vendor}"
-            data = pk_normal[pk_normal['vendor'] == vendor]
+        # Determine which page
+        page = st.session_state.page
+        if page == 'handover':
+            title, data = "🚚 Handover Orders", handover
+        elif page == 'pk_normal':
+            title, data = "📍 PK Zone - Normal Orders", pk_normal
+        elif page == 'pk_ai':
+            title, data = "📍 PK Zone - AI Orders", pk_ai
+        elif page == 'qc_normal':
+            title, data = "🏢 QC Center - Normal Orders", qc_normal
+        elif page == 'qc_ai':
+            title, data = "🏢 QC Center - AI Orders", qc_ai
         else:
-            title = "Orders"
-            data = approved
+            title, data = "📋 Orders", approved
         
-        # Full screen title
-        st.title(title)
-        st.caption(f"📋 {len(data):,} orders")
+        # Page Header
+        st.markdown(f'<div class="page-title">{title}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="page-subtitle">📋 {len(data):,} orders found</div>', unsafe_allow_html=True)
         
-        # Filters in one row
-        col1, col2, col3 = st.columns([2, 1, 1])
+        st.write("")
+        
+        # Filters Row
+        col1, col2, col3 = st.columns([3, 2, 1])
         with col1:
-            search = st.text_input("🔍 Search", placeholder="Order #, Customer, Fleek ID...", label_visibility="collapsed")
+            search = st.text_input("🔍 Search", placeholder="Order number, customer name, vendor...")
         with col2:
             countries = ['All Countries'] + sorted(data['customer_country'].dropna().unique().tolist())
-            country = st.selectbox("Country", countries, label_visibility="collapsed")
+            country = st.selectbox("🌍 Filter by Country", countries)
         with col3:
-            st.download_button("⬇️ Export CSV", data.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
+            st.write(""); st.write("")
+            st.download_button("📥 Export CSV", data.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
         
-        # Apply filters
+        st.write("")
+        
+        # Apply Filters
         filtered = data.copy()
         if search:
             s = search.lower()
             filtered = filtered[
                 filtered['order_number'].astype(str).str.lower().str.contains(s, na=False) |
                 filtered['customer_name'].astype(str).str.lower().str.contains(s, na=False) |
+                filtered['vendor'].astype(str).str.lower().str.contains(s, na=False) |
                 filtered['fleek_id'].astype(str).str.lower().str.contains(s, na=False)
             ]
         if country != 'All Countries':
             filtered = filtered[filtered['customer_country'] == country]
         
-        # Full screen data table
-        cols = [c for c in display_cols if c in filtered.columns]
-        st.dataframe(filtered[cols], use_container_width=True, height=700)
+        # Results count
+        st.markdown(f'<p style="color: #94a3b8; margin-bottom: 10px;">Showing {len(filtered):,} of {len(data):,} orders</p>', unsafe_allow_html=True)
+        
+        # Data Table
+        display_df = filtered[[c for c in DISPLAY_COLS if c in filtered.columns]]
+        st.dataframe(display_df, use_container_width=True, height=600)
 
 except Exception as e:
-    st.error(f"Error: {str(e)}")
+    st.error(f"Error loading data: {e}")
     if st.button("🔄 Retry"):
         st.cache_data.clear()
         st.rerun()
