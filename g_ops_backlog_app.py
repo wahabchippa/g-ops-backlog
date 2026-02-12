@@ -22,70 +22,44 @@ if 'handover_bucket' not in st.session_state:
 if 'vendor_comments' not in st.session_state:
     st.session_state.vendor_comments = {}
 
-# Custom CSS - STRONG OVERRIDE
+# Custom CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 * { font-family: 'Inter', sans-serif !important; }
 
-/* ============ MAIN BACKGROUND - DARK GRADIENT - FORCED ============ */
-.stApp, 
-[data-testid="stAppViewContainer"],
-.main,
-.block-container,
-[data-testid="stAppViewBlockContainer"] {
+/* ============ MAIN BACKGROUND ============ */
+.stApp {
     background: linear-gradient(145deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%) !important;
-    background-color: #0d0d0d !important;
 }
 
-html, body, .stApp > header {
-    background: #0d0d0d !important;
-}
+[data-testid="stHeader"] { background: transparent !important; }
+#MainMenu, footer, header { visibility: hidden; }
 
-[data-testid="stHeader"] { 
-    background: transparent !important; 
-    background-color: transparent !important;
-}
-
-#MainMenu, footer, header { visibility: hidden !important; }
-
-/* ============ SIDEBAR STYLING - FORCED VISIBILITY ============ */
-[data-testid="stSidebar"],
-section[data-testid="stSidebar"],
-[data-testid="stSidebar"] > div,
-[data-testid="stSidebar"] > div > div,
-[data-testid="stSidebar"] > div > div > div {
+/* ============ SIDEBAR STYLING ============ */
+section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%) !important;
-    background-color: #0f0f0f !important;
-}
-
-[data-testid="stSidebar"] {
     border-right: 1px solid #2a2a2a !important;
-    min-width: 300px !important;
-    width: 300px !important;
 }
 
-[data-testid="stSidebarContent"] {
-    background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%) !important;
-    background-color: #0f0f0f !important;
-    padding: 20px 15px !important;
+section[data-testid="stSidebar"] > div {
+    background: transparent !important;
 }
 
-[data-testid="stSidebar"] .stMarkdown,
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
-[data-testid="stSidebar"] label {
+section[data-testid="stSidebar"] .stMarkdown,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span {
     color: #ffffff !important;
 }
 
-[data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3 {
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
     color: #ffffff !important;
 }
 
-[data-testid="stSidebar"] .stButton > button {
+section[data-testid="stSidebar"] .stButton > button {
     background: linear-gradient(145deg, #252525 0%, #1a1a1a 100%) !important;
     color: #d0d0d0 !important;
     border: 1px solid #3a3a3a !important;
@@ -96,169 +70,160 @@ section[data-testid="stSidebar"],
     transition: all 0.3s ease !important;
     margin-bottom: 6px !important;
     text-align: left !important;
-    width: 100% !important;
 }
 
-[data-testid="stSidebar"] .stButton > button:hover {
+section[data-testid="stSidebar"] .stButton > button:hover {
     background: linear-gradient(145deg, #3a3a3a 0%, #2a2a2a 100%) !important;
     border-color: #4a4a4a !important;
-    transform: translateX(5px) !important;
+    transform: translateX(5px);
     color: #ffffff !important;
 }
 
-[data-testid="stSidebar"] .stSelectbox > div > div {
+section[data-testid="stSidebar"] .stSelectbox > div > div {
     background: #1a1a1a !important;
     border: 1px solid #3a3a3a !important;
     color: #d0d0d0 !important;
 }
 
-/* ============ HUGE TITLE - BIGGER ============ */
-.main-title-box {
-    padding: 30px 0;
-    margin-bottom: 20px;
-}
-
-.title-row {
+/* ============ TITLE - PERFECT SIZE ============ */
+.main-title-container {
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 18px;
+    margin-bottom: 8px;
 }
 
-.title-icon-huge {
-    font-size: 6rem !important;
-    line-height: 1;
-    filter: drop-shadow(0 8px 30px rgba(255,200,0,0.7));
-    animation: pulse-big 2s ease-in-out infinite;
+.title-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 4px 15px rgba(255,200,0,0.5));
+    animation: pulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse-big {
+@keyframes pulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
+    50% { transform: scale(1.05); }
 }
 
-.main-title-huge {
-    font-size: 5.5rem !important;
-    font-weight: 900 !important;
-    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 40%, #d0d0d0 100%);
+.main-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin: 0 !important;
-    padding: 0 !important;
-    letter-spacing: -4px !important;
-    line-height: 1 !important;
-    text-shadow: none;
+    margin: 0;
+    letter-spacing: -1px;
+    line-height: 1.1;
 }
 
-.subtitle-text {
-    color: #666666 !important;
-    font-size: 1.2rem !important;
-    margin-top: 15px !important;
-    font-weight: 500 !important;
-    letter-spacing: 0.5px !important;
+.subtitle {
+    color: #666666;
+    font-size: 1rem;
+    margin-top: 10px;
+    font-weight: 500;
 }
 
 /* ============ TOP 4 METRIC CARDS - WHITE with BLACK TEXT ============ */
 .metric-card-white {
-    background: #ffffff !important;
-    border-radius: 16px !important;
-    padding: 28px 20px !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
-    text-align: center !important;
-    transition: all 0.3s ease !important;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    text-align: center;
+    transition: all 0.3s ease;
 }
 .metric-card-white:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
 }
 .metric-card-white .metric-label {
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
-    color: #444444 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 2px !important;
-    margin-bottom: 10px !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #444444;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
 }
 .metric-card-white .metric-value {
-    font-size: 3rem !important;
-    font-weight: 900 !important;
-    color: #111111 !important;
+    font-size: 3rem;
+    font-weight: 900;
+    color: #111111;
 }
 
 /* ============ SECTION HEADERS - WHITE ============ */
 .section-header-white {
-    font-size: 1.4rem !important;
-    font-weight: 700 !important;
-    color: #ffffff !important;
-    margin: 25px 0 18px 0 !important;
-    padding-bottom: 12px !important;
-    border-bottom: 2px solid #333333 !important;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 25px 0 18px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #333333;
 }
 
 /* ============ HANDOVER CARD - DARK BROWN ============ */
 .handover-card {
-    background: linear-gradient(145deg, #4a2c17 0%, #2d1a0e 100%) !important;
-    border-radius: 16px !important;
-    padding: 24px !important;
-    box-shadow: 0 8px 30px rgba(74,44,23,0.5) !important;
-    border: 1px solid #5c3a22 !important;
+    background: linear-gradient(145deg, #4a2c17 0%, #2d1a0e 100%);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(74,44,23,0.5);
+    border: 1px solid #5c3a22;
 }
 .handover-card .info-title {
-    color: #ffffff !important;
-    font-size: 0.85rem !important;
-    font-weight: 700 !important;
-    margin-bottom: 10px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 .handover-card .info-value {
-    color: #ffffff !important;
-    font-size: 2.8rem !important;
-    font-weight: 900 !important;
+    color: #ffffff;
+    font-size: 2.8rem;
+    font-weight: 900;
 }
 
 /* ============ PK ZONE & QC CENTER CARDS - LIGHT GREEN SHADED ============ */
 .green-card {
-    background: linear-gradient(145deg, #1f4d1f 0%, #143314 100%) !important;
-    border-radius: 14px !important;
-    padding: 20px !important;
-    box-shadow: 0 6px 25px rgba(34,197,94,0.2) !important;
-    border: 1px solid #2d6a2d !important;
-    text-align: center !important;
-    transition: all 0.3s ease !important;
+    background: linear-gradient(145deg, #1f4d1f 0%, #143314 100%);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 6px 25px rgba(34,197,94,0.2);
+    border: 1px solid #2d6a2d;
+    text-align: center;
+    transition: all 0.3s ease;
 }
 .green-card:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 10px 35px rgba(34,197,94,0.3) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 35px rgba(34,197,94,0.3);
 }
 .green-card .metric-label {
-    color: #ffffff !important;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1.5px !important;
-    margin-bottom: 10px !important;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
 }
 .green-card .metric-value {
-    color: #7eed9e !important;
-    font-size: 2.2rem !important;
-    font-weight: 800 !important;
+    color: #7eed9e;
+    font-size: 2.2rem;
+    font-weight: 800;
 }
 
 /* ============ AGING SECTION STYLING ============ */
 .aging-section-title {
-    color: #ffffff !important;
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    margin-bottom: 15px !important;
-    padding-bottom: 10px !important;
-    border-bottom: 1px solid #333333 !important;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333333;
 }
 
 .aging-bucket-text {
-    color: #b0b0b0 !important;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
+    color: #b0b0b0;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 /* ============ GRAY BUTTONS ============ */
@@ -278,26 +243,26 @@ section[data-testid="stSidebar"],
     background: #5a5a5a !important;
     color: #ffffff !important;
     border-color: #6a6a6a !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 /* ============ VENDOR TABLE STYLING ============ */
 .vendor-header {
-    font-size: 0.8rem !important;
-    font-weight: 700 !important;
-    color: #888888 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1.5px !important;
-    padding-bottom: 15px !important;
-    border-bottom: 1px solid #3a3a3a !important;
-    margin-bottom: 10px !important;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #888888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3a3a3a;
+    margin-bottom: 10px;
 }
 
 .vendor-name-text {
-    color: #c0c0c0 !important;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
+    color: #c0c0c0;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 /* ============ DROPDOWN - GRAY ============ */
@@ -318,9 +283,9 @@ section[data-testid="stSidebar"],
 
 /* Divider */
 hr {
-    border: none !important;
-    border-top: 1px solid #333333 !important;
-    margin: 30px 0 !important;
+    border: none;
+    border-top: 1px solid #333333;
+    margin: 30px 0;
 }
 
 /* Text Colors */
@@ -335,16 +300,16 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 
 /* ============ DETAIL PAGE STYLING ============ */
 .page-title {
-    font-size: 2.5rem !important;
-    font-weight: 800 !important;
-    color: #ffffff !important;
-    margin-bottom: 8px !important;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
 }
 
 .page-subtitle {
-    color: #888888 !important;
-    font-size: 1.1rem !important;
-    font-weight: 500 !important;
+    color: #888888;
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .stTextInput > div > div > input {
@@ -365,9 +330,9 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 }
 
 [data-testid="stDataFrame"] {
-    background: #111111 !important;
-    border-radius: 14px !important;
-    border: 1px solid #333333 !important;
+    background: #111111;
+    border-radius: 14px;
+    border: 1px solid #333333;
 }
 
 </style>
@@ -457,9 +422,9 @@ try:
     qc_normal = data['qc_normal']
     qc_ai = data['qc_ai']
 
-    # ==================== SIDEBAR ====================
+    # ==================== SIDEBAR - ALWAYS VISIBLE ====================
     with st.sidebar:
-        st.markdown("## 🎯 Quick Navigation")
+        st.markdown("## 🎯 Navigation")
         st.markdown("---")
         
         # Home Button
@@ -468,37 +433,37 @@ try:
             st.rerun()
         
         # Handover Section
-        st.markdown('<p style="color:#F59E0B;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:25px 0 12px 0;padding-bottom:8px;border-bottom:1px solid #333;">🚚 Handover</p>', unsafe_allow_html=True)
-        if st.button(f"📦 All Handover Orders ({len(handover):,})", key="sb_handover", use_container_width=True):
+        st.markdown('<p style="color:#F59E0B;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🚚 HANDOVER</p>', unsafe_allow_html=True)
+        if st.button(f"📦 All Handover ({len(handover):,})", key="sb_handover", use_container_width=True):
             st.session_state.page = 'handover'
             st.rerun()
         
         # PK Zone Section
-        st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:25px 0 12px 0;padding-bottom:8px;border-bottom:1px solid #333;">📍 PK Zone</p>', unsafe_allow_html=True)
-        if st.button(f"📋 Normal Orders ({len(pk_normal):,})", key="sb_pk_normal", use_container_width=True):
+        st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📍 PK ZONE</p>', unsafe_allow_html=True)
+        if st.button(f"📋 Normal ({len(pk_normal):,})", key="sb_pk_normal", use_container_width=True):
             st.session_state.page = 'pk_normal'
             st.rerun()
-        if st.button(f"🤖 AI Orders ({len(pk_ai):,})", key="sb_pk_ai", use_container_width=True):
+        if st.button(f"🤖 AI ({len(pk_ai):,})", key="sb_pk_ai", use_container_width=True):
             st.session_state.page = 'pk_ai'
             st.rerun()
         
         # QC Center Section
-        st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:25px 0 12px 0;padding-bottom:8px;border-bottom:1px solid #333;">🏢 QC Center</p>', unsafe_allow_html=True)
-        if st.button(f"📋 Normal Orders ({len(qc_normal):,})", key="sb_qc_normal", use_container_width=True):
+        st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🏢 QC CENTER</p>', unsafe_allow_html=True)
+        if st.button(f"📋 Normal ({len(qc_normal):,})", key="sb_qc_normal", use_container_width=True):
             st.session_state.page = 'qc_normal'
             st.rerun()
-        if st.button(f"🤖 AI Orders ({len(qc_ai):,})", key="sb_qc_ai", use_container_width=True):
+        if st.button(f"🤖 AI ({len(qc_ai):,})", key="sb_qc_ai", use_container_width=True):
             st.session_state.page = 'qc_ai'
             st.rerun()
         
         # Aging Analysis Section
-        st.markdown('<p style="color:#60A5FA;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:25px 0 12px 0;padding-bottom:8px;border-bottom:1px solid #333;">📊 Aging Analysis</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#60A5FA;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📊 AGING</p>', unsafe_allow_html=True)
         
         # PK Zone Aging Dropdown
         pk_aging_data = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        pk_aging_options = ["Select PK Zone Aging..."] + [f"{b} ({pk_aging_data.get(b, 0)})" for b in BUCKET_ORDER if pk_aging_data.get(b, 0) > 0]
-        selected_pk = st.selectbox("PK Zone", pk_aging_options, key="sb_pk_aging_dd", label_visibility="collapsed")
-        if selected_pk != "Select PK Zone Aging...":
+        pk_aging_options = ["PK Zone Aging..."] + [f"{b} ({pk_aging_data.get(b, 0)})" for b in BUCKET_ORDER if pk_aging_data.get(b, 0) > 0]
+        selected_pk = st.selectbox("PK", pk_aging_options, key="sb_pk_aging_dd", label_visibility="collapsed")
+        if selected_pk != "PK Zone Aging...":
             bucket = selected_pk.split(" (")[0]
             st.session_state.page = 'aging_detail'
             st.session_state.aging_zone = 'PK Zone'
@@ -507,9 +472,9 @@ try:
         
         # QC Center Aging Dropdown
         qc_aging_data = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        qc_aging_options = ["Select QC Center Aging..."] + [f"{b} ({qc_aging_data.get(b, 0)})" for b in BUCKET_ORDER if qc_aging_data.get(b, 0) > 0]
-        selected_qc = st.selectbox("QC Center", qc_aging_options, key="sb_qc_aging_dd", label_visibility="collapsed")
-        if selected_qc != "Select QC Center Aging...":
+        qc_aging_options = ["QC Center Aging..."] + [f"{b} ({qc_aging_data.get(b, 0)})" for b in BUCKET_ORDER if qc_aging_data.get(b, 0) > 0]
+        selected_qc = st.selectbox("QC", qc_aging_options, key="sb_qc_aging_dd", label_visibility="collapsed")
+        if selected_qc != "QC Center Aging...":
             bucket = selected_qc.split(" (")[0]
             st.session_state.page = 'aging_detail'
             st.session_state.aging_zone = 'PK QC Center'
@@ -518,9 +483,9 @@ try:
         
         # Handover Aging Dropdown
         ho_aging_data = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        ho_aging_options = ["Select Handover Aging..."] + [f"{b} ({ho_aging_data.get(b, 0)})" for b in BUCKET_ORDER if ho_aging_data.get(b, 0) > 0]
-        selected_ho = st.selectbox("Handover", ho_aging_options, key="sb_ho_aging_dd", label_visibility="collapsed")
-        if selected_ho != "Select Handover Aging...":
+        ho_aging_options = ["Handover Aging..."] + [f"{b} ({ho_aging_data.get(b, 0)})" for b in BUCKET_ORDER if ho_aging_data.get(b, 0) > 0]
+        selected_ho = st.selectbox("HO", ho_aging_options, key="sb_ho_aging_dd", label_visibility="collapsed")
+        if selected_ho != "Handover Aging...":
             bucket = selected_ho.split(" (")[0]
             st.session_state.page = 'handover_aging_detail'
             st.session_state.handover_bucket = bucket
@@ -529,14 +494,14 @@ try:
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
         
-        # ============ HUGE TITLE - MUCH BIGGER NOW ============
+        # ============ TITLE - PERFECT SIZE ============
         st.markdown("""
-            <div class="main-title-box">
-                <div class="title-row">
-                    <span class="title-icon-huge">⚡</span>
-                    <span class="main-title-huge">G-Ops Backlog Dashboard</span>
+            <div style="margin-bottom: 25px;">
+                <div class="main-title-container">
+                    <span class="title-icon">⚡</span>
+                    <span class="main-title">G-Ops Backlog Dashboard</span>
                 </div>
-                <p class="subtitle-text">📊 Real-time Operations Monitoring &nbsp;|&nbsp; Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
+                <p class="subtitle">📊 Real-time Operations Monitoring &nbsp;|&nbsp; Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
             </div>
         """, unsafe_allow_html=True)
         
