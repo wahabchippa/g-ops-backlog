@@ -24,7 +24,7 @@ if 'vendor_comments' not in st.session_state:
 
 # Dynamic Theme based on page
 if st.session_state.page == 'home':
-    # DARK WOVEN/TEXTURED THEME for Home
+    # DARK BACKGROUND WITH WHITE CARDS
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -58,7 +58,7 @@ if st.session_state.page == 'home':
         font-weight: 500;
     }
     
-    /* Light Section Headers - Visible on Dark BG */
+    /* Light Section Headers */
     .section-header {
         font-size: 1.1rem;
         font-weight: 700;
@@ -68,13 +68,13 @@ if st.session_state.page == 'home':
         border-bottom: 2px solid #444444;
     }
     
-    /* Metric Cards - Compact */
+    /* WHITE Metric Cards with DARK text */
     .metric-card {
-        background: rgba(50,50,50,0.9);
+        background: #ffffff;
         border-radius: 12px;
         padding: 16px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        border: 1px solid #444444;
+        border: 1px solid #e0e0e0;
         text-align: center;
         transition: all 0.3s ease;
     }
@@ -87,7 +87,7 @@ if st.session_state.page == 'home':
     .metric-label {
         font-size: 0.65rem;
         font-weight: 700;
-        color: #a0a0a0;
+        color: #666666;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 5px;
@@ -96,14 +96,14 @@ if st.session_state.page == 'home':
     .metric-value {
         font-size: 1.6rem;
         font-weight: 800;
-        color: #ffffff;
+        color: #1a1a1a;
     }
     
-    /* Compact Buttons */
+    /* Buttons - Light style */
     .stButton > button {
-        background: rgba(60,60,60,0.9) !important;
-        color: #e0e0e0 !important;
-        border: 1px solid #555555 !important;
+        background: #ffffff !important;
+        color: #333333 !important;
+        border: 1px solid #cccccc !important;
         border-radius: 8px !important;
         padding: 4px 12px !important;
         font-weight: 600 !important;
@@ -113,25 +113,25 @@ if st.session_state.page == 'home':
     }
     
     .stButton > button:hover {
-        background: linear-gradient(135deg, #4a4a4a 0%, #5a5a5a 100%) !important;
-        color: white !important;
-        border-color: #666666 !important;
+        background: #f0f0f0 !important;
+        color: #000000 !important;
+        border-color: #999999 !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     
-    /* Info Cards - Compact */
+    /* WHITE Info Cards with DARK text */
     .info-card {
-        background: rgba(50,50,50,0.9);
+        background: #ffffff;
         border-radius: 12px;
         padding: 16px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border-left: 4px solid #666666;
+        border-left: 4px solid #333333;
     }
     
     .info-title {
         font-weight: 600;
-        color: #a0a0a0;
+        color: #666666;
         font-size: 0.75rem;
         margin-bottom: 5px;
     }
@@ -139,15 +139,15 @@ if st.session_state.page == 'home':
     .info-value {
         font-size: 1.5rem;
         font-weight: 800;
-        color: #ffffff;
+        color: #1a1a1a;
     }
     
-    /* Dropdown Styling - Compact */
+    /* Dropdown Styling - White */
     .stSelectbox > div > div {
-        background: rgba(60,60,60,0.9) !important;
-        border: 1px solid #555555 !important;
+        background: #ffffff !important;
+        border: 1px solid #cccccc !important;
         border-radius: 6px !important;
-        color: #e0e0e0 !important;
+        color: #333333 !important;
         font-size: 0.75rem !important;
         min-height: 32px !important;
     }
@@ -158,14 +158,14 @@ if st.session_state.page == 'home':
         font-size: 0.75rem !important;
     }
     
-    /* Divider - Compact */
+    /* Divider */
     hr {
         border: none;
         border-top: 1px solid #444444;
         margin: 20px 0;
     }
     
-    /* Text Colors for Dark Background */
+    /* Text Colors */
     .stMarkdown, p, span, label { color: #e0e0e0 !important; font-size: 0.8rem !important; }
     h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
     
@@ -177,68 +177,33 @@ if st.session_state.page == 'home':
     ::-webkit-scrollbar-track { background: #2a2a2a; }
     ::-webkit-scrollbar-thumb { background: #555555; border-radius: 3px; }
     
-    /* Aging Table Styling */
+    /* WHITE Aging Table */
     .aging-table {
-        background: rgba(40,40,40,0.8);
+        background: #ffffff;
         border-radius: 10px;
         padding: 12px;
         margin-top: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     
-    .aging-row {
-        display: flex;
-        align-items: center;
-        padding: 6px 10px;
-        border-bottom: 1px solid #3a3a3a;
-        font-size: 0.75rem;
-    }
-    
-    .aging-row:last-child {
-        border-bottom: none;
-    }
-    
-    .aging-label {
-        flex: 1;
-        color: #c0c0c0;
-        font-weight: 500;
-    }
-    
-    .aging-count {
-        min-width: 50px;
-        text-align: right;
-        font-weight: 700;
-        color: #ffffff;
-    }
-    
-    /* Vendor Table Styling */
+    /* WHITE Vendor Table */
     .vendor-table {
-        background: rgba(40,40,40,0.8);
+        background: #ffffff;
         border-radius: 10px;
         padding: 10px;
         margin-top: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     
-    .vendor-row {
-        display: flex;
-        align-items: center;
-        padding: 5px 8px;
-        border-bottom: 1px solid #3a3a3a;
-        font-size: 0.7rem;
-    }
-    
-    .vendor-row:hover {
-        background: rgba(60,60,60,0.5);
-    }
-    
-    /* Table Headers */
+    /* Table Headers - Dark on white */
     .table-header {
         font-size: 0.7rem;
         font-weight: 700;
-        color: #909090;
+        color: #666666;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         padding-bottom: 8px;
-        border-bottom: 2px solid #444444;
+        border-bottom: 2px solid #e0e0e0;
         margin-bottom: 5px;
     }
     </style>
@@ -432,7 +397,7 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Summary Metrics - Compact
+        # Summary Metrics - WHITE CARDS
         col1, col2, col3, col4 = st.columns(4)
         for col, label, value in [(col1, "Total Approved", len(approved)), (col2, "PK Zone", len(pk_zone)), 
                                    (col3, "QC Center", len(qc_center)), (col4, "Handover", len(handover))]:
@@ -441,7 +406,7 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Handover + PK Zone + QC Center in compact layout
+        # Handover + PK Zone + QC Center
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -482,7 +447,7 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ AGING PIVOT TABLES - COMPACT SIDE BY SIDE ============
+        # ============ AGING PIVOT TABLES ============
         st.markdown('<div class="section-header">📊 Aging Analysis - Normal Orders</div>', unsafe_allow_html=True)
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -549,13 +514,13 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ PK ZONE VENDOR TABLE - COMPACT ============
+        # ============ PK ZONE VENDOR TABLE ============
         st.markdown('<div class="section-header">🏪 PK Zone Vendors</div>', unsafe_allow_html=True)
         
         pk_vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         pk_vendor_counts.columns = ['Vendor', 'Orders']
         
-        # Compact header
+        # Header
         h1, h2, h3 = st.columns([5, 1, 2])
         with h1:
             st.markdown("<span class='table-header'>Vendor</span>", unsafe_allow_html=True)
