@@ -24,7 +24,7 @@ if 'vendor_comments' not in st.session_state:
 
 # Dynamic Theme based on page
 if st.session_state.page == 'home':
-    # DARK BACKGROUND WITH WHITE CARDS
+    # DARK COHESIVE THEME
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -39,7 +39,7 @@ if st.session_state.page == 'home':
     [data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer, header { visibility: hidden; }
     
-    /* BIG Beautiful Title - Light for Dark BG */
+    /* BIG Beautiful Title */
     .main-title {
         font-size: 2.8rem;
         font-weight: 800;
@@ -64,36 +64,94 @@ if st.session_state.page == 'home':
         font-weight: 500;
     }
     
-    /* Light Section Headers */
+    /* Section Headers */
     .section-header {
         font-size: 1.1rem;
         font-weight: 700;
         color: #e0e0e0;
         margin: 20px 0 10px 0;
         padding-bottom: 8px;
-        border-bottom: 2px solid #444444;
+        border-bottom: 2px solid #333333;
     }
     
-    /* WHITE Metric Cards with DARK text */
-    .metric-card {
-        background: #ffffff;
+    /* ============ METRIC CARDS - Each with different accent ============ */
+    
+    /* Total Approved - Blue */
+    .metric-card-blue {
+        background: linear-gradient(145deg, #1e1e1e 0%, #252525 100%);
         border-radius: 12px;
         padding: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid #333333;
+        border-left: 4px solid #3B82F6;
         text-align: center;
         transition: all 0.3s ease;
     }
-    
-    .metric-card:hover {
+    .metric-card-blue:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 8px 25px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+        border-left-color: #60A5FA;
     }
+    .metric-card-blue .metric-value { color: #3B82F6; }
+    
+    /* PK Zone - Green */
+    .metric-card-green {
+        background: linear-gradient(145deg, #1e1e1e 0%, #252525 100%);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid #333333;
+        border-left: 4px solid #10B981;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .metric-card-green:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+        border-left-color: #34D399;
+    }
+    .metric-card-green .metric-value { color: #10B981; }
+    
+    /* QC Center - Purple */
+    .metric-card-purple {
+        background: linear-gradient(145deg, #1e1e1e 0%, #252525 100%);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid #333333;
+        border-left: 4px solid #8B5CF6;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .metric-card-purple:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+        border-left-color: #A78BFA;
+    }
+    .metric-card-purple .metric-value { color: #8B5CF6; }
+    
+    /* Handover - Orange */
+    .metric-card-orange {
+        background: linear-gradient(145deg, #1e1e1e 0%, #252525 100%);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid #333333;
+        border-left: 4px solid #F59E0B;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .metric-card-orange:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245,158,11,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+        border-left-color: #FBBF24;
+    }
+    .metric-card-orange .metric-value { color: #F59E0B; }
     
     .metric-label {
         font-size: 0.65rem;
         font-weight: 700;
-        color: #666666;
+        color: #888888;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 5px;
@@ -102,14 +160,59 @@ if st.session_state.page == 'home':
     .metric-value {
         font-size: 1.6rem;
         font-weight: 800;
-        color: #1a1a1a;
     }
     
-    /* Buttons - Light style */
+    /* ============ SMALL METRIC CARDS for sections ============ */
+    .metric-card-small {
+        background: linear-gradient(145deg, #1e1e1e 0%, #252525 100%);
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 1px solid #333333;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .metric-card-small:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    }
+    .metric-card-small .metric-label {
+        font-size: 0.6rem;
+        color: #777777;
+    }
+    .metric-card-small .metric-value {
+        font-size: 1.4rem;
+        color: #e0e0e0;
+    }
+    
+    /* ============ INFO CARD (Handover) ============ */
+    .info-card {
+        background: linear-gradient(145deg, #1e1e1e 0%, #252525 100%);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        border: 1px solid #333333;
+        border-left: 4px solid #F59E0B;
+    }
+    
+    .info-title {
+        font-weight: 600;
+        color: #888888;
+        font-size: 0.75rem;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #F59E0B;
+    }
+    
+    /* ============ BUTTONS - Dark Style ============ */
     .stButton > button {
-        background: #ffffff !important;
-        color: #333333 !important;
-        border: 1px solid #cccccc !important;
+        background: linear-gradient(145deg, #2a2a2a 0%, #333333 100%) !important;
+        color: #e0e0e0 !important;
+        border: 1px solid #444444 !important;
         border-radius: 8px !important;
         padding: 4px 12px !important;
         font-weight: 600 !important;
@@ -119,99 +222,87 @@ if st.session_state.page == 'home':
     }
     
     .stButton > button:hover {
-        background: #f0f0f0 !important;
-        color: #000000 !important;
-        border-color: #999999 !important;
+        background: linear-gradient(145deg, #333333 0%, #404040 100%) !important;
+        color: #ffffff !important;
+        border-color: #555555 !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     
-    /* WHITE Info Cards with DARK text */
-    .info-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border-left: 4px solid #333333;
-    }
-    
-    .info-title {
-        font-weight: 600;
-        color: #666666;
-        font-size: 0.75rem;
-        margin-bottom: 5px;
-    }
-    
-    .info-value {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #1a1a1a;
-    }
-    
-    /* Dropdown Styling - White */
+    /* ============ DROPDOWN - Dark Style ============ */
     .stSelectbox > div > div {
-        background: #ffffff !important;
-        border: 1px solid #cccccc !important;
+        background: #252525 !important;
+        border: 1px solid #404040 !important;
         border-radius: 6px !important;
-        color: #333333 !important;
+        color: #e0e0e0 !important;
         font-size: 0.75rem !important;
         min-height: 32px !important;
     }
     
     .stSelectbox label {
-        color: #a0a0a0 !important;
+        color: #888888 !important;
         font-weight: 600 !important;
         font-size: 0.75rem !important;
+    }
+    
+    /* ============ AGING TABLE SECTION ============ */
+    .aging-section {
+        background: linear-gradient(145deg, #1a1a1a 0%, #222222 100%);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid #2a2a2a;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .aging-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #e0e0e0;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #333333;
+    }
+    
+    /* ============ VENDOR TABLE SECTION ============ */
+    .vendor-section {
+        background: linear-gradient(145deg, #1a1a1a 0%, #222222 100%);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid #2a2a2a;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .table-header {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #888888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #333333;
+        margin-bottom: 5px;
     }
     
     /* Divider */
     hr {
         border: none;
-        border-top: 1px solid #444444;
+        border-top: 1px solid #333333;
         margin: 20px 0;
     }
     
     /* Text Colors */
-    .stMarkdown, p, span, label { color: #e0e0e0 !important; font-size: 0.8rem !important; }
-    h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
+    .stMarkdown, p, span, label { color: #c0c0c0 !important; font-size: 0.8rem !important; }
+    h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     
     /* Caption styling */
-    .stCaption, small { color: #808080 !important; font-size: 0.7rem !important; }
+    .stCaption, small { color: #666666 !important; font-size: 0.7rem !important; }
     
-    /* Scrollbar */
+    /* Scrollbar - Dark */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #2a2a2a; }
-    ::-webkit-scrollbar-thumb { background: #555555; border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #444444; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555555; }
     
-    /* WHITE Aging Table */
-    .aging-table {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 12px;
-        margin-top: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    
-    /* WHITE Vendor Table */
-    .vendor-table {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 10px;
-        margin-top: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    
-    /* Table Headers - Dark on white */
-    .table-header {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #666666;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #e0e0e0;
-        margin-bottom: 5px;
-    }
     </style>
     """, unsafe_allow_html=True)
 else:
@@ -223,7 +314,7 @@ else:
     * { font-family: 'Inter', sans-serif; }
     
     .stApp {
-        background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 50%, #0c0a1d 100%);
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
     }
     
     [data-testid="stHeader"] { background: transparent; }
@@ -237,15 +328,15 @@ else:
     }
     
     .page-subtitle {
-        color: #94a3b8;
+        color: #888888;
         font-size: 0.85rem;
         font-weight: 500;
     }
     
     .stButton > button {
-        background: rgba(255,255,255,0.05) !important;
+        background: linear-gradient(145deg, #2a2a2a 0%, #333333 100%) !important;
         color: #60a5fa !important;
-        border: 1px solid rgba(96,165,250,0.3) !important;
+        border: 1px solid #404040 !important;
         border-radius: 8px !important;
         padding: 8px 20px !important;
         font-weight: 600 !important;
@@ -254,29 +345,29 @@ else:
     }
     
     .stButton > button:hover {
-        background: #60a5fa !important;
-        color: #0f172a !important;
-        border-color: #60a5fa !important;
+        background: #3B82F6 !important;
+        color: #ffffff !important;
+        border-color: #3B82F6 !important;
     }
     
     .stTextInput > div > div > input {
-        background: rgba(30, 41, 59, 0.8) !important;
-        color: #f1f5f9 !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        background: #252525 !important;
+        color: #e0e0e0 !important;
+        border: 1px solid #404040 !important;
         border-radius: 8px !important;
         padding: 10px 14px !important;
         font-size: 0.8rem !important;
     }
     
     .stSelectbox > div > div {
-        background: rgba(30, 41, 59, 0.8) !important;
-        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        background: #252525 !important;
+        border: 1px solid #404040 !important;
         border-radius: 8px !important;
         font-size: 0.8rem !important;
     }
     
     .stSelectbox label, .stTextInput label {
-        color: #94a3b8 !important;
+        color: #888888 !important;
         font-weight: 600 !important;
         font-size: 0.75rem !important;
     }
@@ -290,16 +381,16 @@ else:
     }
     
     [data-testid="stDataFrame"] {
-        background: rgba(30, 41, 59, 0.5);
+        background: #1e1e1e;
         border-radius: 10px;
-        border: 1px solid rgba(148, 163, 184, 0.1);
+        border: 1px solid #333333;
     }
     
-    p, span, label, .stMarkdown { color: #e2e8f0 !important; font-size: 0.8rem !important; }
+    p, span, label, .stMarkdown { color: #c0c0c0 !important; font-size: 0.8rem !important; }
     
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-    ::-webkit-scrollbar-thumb { background: #60a5fa; border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #444444; border-radius: 3px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -390,7 +481,7 @@ try:
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
         
-        # BIG Title with Better Icon
+        # BIG Title with Icon
         st.markdown("""
             <div style="margin-bottom: 15px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -403,16 +494,44 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Summary Metrics - WHITE CARDS
+        # ============ TOP 4 METRIC CARDS - Different Colors ============
         col1, col2, col3, col4 = st.columns(4)
-        for col, label, value in [(col1, "Total Approved", len(approved)), (col2, "PK Zone", len(pk_zone)), 
-                                   (col3, "QC Center", len(qc_center)), (col4, "Handover", len(handover))]:
-            with col:
-                st.markdown(f'<div class="metric-card"><div class="metric-label">{label}</div><div class="metric-value">{value:,}</div></div>', unsafe_allow_html=True)
+        
+        with col1:
+            st.markdown(f'''
+                <div class="metric-card-blue">
+                    <div class="metric-label">Total Approved</div>
+                    <div class="metric-value">{len(approved):,}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f'''
+                <div class="metric-card-green">
+                    <div class="metric-label">PK Zone</div>
+                    <div class="metric-value">{len(pk_zone):,}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f'''
+                <div class="metric-card-purple">
+                    <div class="metric-label">QC Center</div>
+                    <div class="metric-value">{len(qc_center):,}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown(f'''
+                <div class="metric-card-orange">
+                    <div class="metric-label">Handover</div>
+                    <div class="metric-value">{len(handover):,}</div>
+                </div>
+            ''', unsafe_allow_html=True)
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Handover + PK Zone + QC Center
+        # ============ HANDOVER + PK ZONE + QC CENTER ============
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -427,12 +546,12 @@ try:
             st.markdown('<div class="section-header">📍 PK Zone</div>', unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown(f'<div class="metric-card"><div class="metric-label">Normal</div><div class="metric-value">{len(pk_normal):,}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card-small"><div class="metric-label">Normal</div><div class="metric-value">{len(pk_normal):,}</div></div>', unsafe_allow_html=True)
                 if st.button("View", key="v_pk_n", use_container_width=True):
                     st.session_state.page = 'pk_normal'
                     st.rerun()
             with c2:
-                st.markdown(f'<div class="metric-card"><div class="metric-label">AI</div><div class="metric-value">{len(pk_ai):,}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card-small"><div class="metric-label">AI</div><div class="metric-value">{len(pk_ai):,}</div></div>', unsafe_allow_html=True)
                 if st.button("View", key="v_pk_a", use_container_width=True):
                     st.session_state.page = 'pk_ai'
                     st.rerun()
@@ -441,12 +560,12 @@ try:
             st.markdown('<div class="section-header">🏢 QC Center</div>', unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown(f'<div class="metric-card"><div class="metric-label">Normal</div><div class="metric-value">{len(qc_normal):,}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card-small"><div class="metric-label">Normal</div><div class="metric-value">{len(qc_normal):,}</div></div>', unsafe_allow_html=True)
                 if st.button("View", key="v_qc_n", use_container_width=True):
                     st.session_state.page = 'qc_normal'
                     st.rerun()
             with c2:
-                st.markdown(f'<div class="metric-card"><div class="metric-label">AI</div><div class="metric-value">{len(qc_ai):,}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="metric-card-small"><div class="metric-label">AI</div><div class="metric-value">{len(qc_ai):,}</div></div>', unsafe_allow_html=True)
                 if st.button("View", key="v_qc_a", use_container_width=True):
                     st.session_state.page = 'qc_ai'
                     st.rerun()
@@ -464,12 +583,12 @@ try:
         
         # PK Zone Aging
         with col1:
-            st.markdown("**📍 PK Zone**")
+            st.markdown('<div class="aging-title">📍 PK Zone</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
                 count = pk_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.markdown(f"<span style='font-size:0.7rem;color:#b0b0b0;'>{bucket}</span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:0.7rem;color:#888888;'>{bucket}</span>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"pk_a_{bucket}", use_container_width=True):
@@ -478,17 +597,17 @@ try:
                             st.session_state.aging_bucket = bucket
                             st.rerun()
                     else:
-                        st.markdown("<span style='font-size:0.7rem;color:#505050;'>0</span>", unsafe_allow_html=True)
-            st.markdown(f"<span style='font-size:0.75rem;font-weight:700;color:#e0e0e0;'>Total: {len(pk_normal):,}</span>", unsafe_allow_html=True)
+                        st.markdown("<span style='font-size:0.7rem;color:#444444;'>0</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size:0.75rem;font-weight:700;color:#10B981;'>Total: {len(pk_normal):,}</span>", unsafe_allow_html=True)
         
         # QC Center Aging
         with col2:
-            st.markdown("**🏢 QC Center**")
+            st.markdown('<div class="aging-title">🏢 QC Center</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
                 count = qc_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.markdown(f"<span style='font-size:0.7rem;color:#b0b0b0;'>{bucket}</span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:0.7rem;color:#888888;'>{bucket}</span>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"qc_a_{bucket}", use_container_width=True):
@@ -497,17 +616,17 @@ try:
                             st.session_state.aging_bucket = bucket
                             st.rerun()
                     else:
-                        st.markdown("<span style='font-size:0.7rem;color:#505050;'>0</span>", unsafe_allow_html=True)
-            st.markdown(f"<span style='font-size:0.75rem;font-weight:700;color:#e0e0e0;'>Total: {len(qc_normal):,}</span>", unsafe_allow_html=True)
+                        st.markdown("<span style='font-size:0.7rem;color:#444444;'>0</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size:0.75rem;font-weight:700;color:#8B5CF6;'>Total: {len(qc_normal):,}</span>", unsafe_allow_html=True)
         
         # Handover Aging
         with col3:
-            st.markdown("**🚚 Handover**")
+            st.markdown('<div class="aging-title">🚚 Handover</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
                 count = handover_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.markdown(f"<span style='font-size:0.7rem;color:#b0b0b0;'>{bucket}</span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-size:0.7rem;color:#888888;'>{bucket}</span>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"ho_a_{bucket}", use_container_width=True):
@@ -515,8 +634,8 @@ try:
                             st.session_state.handover_bucket = bucket
                             st.rerun()
                     else:
-                        st.markdown("<span style='font-size:0.7rem;color:#505050;'>0</span>", unsafe_allow_html=True)
-            st.markdown(f"<span style='font-size:0.75rem;font-weight:700;color:#e0e0e0;'>Total: {len(handover):,}</span>", unsafe_allow_html=True)
+                        st.markdown("<span style='font-size:0.7rem;color:#444444;'>0</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size:0.75rem;font-weight:700;color:#F59E0B;'>Total: {len(handover):,}</span>", unsafe_allow_html=True)
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
@@ -540,7 +659,7 @@ try:
             c1, c2, c3 = st.columns([5, 1, 2])
             with c1:
                 v_name = row['Vendor'][:35] + "..." if len(str(row['Vendor'])) > 35 else row['Vendor']
-                st.markdown(f"<span style='font-size:0.7rem;color:#c0c0c0;'>{v_name}</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='font-size:0.7rem;color:#a0a0a0;'>{v_name}</span>", unsafe_allow_html=True)
             with c2:
                 if st.button(f"{row['Orders']}", key=f"pv_{i}", use_container_width=True):
                     st.session_state.page = 'vendor_detail'
@@ -560,7 +679,7 @@ try:
                 elif sel != '--':
                     st.session_state.vendor_comments[vendor_key] = sel
         
-        st.markdown(f"<span style='font-size:0.75rem;color:#909090;'>{len(pk_vendor_counts)} vendors | {len(pk_normal):,} orders</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size:0.75rem;color:#666666;'>{len(pk_vendor_counts)} vendors | {len(pk_normal):,} orders</span>", unsafe_allow_html=True)
 
     # ==================== DETAIL PAGES ====================
     else:
