@@ -9,7 +9,6 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    /* Main Background - Dark Navy with subtle gradient */
     .stApp {
         background: linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0f0a1a 100%);
         font-family: 'Inter', sans-serif;
@@ -19,7 +18,6 @@ st.markdown("""
         background: linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0f0a1a 100%);
     }
     
-    /* Sidebar - Darker with purple tint */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #12111a 0%, #0d0c14 100%);
         border-right: 1px solid rgba(139, 92, 246, 0.1);
@@ -41,7 +39,6 @@ st.markdown("""
     
     #MainMenu, footer, header { visibility: hidden; }
     
-    /* Typography */
     h1 {
         color: #ffffff !important;
         font-weight: 700 !important;
@@ -60,7 +57,6 @@ st.markdown("""
         color: #94a3b8 !important;
     }
     
-    /* Metrics */
     [data-testid="stMetricValue"] {
         color: #ffffff !important;
         font-weight: 700 !important;
@@ -74,7 +70,6 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
     
-    /* Metric containers */
     [data-testid="stMetric"] {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 27, 46, 0.5) 100%);
         border: 1px solid rgba(139, 92, 246, 0.15);
@@ -90,7 +85,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Buttons - Main content */
     .stButton > button {
         background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
         color: white !important;
@@ -118,7 +112,6 @@ st.markdown("""
         box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
     }
     
-    /* Selectbox */
     .stSelectbox > div > div {
         background: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(139, 92, 246, 0.2);
@@ -134,7 +127,6 @@ st.markdown("""
         color: #94a3b8 !important;
     }
     
-    /* Text Input */
     .stTextInput > div > div > input {
         background: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(139, 92, 246, 0.2);
@@ -147,7 +139,6 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
     }
     
-    /* DataFrame */
     [data-testid="stDataFrame"] {
         background: rgba(30, 41, 59, 0.4);
         border: 1px solid rgba(139, 92, 246, 0.15);
@@ -155,7 +146,6 @@ st.markdown("""
         overflow: hidden;
     }
     
-    /* Download Button */
     .stDownloadButton > button {
         background: linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(251, 113, 133, 0.2) 100%);
         border: 1px solid rgba(251, 146, 60, 0.3);
@@ -167,28 +157,11 @@ st.markdown("""
         border-color: rgba(251, 146, 60, 0.5);
     }
     
-    /* Divider */
     hr {
         border-color: rgba(139, 92, 246, 0.15);
         margin: 2rem 0;
     }
     
-    /* Subheader styling */
-    .stSubheader {
-        color: #f1f5f9 !important;
-    }
-    
-    /* Caption */
-    .stCaption {
-        color: #64748b !important;
-    }
-    
-    /* Markdown text */
-    .stMarkdown {
-        color: #94a3b8 !important;
-    }
-    
-    /* Scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -201,25 +174,6 @@ st.markdown("""
     ::-webkit-scrollbar-thumb {
         background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
         border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    }
-    
-    /* Glow effects for sections */
-    .section-glow {
-        position: relative;
-    }
-    
-    .section-glow::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.5) 50%, transparent 100%);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -397,7 +351,7 @@ try:
         
         # ============ AGING PIVOT TABLES ============
         st.subheader("📊 Aging Analysis - Normal Orders")
-        st.caption("Select aging bucket to view orders")
+        st.caption("Click on count to view orders for that aging bucket")
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -406,87 +360,93 @@ try:
         
         with col1:
             st.markdown("**📍 PK Zone Normal**")
-            pk_select = st.selectbox(
-                "Select aging to view orders:",
-                ['-- Select --'] + [f"{b} days ({pk_aging[b]} orders)" for b in BUCKET_ORDER if pk_aging[b] > 0],
-                key="pk_ag"
-            )
-            if pk_select != '-- Select --':
-                st.session_state.page = 'aging'
-                st.session_state.aging_zone = 'PK Zone'
-                st.session_state.aging_bucket = pk_select.split(' days')[0]
-                st.rerun()
-            
-            st.dataframe(
-                pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [pk_aging[b] for b in BUCKET_ORDER]}),
-                hide_index=True, use_container_width=True
-            )
+            for bucket in BUCKET_ORDER:
+                count = pk_aging[bucket]
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    st.text(f"{bucket} days")
+                with c2:
+                    if count > 0:
+                        if st.button(f"{count}", key=f"pk_{bucket}", use_container_width=True):
+                            st.session_state.page = 'aging'
+                            st.session_state.aging_zone = 'PK Zone'
+                            st.session_state.aging_bucket = bucket
+                            st.rerun()
+                    else:
+                        st.text("0")
+            st.caption(f"**Total: {len(pk_normal):,}**")
         
         with col2:
             st.markdown("**🏢 QC Center Normal**")
-            qc_select = st.selectbox(
-                "Select aging to view orders:",
-                ['-- Select --'] + [f"{b} days ({qc_aging[b]} orders)" for b in BUCKET_ORDER if qc_aging[b] > 0],
-                key="qc_ag"
-            )
-            if qc_select != '-- Select --':
-                st.session_state.page = 'aging'
-                st.session_state.aging_zone = 'PK QC Center'
-                st.session_state.aging_bucket = qc_select.split(' days')[0]
-                st.rerun()
-            
-            st.dataframe(
-                pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [qc_aging[b] for b in BUCKET_ORDER]}),
-                hide_index=True, use_container_width=True
-            )
+            for bucket in BUCKET_ORDER:
+                count = qc_aging[bucket]
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    st.text(f"{bucket} days")
+                with c2:
+                    if count > 0:
+                        if st.button(f"{count}", key=f"qc_{bucket}", use_container_width=True):
+                            st.session_state.page = 'aging'
+                            st.session_state.aging_zone = 'PK QC Center'
+                            st.session_state.aging_bucket = bucket
+                            st.rerun()
+                    else:
+                        st.text("0")
+            st.caption(f"**Total: {len(qc_normal):,}**")
         
         st.divider()
         
         # ============ VENDOR TABLE ============
         st.subheader("🏪 PK Zone Vendors - Normal Orders")
-        st.caption("Select vendor to view their orders")
+        st.caption("Click on order count to view vendor's orders")
         
         vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         vendor_counts.columns = ['Vendor', 'Orders']
         
-        vendor_select = st.selectbox(
-            "Select vendor:",
-            ['-- Select --'] + [f"{r['Vendor']} ({r['Orders']} orders)" for _, r in vendor_counts.iterrows()],
-            key="vend"
-        )
-        if vendor_select != '-- Select --':
-            st.session_state.page = 'vendor'
-            st.session_state.vendor_name = vendor_select.rsplit(' (', 1)[0]
-            st.rerun()
+        # Display vendors in 3 columns with clickable counts
+        cols = st.columns(3)
+        for i, (_, row) in enumerate(vendor_counts.iterrows()):
+            with cols[i % 3]:
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    st.text(row['Vendor'][:20] + "..." if len(row['Vendor']) > 20 else row['Vendor'])
+                with c2:
+                    if st.button(f"{row['Orders']}", key=f"vendor_{i}", use_container_width=True):
+                        st.session_state.page = 'vendor'
+                        st.session_state.vendor_name = row['Vendor']
+                        st.rerun()
         
-        st.dataframe(vendor_counts, hide_index=True, use_container_width=True, height=300)
+        st.caption(f"**Total: {len(vendor_counts)} vendors | {len(pk_normal):,} orders**")
         
         st.divider()
         
         # ============ HANDOVER AGING PIVOT ============
         st.subheader("🚚 Handover Aging Analysis")
-        st.caption("Aging based on handover date (0-30+ days)")
+        st.caption("Click on count to view handover orders for that aging bucket")
         
         handover_aging = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         
-        handover_select = st.selectbox(
-            "Select aging to view handover orders:",
-            ['-- Select --'] + [f"{b} days ({handover_aging[b]} orders)" for b in BUCKET_ORDER if handover_aging[b] > 0],
-            key="handover_ag"
-        )
-        if handover_select != '-- Select --':
-            st.session_state.page = 'handover_aging'
-            st.session_state.handover_bucket = handover_select.split(' days')[0]
-            st.rerun()
+        cols = st.columns(4)
+        for i, bucket in enumerate(BUCKET_ORDER):
+            count = handover_aging[bucket]
+            with cols[i % 4]:
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    st.text(f"{bucket} days")
+                with c2:
+                    if count > 0:
+                        if st.button(f"{count}", key=f"ho_{bucket}", use_container_width=True):
+                            st.session_state.page = 'handover_aging'
+                            st.session_state.handover_bucket = bucket
+                            st.rerun()
+                    else:
+                        st.text("0")
         
-        st.dataframe(
-            pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [handover_aging[b] for b in BUCKET_ORDER]}),
-            hide_index=True, use_container_width=True
-        )
-        st.caption(f"Total Handover: {len(handover):,} orders")
+        st.caption(f"**Total Handover: {len(handover):,} orders**")
 
-    # ===================== DETAIL PAGES =====================
+    # ===================== DETAIL PAGES - FULL SCREEN =====================
     else:
+        # Back button
         if st.button("⬅️ Back to Dashboard", key="back_btn", type="primary"):
             st.session_state.page = 'home'
             st.rerun()
@@ -529,18 +489,17 @@ try:
             title = "Orders"
             data = approved
         
+        # Full screen title
         st.title(title)
         st.caption(f"📋 {len(data):,} orders")
         
-        st.divider()
-        
-        # Filters
+        # Filters in one row
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            search = st.text_input("🔍 Search", placeholder="Order #, Customer, Fleek ID...")
+            search = st.text_input("🔍 Search", placeholder="Order #, Customer, Fleek ID...", label_visibility="collapsed")
         with col2:
-            countries = ['All'] + sorted(data['customer_country'].dropna().unique().tolist())
-            country = st.selectbox("🌍 Country", countries)
+            countries = ['All Countries'] + sorted(data['customer_country'].dropna().unique().tolist())
+            country = st.selectbox("Country", countries, label_visibility="collapsed")
         with col3:
             st.download_button("⬇️ Export CSV", data.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
         
@@ -553,12 +512,12 @@ try:
                 filtered['customer_name'].astype(str).str.lower().str.contains(s, na=False) |
                 filtered['fleek_id'].astype(str).str.lower().str.contains(s, na=False)
             ]
-        if country != 'All':
+        if country != 'All Countries':
             filtered = filtered[filtered['customer_country'] == country]
         
-        # Show data
+        # Full screen data table
         cols = [c for c in display_cols if c in filtered.columns]
-        st.dataframe(filtered[cols], use_container_width=True, height=500)
+        st.dataframe(filtered[cols], use_container_width=True, height=700)
 
 except Exception as e:
     st.error(f"Error: {str(e)}")
