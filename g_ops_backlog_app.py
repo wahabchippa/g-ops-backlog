@@ -58,6 +58,8 @@ if 'aging_bucket' not in st.session_state:
     st.session_state.aging_bucket = None
 if 'vendor_name' not in st.session_state:
     st.session_state.vendor_name = None
+if 'handover_bucket' not in st.session_state:
+    st.session_state.handover_bucket = None
 
 # ============ SIDEBAR - Always visible ============
 with st.sidebar:
@@ -97,11 +99,17 @@ try:
     # Prepare data
     approved = df[df['latest_status'] == 'QC_APPROVED'].copy()
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
-                  (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))]
+                  (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))].copy()
     
+    # Aging for QC Approved
     approved['qc_date'] = approved['qc_approved_at'].apply(parse_date)
     approved['aging_days'] = (datetime.now() - approved['qc_date']).dt.days
     approved['aging_bucket'] = approved['aging_days'].apply(get_aging_bucket)
+    
+    # Aging for Handover (based on logistics_partner_handedover_at)
+    handover['handover_date'] = handover['logistics_partner_handedover_at'].apply(parse_date)
+    handover['aging_days'] = (datetime.now() - handover['handover_date']).dt.days
+    handover['aging_bucket'] = handover['aging_days'].apply(get_aging_bucket)
     
     pk_zone = approved[approved['QC or zone'] == 'PK Zone']
     qc_center = approved[approved['QC or zone'] == 'PK QC Center']
@@ -183,8 +191,8 @@ try:
         
         st.divider()
         
-        # ============ AGING PIVOT TABLES ============
-        st.subheader("📊 Aging Analysis - Normal Orders")
+        # ============ AGING PIVOT TABLES - NORMAL ORDERS ============
+        st.subheader("📊 Aging Analysis - Normal Orders (QC Approved)")
         st.caption("Select aging bucket to view orders")
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -248,6 +256,30 @@ try:
             st.rerun()
         
         st.dataframe(vendor_counts, hide_index=True, use_container_width=True, height=300)
+        
+        st.divider()
+        
+        # ============ HANDOVER AGING PIVOT ============
+        st.subheader("🚚 Handover Aging Analysis")
+        st.caption("Aging based on handover date (0-30+ days)")
+        
+        handover_aging = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+        
+        handover_select = st.selectbox(
+            "Select aging to view handover orders:",
+            ['-- Select --'] + [f"{b} days ({handover_aging[b]} orders)" for b in BUCKET_ORDER if handover_aging[b] > 0],
+            key="handover_ag"
+        )
+        if handover_select != '-- Select --':
+            st.session_state.page = 'handover_aging'
+            st.session_state.handover_bucket = handover_select.split(' days')[0]
+            st.rerun()
+        
+        st.dataframe(
+            pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [handover_aging[b] for b in BUCKET_ORDER]}),
+            hide_index=True, use_container_width=True
+        )
+        st.caption(f"Total Handover: {len(handover):,} orders")
 
     # ===================== DETAIL PAGES =====================
     else:
@@ -282,6 +314,10 @@ try:
                 data = pk_normal[pk_normal['aging_bucket'] == bucket]
             else:
                 data = qc_normal[qc_normal['aging_bucket'] == bucket]
+        elif st.session_state.page == 'handover_aging':
+            bucket = st.session_state.handover_bucket
+            title = f"🚚 Handover - {bucket} Days Aging"
+            data = handover[handover['aging_bucket'] == bucket]
         elif st.session_state.page == 'vendor':
             vendor = st.session_state.vendor_name
             title = f"🏪 {vendor}"
