@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="📦", layout="wide")
+st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide")
 
 # Session state
 if 'page' not in st.session_state:
@@ -39,22 +39,28 @@ if st.session_state.page == 'home':
     [data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer, header { visibility: hidden; }
     
-    /* Beautiful Title - Light for Dark BG */
+    /* BIG Beautiful Title - Light for Dark BG */
     .main-title {
-        font-size: 2.2rem;
+        font-size: 2.8rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 50%, #d0d0d0 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #c0c0c0 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         margin: 0;
         letter-spacing: -0.5px;
+        text-shadow: 0 2px 10px rgba(255,255,255,0.1);
+    }
+    
+    .title-icon {
+        font-size: 3.2rem;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
     
     .subtitle {
         color: #a0a0a0;
-        font-size: 0.8rem;
-        margin-top: 5px;
+        font-size: 0.85rem;
+        margin-top: 8px;
         font-weight: 500;
     }
     
@@ -384,14 +390,14 @@ try:
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
         
-        # Compact Title
+        # BIG Title with Better Icon
         st.markdown("""
-            <div style="margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 2.5rem;">📦</span>
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span class="title-icon">⚡</span>
                     <span class="main-title">G-Ops Backlog Dashboard</span>
                 </div>
-                <p class="subtitle">✨ Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
+                <p class="subtitle">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
             </div>
         """, unsafe_allow_html=True)
         
