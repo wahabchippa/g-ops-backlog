@@ -18,9 +18,13 @@ if 'vendor_zone' not in st.session_state:
 if 'handover_bucket' not in st.session_state:
     st.session_state.handover_bucket = None
 
+# Initialize vendor comments storage
+if 'vendor_comments' not in st.session_state:
+    st.session_state.vendor_comments = {}
+
 # Dynamic Theme based on page
 if st.session_state.page == 'home':
-    # LIGHT BROWN/SKIN THEME for Home
+    # DARK WOVEN/TEXTURED THEME for Home
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -28,17 +32,18 @@ if st.session_state.page == 'home':
     * { font-family: 'Inter', sans-serif; }
     
     .stApp {
-        background: linear-gradient(145deg, #f5e6d3 0%, #e8d4c4 50%, #dcc8b5 100%);
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        background-color: #1a1a1a;
     }
     
     [data-testid="stHeader"] { background: transparent; }
     #MainMenu, footer, header { visibility: hidden; }
     
-    /* Beautiful Title */
+    /* Beautiful Title - Light for Dark BG */
     .main-title {
         font-size: 2.8rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #CD853F 100%);
+        background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 50%, #d0d0d0 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -47,42 +52,42 @@ if st.session_state.page == 'home':
     }
     
     .subtitle {
-        color: #5D4037;
+        color: #a0a0a0;
         font-size: 0.95rem;
         margin-top: 8px;
         font-weight: 500;
     }
     
-    /* Dark Section Headers - Visible on Brown */
+    /* Light Section Headers - Visible on Dark BG */
     .section-header {
         font-size: 1.35rem;
         font-weight: 700;
-        color: #3E2723;
+        color: #e0e0e0;
         margin: 30px 0 15px 0;
         padding-bottom: 10px;
-        border-bottom: 3px solid #A1887F;
+        border-bottom: 3px solid #444444;
     }
     
-    /* Metric Cards */
+    /* Metric Cards - Dark with light text */
     .metric-card {
-        background: rgba(255,255,255,0.85);
+        background: rgba(50,50,50,0.9);
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
-        border: 1px solid #D7CCC8;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+        border: 1px solid #444444;
         text-align: center;
         transition: all 0.3s ease;
     }
     
     .metric-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
     
     .metric-label {
         font-size: 0.7rem;
         font-weight: 700;
-        color: #795548;
+        color: #a0a0a0;
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-bottom: 8px;
@@ -91,14 +96,14 @@ if st.session_state.page == 'home':
     .metric-value {
         font-size: 2.2rem;
         font-weight: 800;
-        color: #3E2723;
+        color: #ffffff;
     }
     
     /* Light Buttons with Hover Effect */
     .stButton > button {
-        background: rgba(255,255,255,0.9) !important;
-        color: #5D4037 !important;
-        border: 2px solid #A1887F !important;
+        background: rgba(60,60,60,0.9) !important;
+        color: #e0e0e0 !important;
+        border: 2px solid #555555 !important;
         border-radius: 10px !important;
         padding: 8px 16px !important;
         font-weight: 600 !important;
@@ -107,25 +112,25 @@ if st.session_state.page == 'home':
     }
     
     .stButton > button:hover {
-        background: linear-gradient(135deg, #5D4037 0%, #795548 100%) !important;
+        background: linear-gradient(135deg, #4a4a4a 0%, #5a5a5a 100%) !important;
         color: white !important;
-        border-color: #5D4037 !important;
+        border-color: #666666 !important;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(93,64,55,0.3);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     }
     
     /* Info Cards */
     .info-card {
-        background: rgba(255,255,255,0.85);
+        background: rgba(50,50,50,0.9);
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border-left: 5px solid #8D6E63;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border-left: 5px solid #666666;
     }
     
     .info-title {
         font-weight: 600;
-        color: #5D4037;
+        color: #a0a0a0;
         font-size: 0.9rem;
         margin-bottom: 8px;
     }
@@ -133,48 +138,52 @@ if st.session_state.page == 'home':
     .info-value {
         font-size: 2rem;
         font-weight: 800;
-        color: #3E2723;
-    }
-    
-    /* Vendor Row Styling */
-    .vendor-row {
-        background: rgba(255,255,255,0.7);
-        border-radius: 10px;
-        padding: 10px 15px;
-        margin-bottom: 8px;
-        border: 1px solid #D7CCC8;
+        color: #ffffff;
     }
     
     /* Dropdown Styling */
     .stSelectbox > div > div {
-        background: rgba(255,255,255,0.9) !important;
-        border: 2px solid #A1887F !important;
+        background: rgba(60,60,60,0.9) !important;
+        border: 2px solid #555555 !important;
         border-radius: 8px !important;
+        color: #e0e0e0 !important;
     }
     
     .stSelectbox label {
-        color: #5D4037 !important;
+        color: #a0a0a0 !important;
         font-weight: 600 !important;
     }
     
     /* Divider */
     hr {
         border: none;
-        border-top: 2px solid #BCAAA4;
+        border-top: 2px solid #444444;
         margin: 35px 0;
     }
     
-    /* Text Colors for Brown Background */
-    .stMarkdown, p, span { color: #3E2723; }
+    /* Text Colors for Dark Background */
+    .stMarkdown, p, span, label { color: #e0e0e0 !important; }
+    h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
+    
+    /* Caption styling */
+    .stCaption, small { color: #909090 !important; }
     
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #D7CCC8; }
-    ::-webkit-scrollbar-thumb { background: #8D6E63; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: #2a2a2a; }
+    ::-webkit-scrollbar-thumb { background: #555555; border-radius: 4px; }
+    
+    /* Table header styling */
+    .vendor-header {
+        color: #ffffff;
+        font-weight: 700;
+        padding: 10px 0;
+        border-bottom: 2px solid #444444;
+    }
     </style>
     """, unsafe_allow_html=True)
 else:
-    # DARK THEME for Detail Pages
+    # DARK THEME for Detail Pages (same as before)
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -276,56 +285,67 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
-# Data Loading
+# Data Loading - OPTIMIZED
 SHEET_ID = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
 
-@st.cache_data(ttl=300)
+# Only load columns we need - HUGE speed boost
+REQUIRED_COLS = [
+    'latest_status', 'QC or zone', 'Order Type', 'order_number', 'fleek_id',
+    'customer_name', 'customer_country', 'vendor', 'item_name', 
+    'total_order_line_amount', 'product_brand', 'logistics_partner_name',
+    'qc_approved_at', 'logistics_partner_handedover_at'
+]
+
+@st.cache_data(ttl=600, show_spinner=False)  # 10 min cache
 def load_data():
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dump"
-    return pd.read_csv(url, low_memory=False)
+    df = pd.read_csv(url, usecols=lambda c: c in REQUIRED_COLS, low_memory=False)
+    return df
 
-def parse_date(date_str):
-    try:
-        return pd.to_datetime(date_str, format='%B %d, %Y, %H:%M')
-    except:
-        return pd.NaT
-
-def get_aging_bucket(days):
-    if pd.isna(days) or days < 0: return None
-    if days == 0: return "0 days"
-    if days == 1: return "1 day"
-    if days <= 5: return f"{int(days)} days"
-    elif days <= 7: return "6-7 days"
-    elif days <= 10: return "8-10 days"
-    elif days <= 15: return "11-15 days"
-    elif days <= 20: return "16-20 days"
-    elif days <= 25: return "21-25 days"
-    elif days <= 30: return "26-30 days"
-    else: return "30+ days"
-
-BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
-                '6-7 days', '8-10 days', '11-15 days', '16-20 days', 
-                '21-25 days', '26-30 days', '30+ days']
-
-# Dropdown options for vendors
-VENDOR_ACTION_OPTIONS = ['-- Select Action --', 'today', 'update', 'Tuesday', 'Thursday', 'Saturday', 'NOT Response', 'MOVE to WH']
-
-try:
-    df = load_data()
+@st.cache_data(ttl=600, show_spinner=False)
+def process_data(df):
+    """Process data once and cache it"""
+    now = datetime.now()
     
-    # Process Data
+    # Filter data
     approved = df[df['latest_status'] == 'QC_APPROVED'].copy()
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
                   (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))].copy()
     
-    approved['qc_date'] = approved['qc_approved_at'].apply(parse_date)
-    approved['aging_days'] = (datetime.now() - approved['qc_date']).dt.days
-    approved['aging_bucket'] = approved['aging_days'].apply(get_aging_bucket)
+    # Vectorized date parsing - MUCH faster than .apply()
+    approved['qc_date'] = pd.to_datetime(approved['qc_approved_at'], format='%B %d, %Y, %H:%M', errors='coerce')
+    approved['aging_days'] = (now - approved['qc_date']).dt.days
     
-    handover['handover_date'] = handover['logistics_partner_handedover_at'].apply(parse_date)
-    handover['aging_days'] = (datetime.now() - handover['handover_date']).dt.days
-    handover['aging_bucket'] = handover['aging_days'].apply(get_aging_bucket)
+    handover['handover_date'] = pd.to_datetime(handover['logistics_partner_handedover_at'], format='%B %d, %Y, %H:%M', errors='coerce')
+    handover['aging_days'] = (now - handover['handover_date']).dt.days
     
+    # Vectorized bucket assignment - faster than .apply()
+    def assign_buckets(days_series):
+        conditions = [
+            days_series == 0,
+            days_series == 1,
+            days_series == 2,
+            days_series == 3,
+            days_series == 4,
+            days_series == 5,
+            (days_series >= 6) & (days_series <= 7),
+            (days_series >= 8) & (days_series <= 10),
+            (days_series >= 11) & (days_series <= 15),
+            (days_series >= 16) & (days_series <= 20),
+            (days_series >= 21) & (days_series <= 25),
+            (days_series >= 26) & (days_series <= 30),
+            days_series > 30
+        ]
+        choices = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days',
+                   '6-7 days', '8-10 days', '11-15 days', '16-20 days',
+                   '21-25 days', '26-30 days', '30+ days']
+        import numpy as np
+        return np.select(conditions, choices, default=None)
+    
+    approved['aging_bucket'] = assign_buckets(approved['aging_days'])
+    handover['aging_bucket'] = assign_buckets(handover['aging_days'])
+    
+    # Pre-filter all subsets
     pk_zone = approved[approved['QC or zone'] == 'PK Zone']
     qc_center = approved[approved['QC or zone'] == 'PK QC Center']
     pk_normal = pk_zone[pk_zone['Order Type'] == 'Normal Order']
@@ -333,9 +353,43 @@ try:
     qc_normal = qc_center[qc_center['Order Type'] == 'Normal Order']
     qc_ai = qc_center[qc_center['Order Type'] == 'AI Order']
     
-    DISPLAY_COLS = ['order_number', 'fleek_id', 'customer_name', 'customer_country', 
-                    'vendor', 'item_name', 'total_order_line_amount', 'product_brand',
-                    'logistics_partner_name', 'aging_days', 'aging_bucket']
+    return {
+        'approved': approved,
+        'handover': handover,
+        'pk_zone': pk_zone,
+        'qc_center': qc_center,
+        'pk_normal': pk_normal,
+        'pk_ai': pk_ai,
+        'qc_normal': qc_normal,
+        'qc_ai': qc_ai
+    }
+
+BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
+                '6-7 days', '8-10 days', '11-15 days', '16-20 days', 
+                '21-25 days', '26-30 days', '30+ days']
+
+# Dropdown options for vendors - with Remove option
+VENDOR_ACTION_OPTIONS = ['-- Select --', 'today', 'update', 'Tuesday', 'Thursday', 'Saturday', 'NOT Response', 'MOVE to WH', '❌ Remove']
+
+DISPLAY_COLS = ['order_number', 'fleek_id', 'customer_name', 'customer_country', 
+                'vendor', 'item_name', 'total_order_line_amount', 'product_brand',
+                'logistics_partner_name', 'aging_days', 'aging_bucket']
+
+try:
+    # Show loading spinner only on first load
+    with st.spinner('Loading data...'):
+        df = load_data()
+        data = process_data(df)
+    
+    # Extract processed data
+    approved = data['approved']
+    handover = data['handover']
+    pk_zone = data['pk_zone']
+    qc_center = data['qc_center']
+    pk_normal = data['pk_normal']
+    pk_ai = data['pk_ai']
+    qc_normal = data['qc_normal']
+    qc_ai = data['qc_ai']
 
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
@@ -442,7 +496,6 @@ try:
         # PK Zone Aging - Clickable with visible labels
         with col1:
             st.markdown("##### 📍 PK Zone Normal")
-            # Table header
             h1, h2 = st.columns([3, 1])
             with h1:
                 st.markdown("**Aging Bucket**")
@@ -453,7 +506,7 @@ try:
                 count = pk_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.markdown(f"<div style='padding: 6px 0; color: #3E2723; font-size: 0.9rem; font-weight: 500;'>{bucket}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='padding: 6px 0; color: #e0e0e0; font-size: 0.9rem; font-weight: 500;'>{bucket}</div>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"pk_aging_{bucket}", use_container_width=True):
@@ -462,13 +515,12 @@ try:
                             st.session_state.aging_bucket = bucket
                             st.rerun()
                     else:
-                        st.markdown(f"<div style='padding: 8px; text-align: center; color: #8D6E63;'>0</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='padding: 8px; text-align: center; color: #707070;'>0</div>", unsafe_allow_html=True)
             st.markdown(f"**Total: {len(pk_normal):,}**")
         
         # QC Center Aging - Clickable with visible labels
         with col2:
             st.markdown("##### 🏢 QC Center Normal")
-            # Table header
             h1, h2 = st.columns([3, 1])
             with h1:
                 st.markdown("**Aging Bucket**")
@@ -479,7 +531,7 @@ try:
                 count = qc_aging.get(bucket, 0)
                 c1, c2 = st.columns([3, 1])
                 with c1:
-                    st.markdown(f"<div style='padding: 6px 0; color: #3E2723; font-size: 0.9rem; font-weight: 500;'>{bucket}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='padding: 6px 0; color: #e0e0e0; font-size: 0.9rem; font-weight: 500;'>{bucket}</div>", unsafe_allow_html=True)
                 with c2:
                     if count > 0:
                         if st.button(f"{count}", key=f"qc_aging_{bucket}", use_container_width=True):
@@ -488,33 +540,33 @@ try:
                             st.session_state.aging_bucket = bucket
                             st.rerun()
                     else:
-                        st.markdown(f"<div style='padding: 8px; text-align: center; color: #8D6E63;'>0</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='padding: 8px; text-align: center; color: #707070;'>0</div>", unsafe_allow_html=True)
             st.markdown(f"**Total: {len(qc_normal):,}**")
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ PK ZONE VENDOR TABLE - 1 ROW EACH WITH DROPDOWN ============
+        # ============ PK ZONE VENDOR TABLE ONLY - WITH PERSISTENT COMMENTS ============
         st.markdown('<div class="section-header">🏪 PK Zone Vendors - Normal Orders</div>', unsafe_allow_html=True)
-        st.caption("🖱️ Click on order count to view vendor's orders | Select action from dropdown")
+        st.caption("🖱️ Click on order count to view vendor's orders | Comment is saved automatically")
         
         pk_vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         pk_vendor_counts.columns = ['Vendor', 'Orders']
         
-        # Header row
+        # Header row with Comment
         h1, h2, h3 = st.columns([4, 1, 2])
         with h1:
             st.markdown("**Vendor Name**")
         with h2:
             st.markdown("**Orders**")
         with h3:
-            st.markdown("**Action**")
+            st.markdown("**Comment**")
         
-        # Each vendor in 1 row
         for i, (_, row) in enumerate(pk_vendor_counts.iterrows()):
+            vendor_key = f"pk_{row['Vendor']}"
             c1, c2, c3 = st.columns([4, 1, 2])
             with c1:
                 vendor_display = row['Vendor'][:40] + "..." if len(str(row['Vendor'])) > 40 else row['Vendor']
-                st.markdown(f"<div style='padding: 8px 0; color: #3E2723; font-size: 0.9rem; font-weight: 500;'>{vendor_display}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='padding: 8px 0; color: #e0e0e0; font-size: 0.9rem; font-weight: 500;'>{vendor_display}</div>", unsafe_allow_html=True)
             with c2:
                 if st.button(f"{row['Orders']}", key=f"pk_vendor_{i}", use_container_width=True):
                     st.session_state.page = 'vendor_detail'
@@ -522,66 +574,52 @@ try:
                     st.session_state.vendor_zone = 'PK Zone'
                     st.rerun()
             with c3:
-                st.selectbox("", VENDOR_ACTION_OPTIONS, key=f"pk_action_{i}", label_visibility="collapsed")
+                # Get current saved value or default
+                current_value = st.session_state.vendor_comments.get(vendor_key, '-- Select --')
+                
+                # Find index of current value
+                try:
+                    default_index = VENDOR_ACTION_OPTIONS.index(current_value)
+                except ValueError:
+                    default_index = 0
+                
+                # Dropdown with saved value
+                selected = st.selectbox(
+                    "", 
+                    VENDOR_ACTION_OPTIONS, 
+                    index=default_index,
+                    key=f"pk_action_{i}", 
+                    label_visibility="collapsed"
+                )
+                
+                # Save selection (handle Remove)
+                if selected == '❌ Remove':
+                    if vendor_key in st.session_state.vendor_comments:
+                        del st.session_state.vendor_comments[vendor_key]
+                elif selected != '-- Select --':
+                    st.session_state.vendor_comments[vendor_key] = selected
         
         st.markdown(f"**Total: {len(pk_vendor_counts)} vendors | {len(pk_normal):,} orders**")
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ QC CENTER VENDOR TABLE - 1 ROW EACH WITH DROPDOWN ============
-        st.markdown('<div class="section-header">🏢 QC Center Vendors - Normal Orders</div>', unsafe_allow_html=True)
-        st.caption("🖱️ Click on order count to view vendor's orders | Select action from dropdown")
-        
-        qc_vendor_counts = qc_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
-        qc_vendor_counts.columns = ['Vendor', 'Orders']
-        
-        # Header row
-        h1, h2, h3 = st.columns([4, 1, 2])
-        with h1:
-            st.markdown("**Vendor Name**")
-        with h2:
-            st.markdown("**Orders**")
-        with h3:
-            st.markdown("**Action**")
-        
-        # Each vendor in 1 row
-        for i, (_, row) in enumerate(qc_vendor_counts.iterrows()):
-            c1, c2, c3 = st.columns([4, 1, 2])
-            with c1:
-                vendor_display = row['Vendor'][:40] + "..." if len(str(row['Vendor'])) > 40 else row['Vendor']
-                st.markdown(f"<div style='padding: 8px 0; color: #3E2723; font-size: 0.9rem; font-weight: 500;'>{vendor_display}</div>", unsafe_allow_html=True)
-            with c2:
-                if st.button(f"{row['Orders']}", key=f"qc_vendor_{i}", use_container_width=True):
-                    st.session_state.page = 'vendor_detail'
-                    st.session_state.vendor_name = row['Vendor']
-                    st.session_state.vendor_zone = 'PK QC Center'
-                    st.rerun()
-            with c3:
-                st.selectbox("", VENDOR_ACTION_OPTIONS, key=f"qc_action_{i}", label_visibility="collapsed")
-        
-        st.markdown(f"**Total: {len(qc_vendor_counts)} vendors | {len(qc_normal):,} orders**")
-        
-        st.markdown("<hr>", unsafe_allow_html=True)
-        
-        # ============ HANDOVER AGING - CLICKABLE ============
+        # ============ HANDOVER AGING ============
         st.markdown('<div class="section-header">🚚 Handover Aging Analysis</div>', unsafe_allow_html=True)
         st.caption("🖱️ Click on count to view handover orders for that aging bucket")
         
         handover_aging = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         
-        # Header
         h1, h2 = st.columns([3, 1])
         with h1:
             st.markdown("**Aging Bucket**")
         with h2:
             st.markdown("**Count**")
         
-        # Display each bucket in single row
         for bucket in BUCKET_ORDER:
             count = handover_aging.get(bucket, 0)
             c1, c2 = st.columns([3, 1])
             with c1:
-                st.markdown(f"<div style='padding: 6px 0; color: #3E2723; font-size: 0.9rem; font-weight: 500;'>{bucket}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='padding: 6px 0; color: #e0e0e0; font-size: 0.9rem; font-weight: 500;'>{bucket}</div>", unsafe_allow_html=True)
             with c2:
                 if count > 0:
                     if st.button(f"{count}", key=f"handover_aging_{bucket}", use_container_width=True):
@@ -589,84 +627,79 @@ try:
                         st.session_state.handover_bucket = bucket
                         st.rerun()
                 else:
-                    st.markdown(f"<div style='padding: 8px; text-align: center; color: #8D6E63;'>0</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='padding: 8px; text-align: center; color: #707070;'>0</div>", unsafe_allow_html=True)
         
         st.markdown(f"**Total Handover: {len(handover):,} orders**")
 
     # ==================== DETAIL PAGES (DARK) ====================
     else:
-        # Back Button
         if st.button("← Back to Dashboard", key="back"):
             st.session_state.page = 'home'
             st.rerun()
         
         st.write("")
         
-        # Determine which page and data
         page = st.session_state.page
         
         if page == 'handover':
             title = "🚚 Handover Orders"
-            data = handover
+            data_view = handover
         elif page == 'pk_normal':
             title = "📍 PK Zone - Normal Orders"
-            data = pk_normal
+            data_view = pk_normal
         elif page == 'pk_ai':
             title = "📍 PK Zone - AI Orders"
-            data = pk_ai
+            data_view = pk_ai
         elif page == 'qc_normal':
             title = "🏢 QC Center - Normal Orders"
-            data = qc_normal
+            data_view = qc_normal
         elif page == 'qc_ai':
             title = "🏢 QC Center - AI Orders"
-            data = qc_ai
+            data_view = qc_ai
         elif page == 'aging_detail':
             zone = st.session_state.aging_zone
             bucket = st.session_state.aging_bucket
             icon = "📍" if zone == 'PK Zone' else "🏢"
             title = f"{icon} {zone} - {bucket} Aging"
             if zone == 'PK Zone':
-                data = pk_normal[pk_normal['aging_bucket'] == bucket]
+                data_view = pk_normal[pk_normal['aging_bucket'] == bucket]
             else:
-                data = qc_normal[qc_normal['aging_bucket'] == bucket]
+                data_view = qc_normal[qc_normal['aging_bucket'] == bucket]
         elif page == 'vendor_detail':
             vendor = st.session_state.vendor_name
             zone = st.session_state.vendor_zone
             icon = "📍" if zone == 'PK Zone' else "🏢"
             title = f"{icon} {zone} Vendor: {vendor}"
             if zone == 'PK Zone':
-                data = pk_normal[pk_normal['vendor'] == vendor]
+                data_view = pk_normal[pk_normal['vendor'] == vendor]
             else:
-                data = qc_normal[qc_normal['vendor'] == vendor]
+                data_view = qc_normal[qc_normal['vendor'] == vendor]
         elif page == 'handover_aging_detail':
             bucket = st.session_state.handover_bucket
             title = f"🚚 Handover - {bucket} Aging"
-            data = handover[handover['aging_bucket'] == bucket]
+            data_view = handover[handover['aging_bucket'] == bucket]
         else:
             title = "📋 Orders"
-            data = approved
+            data_view = approved
         
-        # Page Header
         st.markdown(f'<div class="page-title">{title}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="page-subtitle">📋 {len(data):,} orders found</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="page-subtitle">📋 {len(data_view):,} orders found</div>', unsafe_allow_html=True)
         
         st.write("")
         
-        # Filters Row
         col1, col2, col3 = st.columns([3, 2, 1])
         with col1:
             search = st.text_input("🔍 Search", placeholder="Order number, customer name, vendor...")
         with col2:
-            countries = ['All Countries'] + sorted(data['customer_country'].dropna().unique().tolist())
+            countries = ['All Countries'] + sorted(data_view['customer_country'].dropna().unique().tolist())
             country = st.selectbox("🌍 Filter by Country", countries)
         with col3:
             st.write(""); st.write("")
-            st.download_button("📥 Export CSV", data.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
+            st.download_button("📥 Export CSV", data_view.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
         
         st.write("")
         
-        # Apply Filters
-        filtered = data.copy()
+        filtered = data_view.copy()
         if search:
             s = search.lower()
             filtered = filtered[
@@ -678,10 +711,8 @@ try:
         if country != 'All Countries':
             filtered = filtered[filtered['customer_country'] == country]
         
-        # Results count
-        st.markdown(f'<p style="color: #94a3b8; margin-bottom: 10px;">Showing {len(filtered):,} of {len(data):,} orders</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color: #94a3b8; margin-bottom: 10px;">Showing {len(filtered):,} of {len(data_view):,} orders</p>', unsafe_allow_html=True)
         
-        # Data Table
         display_df = filtered[[c for c in DISPLAY_COLS if c in filtered.columns]]
         st.dataframe(display_df, use_container_width=True, height=600)
 
