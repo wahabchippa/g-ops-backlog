@@ -7,6 +7,14 @@ st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="📦", layou
 # Session state
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
+if 'aging_zone' not in st.session_state:
+    st.session_state.aging_zone = None
+if 'aging_bucket' not in st.session_state:
+    st.session_state.aging_bucket = None
+if 'vendor_name' not in st.session_state:
+    st.session_state.vendor_name = None
+if 'handover_bucket' not in st.session_state:
+    st.session_state.handover_bucket = None
 
 # Dynamic Theme based on page
 if st.session_state.page == 'home':
@@ -51,9 +59,6 @@ if st.session_state.page == 'home':
         margin: 30px 0 15px 0;
         padding-bottom: 10px;
         border-bottom: 3px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
     }
     
     /* Metric Cards */
@@ -93,11 +98,10 @@ if st.session_state.page == 'home':
         color: #475569 !important;
         border: 2px solid #e2e8f0 !important;
         border-radius: 10px !important;
-        padding: 10px 24px !important;
+        padding: 8px 16px !important;
         font-weight: 600 !important;
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
         transition: all 0.3s ease !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     
     .stButton > button:hover {
@@ -106,49 +110,6 @@ if st.session_state.page == 'home':
         border-color: #1e293b !important;
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(30,41,59,0.25);
-    }
-    
-    /* Clean Tables */
-    .aging-table {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #f1f5f9;
-    }
-    
-    .aging-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .aging-table th {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        color: white;
-        padding: 14px 20px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .aging-table td {
-        padding: 12px 20px;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
-        font-size: 0.95rem;
-    }
-    
-    .aging-table tr:hover {
-        background: #f8fafc;
-    }
-    
-    .aging-table tr:last-child td {
-        border-bottom: none;
-        font-weight: 700;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        color: #1e293b;
     }
     
     /* Info Cards */
@@ -185,7 +146,6 @@ if st.session_state.page == 'home':
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
     """, unsafe_allow_html=True)
 else:
@@ -243,16 +203,11 @@ else:
         border: 2px solid rgba(148, 163, 184, 0.2) !important;
         border-radius: 10px !important;
         padding: 12px 16px !important;
-        font-size: 0.95rem !important;
     }
     
     .stTextInput > div > div > input:focus {
         border-color: #60a5fa !important;
         box-shadow: 0 0 20px rgba(96,165,250,0.2) !important;
-    }
-    
-    .stTextInput > div > div > input::placeholder {
-        color: #64748b !important;
     }
     
     .stSelectbox > div > div {
@@ -447,58 +402,104 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Aging Analysis Tables
+        # ============ AGING PIVOT TABLES - CLICKABLE ============
         st.markdown('<div class="section-header">📊 Aging Analysis - Normal Orders</div>', unsafe_allow_html=True)
+        st.caption("🖱️ Click on count to view orders for that aging bucket")
+        
+        pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+        qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         
         col1, col2 = st.columns(2)
         
-        # PK Zone Aging
+        # PK Zone Aging - Clickable
         with col1:
             st.markdown("##### 📍 PK Zone Normal")
-            pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-            table_html = '<div class="aging-table"><table><tr><th>Aging</th><th style="text-align:right;">Count</th></tr>'
             for bucket in BUCKET_ORDER:
                 count = pk_aging.get(bucket, 0)
-                table_html += f"<tr><td>{bucket}</td><td style='text-align:right;'>{count}</td></tr>"
-            table_html += f"<tr><td>Total</td><td style='text-align:right;'>{len(pk_normal):,}</td></tr></table></div>"
-            st.markdown(table_html, unsafe_allow_html=True)
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    st.text(bucket)
+                with c2:
+                    if count > 0:
+                        if st.button(f"{count}", key=f"pk_aging_{bucket}", use_container_width=True):
+                            st.session_state.page = 'aging_detail'
+                            st.session_state.aging_zone = 'PK Zone'
+                            st.session_state.aging_bucket = bucket
+                            st.rerun()
+                    else:
+                        st.text("0")
+            st.markdown(f"**Total: {len(pk_normal):,}**")
         
-        # QC Center Aging
+        # QC Center Aging - Clickable
         with col2:
             st.markdown("##### 🏢 QC Center Normal")
-            qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-            table_html = '<div class="aging-table"><table><tr><th>Aging</th><th style="text-align:right;">Count</th></tr>'
             for bucket in BUCKET_ORDER:
                 count = qc_aging.get(bucket, 0)
-                table_html += f"<tr><td>{bucket}</td><td style='text-align:right;'>{count}</td></tr>"
-            table_html += f"<tr><td>Total</td><td style='text-align:right;'>{len(qc_normal):,}</td></tr></table></div>"
-            st.markdown(table_html, unsafe_allow_html=True)
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    st.text(bucket)
+                with c2:
+                    if count > 0:
+                        if st.button(f"{count}", key=f"qc_aging_{bucket}", use_container_width=True):
+                            st.session_state.page = 'aging_detail'
+                            st.session_state.aging_zone = 'PK QC Center'
+                            st.session_state.aging_bucket = bucket
+                            st.rerun()
+                    else:
+                        st.text("0")
+            st.markdown(f"**Total: {len(qc_normal):,}**")
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Vendor Table
+        # ============ VENDOR TABLE - CLICKABLE ============
         st.markdown('<div class="section-header">🏪 PK Zone Vendors - Normal Orders</div>', unsafe_allow_html=True)
+        st.caption("🖱️ Click on order count to view vendor's orders")
+        
         vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         vendor_counts.columns = ['Vendor', 'Orders']
         
-        table_html = '<div class="aging-table"><table><tr><th>Vendor</th><th style="text-align:right;">Orders</th></tr>'
-        for _, row in vendor_counts.iterrows():
-            table_html += f"<tr><td>{row['Vendor']}</td><td style='text-align:right;'>{row['Orders']}</td></tr>"
-        table_html += f"<tr><td>Total ({len(vendor_counts)} vendors)</td><td style='text-align:right;'>{len(pk_normal):,}</td></tr></table></div>"
-        st.markdown(table_html, unsafe_allow_html=True)
+        # Display in 3 columns
+        cols = st.columns(3)
+        for i, (_, row) in enumerate(vendor_counts.iterrows()):
+            with cols[i % 3]:
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    vendor_display = row['Vendor'][:25] + "..." if len(str(row['Vendor'])) > 25 else row['Vendor']
+                    st.text(vendor_display)
+                with c2:
+                    if st.button(f"{row['Orders']}", key=f"vendor_{i}", use_container_width=True):
+                        st.session_state.page = 'vendor_detail'
+                        st.session_state.vendor_name = row['Vendor']
+                        st.rerun()
+        
+        st.markdown(f"**Total: {len(vendor_counts)} vendors | {len(pk_normal):,} orders**")
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # Handover Aging
+        # ============ HANDOVER AGING - CLICKABLE ============
         st.markdown('<div class="section-header">🚚 Handover Aging Analysis</div>', unsafe_allow_html=True)
+        st.caption("🖱️ Click on count to view handover orders for that aging bucket")
+        
         handover_aging = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         
-        table_html = '<div class="aging-table"><table><tr><th>Aging</th><th style="text-align:right;">Count</th></tr>'
-        for bucket in BUCKET_ORDER:
+        # Display in 4 columns
+        cols = st.columns(4)
+        for i, bucket in enumerate(BUCKET_ORDER):
             count = handover_aging.get(bucket, 0)
-            table_html += f"<tr><td>{bucket}</td><td style='text-align:right;'>{count}</td></tr>"
-        table_html += f"<tr><td>Total</td><td style='text-align:right;'>{len(handover):,}</td></tr></table></div>"
-        st.markdown(table_html, unsafe_allow_html=True)
+            with cols[i % 4]:
+                c1, c2 = st.columns([2, 1])
+                with c1:
+                    st.text(bucket)
+                with c2:
+                    if count > 0:
+                        if st.button(f"{count}", key=f"handover_aging_{bucket}", use_container_width=True):
+                            st.session_state.page = 'handover_aging_detail'
+                            st.session_state.handover_bucket = bucket
+                            st.rerun()
+                    else:
+                        st.text("0")
+        
+        st.markdown(f"**Total Handover: {len(handover):,} orders**")
 
     # ==================== DETAIL PAGES (DARK) ====================
     else:
@@ -509,20 +510,44 @@ try:
         
         st.write("")
         
-        # Determine which page
+        # Determine which page and data
         page = st.session_state.page
+        
         if page == 'handover':
-            title, data = "🚚 Handover Orders", handover
+            title = "🚚 Handover Orders"
+            data = handover
         elif page == 'pk_normal':
-            title, data = "📍 PK Zone - Normal Orders", pk_normal
+            title = "📍 PK Zone - Normal Orders"
+            data = pk_normal
         elif page == 'pk_ai':
-            title, data = "📍 PK Zone - AI Orders", pk_ai
+            title = "📍 PK Zone - AI Orders"
+            data = pk_ai
         elif page == 'qc_normal':
-            title, data = "🏢 QC Center - Normal Orders", qc_normal
+            title = "🏢 QC Center - Normal Orders"
+            data = qc_normal
         elif page == 'qc_ai':
-            title, data = "🏢 QC Center - AI Orders", qc_ai
+            title = "🏢 QC Center - AI Orders"
+            data = qc_ai
+        elif page == 'aging_detail':
+            zone = st.session_state.aging_zone
+            bucket = st.session_state.aging_bucket
+            icon = "📍" if zone == 'PK Zone' else "🏢"
+            title = f"{icon} {zone} - {bucket} Aging"
+            if zone == 'PK Zone':
+                data = pk_normal[pk_normal['aging_bucket'] == bucket]
+            else:
+                data = qc_normal[qc_normal['aging_bucket'] == bucket]
+        elif page == 'vendor_detail':
+            vendor = st.session_state.vendor_name
+            title = f"🏪 Vendor: {vendor}"
+            data = pk_normal[pk_normal['vendor'] == vendor]
+        elif page == 'handover_aging_detail':
+            bucket = st.session_state.handover_bucket
+            title = f"🚚 Handover - {bucket} Aging"
+            data = handover[handover['aging_bucket'] == bucket]
         else:
-            title, data = "📋 Orders", approved
+            title = "📋 Orders"
+            data = approved
         
         # Page Header
         st.markdown(f'<div class="page-title">{title}</div>', unsafe_allow_html=True)
