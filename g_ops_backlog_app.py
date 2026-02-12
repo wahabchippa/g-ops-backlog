@@ -2,59 +2,27 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Page config
-st.set_page_config(
-    page_title="G-Ops Backlog Dashboard",
-    page_icon="📦",
-    layout="wide"
-)
+st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="📦", layout="wide")
 
-# Minimal Dark Theme - NO button styling
+# Simple Dark Theme
 st.markdown("""
 <style>
-    .stApp {
-        background-color: #0d1117;
-    }
-    
-    .main .block-container {
-        background-color: #0d1117;
-        padding-top: 2rem;
-    }
-    
-    [data-testid="stAppViewContainer"] {
-        background-color: #0d1117;
-    }
-    
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    h1, h2, h3 {
-        color: #f0f6fc !important;
-    }
-    
-    p, span, label {
-        color: #c9d1d9 !important;
-    }
-    
-    [data-testid="stMetricValue"] {
-        color: #f0f6fc !important;
-    }
-    
-    [data-testid="stMetricLabel"] {
-        color: #8b949e !important;
-    }
+    .stApp { background-color: #0d1117; }
+    [data-testid="stAppViewContainer"] { background-color: #0d1117; }
+    #MainMenu, footer, header { visibility: hidden; }
+    h1, h2, h3, h4 { color: #f0f6fc !important; }
+    p, span, label { color: #c9d1d9 !important; }
+    [data-testid="stMetricValue"] { color: #f0f6fc !important; }
+    [data-testid="stMetricLabel"] { color: #8b949e !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Google Sheet config
 SHEET_ID = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
 
 @st.cache_data(ttl=300)
 def load_data():
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dump"
-    df = pd.read_csv(url, low_memory=False)
-    return df
+    return pd.read_csv(url, low_memory=False)
 
 def parse_date(date_str):
     try:
@@ -63,8 +31,7 @@ def parse_date(date_str):
         return pd.NaT
 
 def get_aging_bucket(days):
-    if pd.isna(days) or days < 0:
-        return None
+    if pd.isna(days) or days < 0: return None
     elif days == 0: return '0'
     elif days == 1: return '1'
     elif days == 2: return '2'
@@ -81,35 +48,30 @@ def get_aging_bucket(days):
 
 BUCKET_ORDER = ['0', '1', '2', '3', '4', '5', '6-7', '8-10', '11-15', '16-20', '21-25', '26-30', '30+']
 
-# Initialize session state
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'home'
-if 'selected_zone' not in st.session_state:
-    st.session_state.selected_zone = None
-if 'selected_bucket' not in st.session_state:
-    st.session_state.selected_bucket = None
-if 'selected_vendor' not in st.session_state:
-    st.session_state.selected_vendor = None
+# Session state for navigation
+if 'page' not in st.session_state:
+    st.session_state.page = 'home'
+if 'aging_zone' not in st.session_state:
+    st.session_state.aging_zone = None
+if 'aging_bucket' not in st.session_state:
+    st.session_state.aging_bucket = None
+if 'vendor_name' not in st.session_state:
+    st.session_state.vendor_name = None
 
-# Load data
 try:
     df = load_data()
     
-    # Filter data
+    # Prepare data
     approved = df[df['latest_status'] == 'QC_APPROVED'].copy()
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
                   (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))]
     
-    # Calculate aging
     approved['qc_date'] = approved['qc_approved_at'].apply(parse_date)
-    today = datetime.now()
-    approved['aging_days'] = (today - approved['qc_date']).dt.days
+    approved['aging_days'] = (datetime.now() - approved['qc_date']).dt.days
     approved['aging_bucket'] = approved['aging_days'].apply(get_aging_bucket)
     
-    # Split data
     pk_zone = approved[approved['QC or zone'] == 'PK Zone']
     qc_center = approved[approved['QC or zone'] == 'PK QC Center']
-    
     pk_normal = pk_zone[pk_zone['Order Type'] == 'Normal Order']
     pk_ai = pk_zone[pk_zone['Order Type'] == 'AI Order']
     qc_normal = qc_center[qc_center['Order Type'] == 'Normal Order']
@@ -120,60 +82,84 @@ try:
                     'logistics_partner_handedover_at', 'logistics_partner_name',
                     'QC or zone', 'Order Type', 'aging_days', 'aging_bucket']
 
-    # ============ SIDEBAR NAVIGATION ============
-    with st.sidebar:
-        st.title("📦 Navigation")
+    # ===================== HOME PAGE =====================
+    if st.session_state.page == 'home':
         
-        if st.button("🏠 Home Dashboard", use_container_width=True):
-            st.session_state.current_page = 'home'
-            st.rerun()
-        
-        st.divider()
-        st.subheader("Quick Links")
-        
-        if st.button(f"🚚 Handover ({len(handover)})", use_container_width=True):
-            st.session_state.current_page = 'handover'
-            st.rerun()
-        
-        if st.button(f"📍 PK Zone Normal ({len(pk_normal)})", use_container_width=True):
-            st.session_state.current_page = 'pk_n'
-            st.rerun()
-            
-        if st.button(f"📍 PK Zone AI ({len(pk_ai)})", use_container_width=True):
-            st.session_state.current_page = 'pk_a'
-            st.rerun()
-            
-        if st.button(f"🏢 QC Center Normal ({len(qc_normal)})", use_container_width=True):
-            st.session_state.current_page = 'qc_n'
-            st.rerun()
-            
-        if st.button(f"🏢 QC Center AI ({len(qc_ai)})", use_container_width=True):
-            st.session_state.current_page = 'qc_a'
-            st.rerun()
-        
-        st.divider()
-        if st.button("🔄 Refresh Data", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
-
-    # ============ MAIN CONTENT ============
-    if st.session_state.current_page == 'home':
-        st.title("📦 G-Ops Backlog Dashboard")
-        st.caption(f"Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
+        # Header
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.title("📦 G-Ops Backlog Dashboard")
+            st.caption(f"Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
+        with col2:
+            if st.button("🔄 Refresh", key="ref"):
+                st.cache_data.clear()
+                st.rerun()
         
         st.divider()
         
-        # Summary Metrics
+        # Metrics
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total Approved", f"{len(approved):,}")
+        c2.metric("PK Zone", f"{len(pk_zone):,}")
+        c3.metric("QC Center", f"{len(qc_center):,}")
+        c4.metric("Handover", f"{len(handover):,}")
+        
+        st.divider()
+        
+        # ============ HANDOVER SECTION ============
+        st.subheader("🚚 Handover to Logistics")
+        st.caption("Orders handed over to logistics partner (PK Zone + QC Center)")
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            st.metric("Handover Orders", f"{len(handover):,}")
+        with col2:
+            if st.button("View Handover Orders", key="v_handover"):
+                st.session_state.page = 'handover'
+                st.rerun()
+        
+        st.divider()
+        
+        # ============ PK ZONE SECTION ============
+        st.subheader("📍 PK Zone Orders")
+        st.caption("QC Approved orders from PK Zone")
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Approved", f"{len(approved):,}")
-        col2.metric("PK Zone", f"{len(pk_zone):,}")
-        col3.metric("QC Center", f"{len(qc_center):,}")
-        col4.metric("Handover", f"{len(handover):,}")
+        with col1:
+            st.metric("Normal Orders", f"{len(pk_normal):,}")
+        with col2:
+            if st.button("View PK Normal", key="v_pk_n"):
+                st.session_state.page = 'pk_normal'
+                st.rerun()
+        with col3:
+            st.metric("AI Orders", f"{len(pk_ai):,}")
+        with col4:
+            if st.button("View PK AI", key="v_pk_a"):
+                st.session_state.page = 'pk_ai'
+                st.rerun()
         
         st.divider()
         
-        # ========== AGING PIVOT TABLES ==========
+        # ============ QC CENTER SECTION ============
+        st.subheader("🏢 QC Center Orders")
+        st.caption("QC Approved orders from QC Center")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Normal Orders", f"{len(qc_normal):,}")
+        with col2:
+            if st.button("View QC Normal", key="v_qc_n"):
+                st.session_state.page = 'qc_normal'
+                st.rerun()
+        with col3:
+            st.metric("AI Orders", f"{len(qc_ai):,}")
+        with col4:
+            if st.button("View QC AI", key="v_qc_a"):
+                st.session_state.page = 'qc_ai'
+                st.rerun()
+        
+        st.divider()
+        
+        # ============ AGING PIVOT TABLES ============
         st.subheader("📊 Aging Analysis - Normal Orders")
+        st.caption("Click on aging bucket count to view orders")
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -181,73 +167,103 @@ try:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**📍 PK Zone - Normal Orders**")
-            
-            # Aging dropdown
-            pk_options = ['-- Select Aging --'] + [f"{b} days ({pk_aging[b]})" for b in BUCKET_ORDER if pk_aging[b] > 0]
-            pk_selected = st.selectbox("Select to view orders:", pk_options, key="pk_aging_dd")
-            
-            if pk_selected != '-- Select Aging --':
-                bucket = pk_selected.split(' days')[0]
-                st.session_state.current_page = 'aging_detail'
-                st.session_state.selected_zone = 'PK Zone'
-                st.session_state.selected_bucket = bucket
+            st.markdown("**📍 PK Zone Normal**")
+            pk_select = st.selectbox(
+                "Select aging to view orders:",
+                ['-- Select --'] + [f"{b} days ({pk_aging[b]} orders)" for b in BUCKET_ORDER if pk_aging[b] > 0],
+                key="pk_ag"
+            )
+            if pk_select != '-- Select --':
+                st.session_state.page = 'aging'
+                st.session_state.aging_zone = 'PK Zone'
+                st.session_state.aging_bucket = pk_select.split(' days')[0]
                 st.rerun()
             
-            # Show table
-            aging_df = pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [pk_aging[b] for b in BUCKET_ORDER]})
-            st.dataframe(aging_df, hide_index=True, use_container_width=True)
-            st.caption(f"Total: {len(pk_normal)} orders")
+            st.dataframe(
+                pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [pk_aging[b] for b in BUCKET_ORDER]}),
+                hide_index=True, use_container_width=True
+            )
         
         with col2:
-            st.markdown("**🏢 QC Center - Normal Orders**")
-            
-            qc_options = ['-- Select Aging --'] + [f"{b} days ({qc_aging[b]})" for b in BUCKET_ORDER if qc_aging[b] > 0]
-            qc_selected = st.selectbox("Select to view orders:", qc_options, key="qc_aging_dd")
-            
-            if qc_selected != '-- Select Aging --':
-                bucket = qc_selected.split(' days')[0]
-                st.session_state.current_page = 'aging_detail'
-                st.session_state.selected_zone = 'PK QC Center'
-                st.session_state.selected_bucket = bucket
+            st.markdown("**🏢 QC Center Normal**")
+            qc_select = st.selectbox(
+                "Select aging to view orders:",
+                ['-- Select --'] + [f"{b} days ({qc_aging[b]} orders)" for b in BUCKET_ORDER if qc_aging[b] > 0],
+                key="qc_ag"
+            )
+            if qc_select != '-- Select --':
+                st.session_state.page = 'aging'
+                st.session_state.aging_zone = 'PK QC Center'
+                st.session_state.aging_bucket = qc_select.split(' days')[0]
                 st.rerun()
             
-            aging_df2 = pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [qc_aging[b] for b in BUCKET_ORDER]})
-            st.dataframe(aging_df2, hide_index=True, use_container_width=True)
-            st.caption(f"Total: {len(qc_normal)} orders")
+            st.dataframe(
+                pd.DataFrame({'Days': BUCKET_ORDER, 'Count': [qc_aging[b] for b in BUCKET_ORDER]}),
+                hide_index=True, use_container_width=True
+            )
         
         st.divider()
         
-        # ========== VENDOR TABLE ==========
+        # ============ VENDOR TABLE ============
         st.subheader("🏪 PK Zone Vendors - Normal Orders")
+        st.caption("Select vendor to view their orders")
         
         vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         vendor_counts.columns = ['Vendor', 'Orders']
         
-        vendor_list = ['-- Select Vendor --'] + [f"{r['Vendor']} ({r['Orders']})" for _, r in vendor_counts.iterrows()]
-        vendor_selected = st.selectbox("Select vendor to view orders:", vendor_list, key="vendor_dd")
-        
-        if vendor_selected != '-- Select Vendor --':
-            vendor_name = vendor_selected.rsplit(' (', 1)[0]
-            st.session_state.current_page = 'vendor_detail'
-            st.session_state.selected_vendor = vendor_name
+        vendor_select = st.selectbox(
+            "Select vendor:",
+            ['-- Select --'] + [f"{r['Vendor']} ({r['Orders']} orders)" for _, r in vendor_counts.iterrows()],
+            key="vend"
+        )
+        if vendor_select != '-- Select --':
+            st.session_state.page = 'vendor'
+            st.session_state.vendor_name = vendor_select.rsplit(' (', 1)[0]
             st.rerun()
         
         st.dataframe(vendor_counts, hide_index=True, use_container_width=True, height=300)
-        st.caption(f"{len(vendor_counts)} vendors | {len(pk_normal)} orders")
-    
-    # ============ AGING DETAIL PAGE ============
-    elif st.session_state.current_page == 'aging_detail':
-        zone = st.session_state.selected_zone
-        bucket = st.session_state.selected_bucket
+
+    # ===================== DETAIL PAGES =====================
+    else:
+        # Back button
+        if st.button("← Back to Dashboard", key="back"):
+            st.session_state.page = 'home'
+            st.rerun()
         
-        if zone == 'PK Zone':
-            data = pk_normal[pk_normal['aging_bucket'] == bucket]
+        # Determine which data to show
+        if st.session_state.page == 'handover':
+            title = "🚚 Handover Orders"
+            data = handover
+        elif st.session_state.page == 'pk_normal':
+            title = "📍 PK Zone - Normal Orders"
+            data = pk_normal
+        elif st.session_state.page == 'pk_ai':
+            title = "📍 PK Zone - AI Orders"
+            data = pk_ai
+        elif st.session_state.page == 'qc_normal':
+            title = "🏢 QC Center - Normal Orders"
+            data = qc_normal
+        elif st.session_state.page == 'qc_ai':
+            title = "🏢 QC Center - AI Orders"
+            data = qc_ai
+        elif st.session_state.page == 'aging':
+            zone = st.session_state.aging_zone
+            bucket = st.session_state.aging_bucket
+            title = f"{'📍' if zone == 'PK Zone' else '🏢'} {zone} - {bucket} Days Aging"
+            if zone == 'PK Zone':
+                data = pk_normal[pk_normal['aging_bucket'] == bucket]
+            else:
+                data = qc_normal[qc_normal['aging_bucket'] == bucket]
+        elif st.session_state.page == 'vendor':
+            vendor = st.session_state.vendor_name
+            title = f"🏪 {vendor}"
+            data = pk_normal[pk_normal['vendor'] == vendor]
         else:
-            data = qc_normal[qc_normal['aging_bucket'] == bucket]
+            title = "Orders"
+            data = approved
         
-        st.title(f"{'📍' if zone == 'PK Zone' else '🏢'} {zone} - {bucket} Days")
-        st.caption(f"{len(data):,} Normal Orders")
+        st.title(title)
+        st.caption(f"{len(data):,} orders")
         
         st.divider()
         
@@ -259,7 +275,7 @@ try:
             countries = ['All'] + sorted(data['customer_country'].dropna().unique().tolist())
             country = st.selectbox("🌍 Country", countries)
         with col3:
-            st.download_button("⬇️ Export", data.to_csv(index=False), f"{zone}_{bucket}.csv", "text/csv", use_container_width=True)
+            st.download_button("⬇️ Export CSV", data.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
         
         # Apply filters
         filtered = data.copy()
@@ -273,79 +289,7 @@ try:
         if country != 'All':
             filtered = filtered[filtered['customer_country'] == country]
         
-        cols = [c for c in display_cols if c in filtered.columns]
-        st.dataframe(filtered[cols], use_container_width=True, height=500)
-    
-    # ============ VENDOR DETAIL PAGE ============
-    elif st.session_state.current_page == 'vendor_detail':
-        vendor = st.session_state.selected_vendor
-        data = pk_normal[pk_normal['vendor'] == vendor]
-        
-        st.title(f"🏪 {vendor}")
-        st.caption(f"{len(data):,} Normal Orders | PK Zone")
-        
-        st.divider()
-        
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            search = st.text_input("🔍 Search", placeholder="Order #, Customer, Fleek ID...")
-        with col2:
-            countries = ['All'] + sorted(data['customer_country'].dropna().unique().tolist())
-            country = st.selectbox("🌍 Country", countries)
-        with col3:
-            st.download_button("⬇️ Export", data.to_csv(index=False), f"{vendor}.csv", "text/csv", use_container_width=True)
-        
-        filtered = data.copy()
-        if search:
-            s = search.lower()
-            filtered = filtered[
-                filtered['order_number'].astype(str).str.lower().str.contains(s, na=False) |
-                filtered['customer_name'].astype(str).str.lower().str.contains(s, na=False) |
-                filtered['fleek_id'].astype(str).str.lower().str.contains(s, na=False)
-            ]
-        if country != 'All':
-            filtered = filtered[filtered['customer_country'] == country]
-        
-        cols = [c for c in display_cols if c in filtered.columns]
-        st.dataframe(filtered[cols], use_container_width=True, height=500)
-    
-    # ============ OTHER PAGES ============
-    else:
-        pages = {
-            'handover': ('🚚 Handover Orders', handover),
-            'pk_n': ('📍 PK Zone - Normal', pk_normal),
-            'pk_a': ('📍 PK Zone - AI', pk_ai),
-            'qc_n': ('🏢 QC Center - Normal', qc_normal),
-            'qc_a': ('🏢 QC Center - AI', qc_ai)
-        }
-        
-        title, data = pages.get(st.session_state.current_page, ('Orders', approved))
-        
-        st.title(title)
-        st.caption(f"{len(data):,} orders")
-        
-        st.divider()
-        
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            search = st.text_input("🔍 Search", placeholder="Order #, Customer, Fleek ID...")
-        with col2:
-            countries = ['All'] + sorted(data['customer_country'].dropna().unique().tolist())
-            country = st.selectbox("🌍 Country", countries)
-        with col3:
-            st.download_button("⬇️ Export", data.to_csv(index=False), "orders.csv", "text/csv", use_container_width=True)
-        
-        filtered = data.copy()
-        if search:
-            s = search.lower()
-            filtered = filtered[
-                filtered['order_number'].astype(str).str.lower().str.contains(s, na=False) |
-                filtered['customer_name'].astype(str).str.lower().str.contains(s, na=False) |
-                filtered['fleek_id'].astype(str).str.lower().str.contains(s, na=False)
-            ]
-        if country != 'All':
-            filtered = filtered[filtered['customer_country'] == country]
-        
+        # Show data
         cols = [c for c in display_cols if c in filtered.columns]
         st.dataframe(filtered[cols], use_container_width=True, height=500)
 
