@@ -9,6 +9,7 @@ st.markdown("""
 <style>
     .stApp { background-color: #0d1117; }
     [data-testid="stAppViewContainer"] { background-color: #0d1117; }
+    [data-testid="stSidebar"] { background-color: #161b22; }
     #MainMenu, footer, header { visibility: hidden; }
     h1, h2, h3, h4 { color: #f0f6fc !important; }
     p, span, label { color: #c9d1d9 !important; }
@@ -48,7 +49,7 @@ def get_aging_bucket(days):
 
 BUCKET_ORDER = ['0', '1', '2', '3', '4', '5', '6-7', '8-10', '11-15', '16-20', '21-25', '26-30', '30+']
 
-# Session state for navigation
+# Session state
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 if 'aging_zone' not in st.session_state:
@@ -57,6 +58,38 @@ if 'aging_bucket' not in st.session_state:
     st.session_state.aging_bucket = None
 if 'vendor_name' not in st.session_state:
     st.session_state.vendor_name = None
+
+# ============ SIDEBAR - Always visible ============
+with st.sidebar:
+    st.title("📦 Navigation")
+    st.divider()
+    
+    if st.button("🏠 Home Dashboard", use_container_width=True, key="sidebar_home"):
+        st.session_state.page = 'home'
+        st.rerun()
+    
+    if st.button("🔄 Refresh Data", use_container_width=True, key="sidebar_refresh"):
+        st.cache_data.clear()
+        st.rerun()
+    
+    st.divider()
+    st.caption("Quick Links:")
+    
+    if st.button("🚚 Handover", use_container_width=True, key="sb_hand"):
+        st.session_state.page = 'handover'
+        st.rerun()
+    if st.button("📍 PK Zone Normal", use_container_width=True, key="sb_pkn"):
+        st.session_state.page = 'pk_normal'
+        st.rerun()
+    if st.button("📍 PK Zone AI", use_container_width=True, key="sb_pka"):
+        st.session_state.page = 'pk_ai'
+        st.rerun()
+    if st.button("🏢 QC Center Normal", use_container_width=True, key="sb_qcn"):
+        st.session_state.page = 'qc_normal'
+        st.rerun()
+    if st.button("🏢 QC Center AI", use_container_width=True, key="sb_qca"):
+        st.session_state.page = 'qc_ai'
+        st.rerun()
 
 try:
     df = load_data()
@@ -85,15 +118,8 @@ try:
     # ===================== HOME PAGE =====================
     if st.session_state.page == 'home':
         
-        # Header
-        col1, col2 = st.columns([4, 1])
-        with col1:
-            st.title("📦 G-Ops Backlog Dashboard")
-            st.caption(f"Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
-        with col2:
-            if st.button("🔄 Refresh", key="ref"):
-                st.cache_data.clear()
-                st.rerun()
+        st.title("📦 G-Ops Backlog Dashboard")
+        st.caption(f"Last updated: {datetime.now().strftime('%d %b %Y, %I:%M %p')}")
         
         st.divider()
         
@@ -159,7 +185,7 @@ try:
         
         # ============ AGING PIVOT TABLES ============
         st.subheader("📊 Aging Analysis - Normal Orders")
-        st.caption("Click on aging bucket count to view orders")
+        st.caption("Select aging bucket to view orders")
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -225,12 +251,14 @@ try:
 
     # ===================== DETAIL PAGES =====================
     else:
-        # Back button
-        if st.button("← Back to Dashboard", key="back"):
+        # Back button at top
+        if st.button("⬅️ Back to Dashboard", key="back_btn", type="primary"):
             st.session_state.page = 'home'
             st.rerun()
         
-        # Determine which data to show
+        st.divider()
+        
+        # Determine data
         if st.session_state.page == 'handover':
             title = "🚚 Handover Orders"
             data = handover
