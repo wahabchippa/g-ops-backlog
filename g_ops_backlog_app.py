@@ -3,53 +3,45 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# JavaScript Toggle Button for Sidebar
+# Sidebar Toggle Button - White with Black Text
 st.markdown("""
 <style>
-    .sidebar-toggle-btn {
+    .sidebar-menu-btn {
         position: fixed;
         top: 70px;
         left: 15px;
         z-index: 999999;
-        background: linear-gradient(145deg, #ff4b4b, #ff3333);
-        color: white;
-        border: none;
-        padding: 12px 18px;
-        border-radius: 10px;
+        background: #ffffff;
+        color: #000000;
+        border: 2px solid #333333;
+        padding: 10px 16px;
+        border-radius: 8px;
         cursor: pointer;
-        font-size: 18px;
-        font-weight: bold;
-        box-shadow: 0 4px 15px rgba(255,75,75,0.4);
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
     }
-    .sidebar-toggle-btn:hover {
-        background: linear-gradient(145deg, #ff3333, #ff1111);
+    .sidebar-menu-btn:hover {
+        background: #f0f0f0;
         transform: scale(1.05);
     }
 </style>
 
-<button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰ Menu</button>
-
-<script>
-function toggleSidebar() {
-    const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-    const btn = window.parent.document.querySelector('[data-testid="collapsedControl"]');
-    
-    if (sidebar) {
-        if (sidebar.style.display === 'none' || sidebar.getAttribute('aria-expanded') === 'false') {
-            sidebar.style.display = 'flex';
-            sidebar.style.width = '300px';
-            sidebar.setAttribute('aria-expanded', 'true');
-        } else {
+<button class="sidebar-menu-btn" onclick="
+    var sidebar = window.parent.document.querySelector('[data-testid=stSidebar]');
+    var collapseBtn = window.parent.document.querySelector('[data-testid=collapsedControl]');
+    if(collapseBtn) { collapseBtn.click(); }
+    else if(sidebar) {
+        if(sidebar.style.marginLeft === '0px' || sidebar.style.display !== 'none') {
+            sidebar.style.marginLeft = '-300px';
             sidebar.style.display = 'none';
-            sidebar.setAttribute('aria-expanded', 'false');
+        } else {
+            sidebar.style.marginLeft = '0px';
+            sidebar.style.display = 'flex';
         }
     }
-    
-    if (btn) {
-        btn.click();
-    }
-}
-</script>
+">Sidebar Menu</button>
 """, unsafe_allow_html=True)
 
 # Add sidebar content
