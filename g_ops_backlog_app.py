@@ -3,18 +3,34 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# Force sidebar to show
+# Sidebar toggle button in header
 st.markdown("""
 <style>
-    [data-testid="collapsedControl"] {
-        display: block !important;
-    }
-    section[data-testid="stSidebar"] {
-        display: block !important;
-        width: 300px !important;
+    .sidebar-toggle {
+        position: fixed;
+        top: 60px;
+        left: 10px;
+        z-index: 999999;
+        background: #ff4b4b;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
     }
 </style>
 """, unsafe_allow_html=True)
+
+# Add sidebar content
+with st.sidebar:
+    st.markdown("### ⚙️ Controls")
+    if st.button("🔄 Refresh Data", use_container_width=True):
+        st.rerun()
+    st.markdown("---")
+    st.markdown("### 📊 Navigation")
+    st.markdown("Click anywhere to close sidebar")
+    st.markdown("Press **☰** (top-left) to open again")
 
 # Session state
 if 'page' not in st.session_state:
