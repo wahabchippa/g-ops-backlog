@@ -422,12 +422,12 @@ try:
         if st.session_state.page == 'home':
             
             st.markdown("""
-                <div style="margin-bottom: 25px;">
-                    <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 8px;">
-                        <span style="font-size: 6rem;">⚡</span>
-                        <span style="font-size: 6rem; font-weight: 900; color: #ffffff;">G-Ops Backlog Dashboard</span>
+                <div style="margin-bottom: 25px !important;">
+                    <div style="display: flex !important; align-items: center !important; gap: 18px !important; margin-bottom: 8px !important;">
+                        <span style="font-size: 6rem !important; line-height: 1 !important;">⚡</span>
+                        <span style="font-size: 6rem !important; font-weight: 900 !important; color: #ffffff !important; line-height: 1 !important;">G-Ops Backlog Dashboard</span>
                     </div>
-                    <p style="color: #666666; font-size: 1.1rem;">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
+                    <p style="color: #666666 !important; font-size: 1.1rem !important;">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
                 </div>
             """, unsafe_allow_html=True)
             
