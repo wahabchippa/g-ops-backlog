@@ -2,42 +2,13 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# Sidebar Toggle with CSS
+# IMPORTANT: Sidebar state MUST be set before set_page_config
 if 'show_sidebar' not in st.session_state:
     st.session_state.show_sidebar = True
 
-# Create toggle button
-toggle_col, _ = st.columns([1, 10])
-with toggle_col:
-    btn_text = "✕ Close" if st.session_state.show_sidebar else "☰ Sidebar"
-    if st.button(btn_text, key="toggle_sidebar_btn"):
-        st.session_state.show_sidebar = not st.session_state.show_sidebar
-        st.rerun()
-
-# Hide sidebar if closed
-if not st.session_state.show_sidebar:
-    st.markdown("""
-        <style>
-            section[data-testid="stSidebar"] {
-                display: none !important;
-                width: 0 !important;
-                min-width: 0 !important;
-            }
-            [data-testid="collapsedControl"] {
-                display: none !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-        <style>
-            section[data-testid="stSidebar"] {
-                display: flex !important;
-                width: 300px !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+# Set page config based on sidebar state
+sidebar_state = "expanded" if st.session_state.show_sidebar else "collapsed"
+st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state=sidebar_state)
 
 # Session state
 if 'page' not in st.session_state:
@@ -118,6 +89,17 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     background: #1a1a1a !important;
     border: 1px solid #3a3a3a !important;
     color: #d0d0d0 !important;
+}
+
+/* ============ SIDEBAR TOGGLE BUTTON ============ */
+.sidebar-btn {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #333333 !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
 }
 
 /* ============ TITLE - PERFECT SIZE ============ */
@@ -457,74 +439,88 @@ try:
     qc_normal = data['qc_normal']
     qc_ai = data['qc_ai']
 
-    # ==================== SIDEBAR - ALWAYS VISIBLE ====================
-    with st.sidebar:
-        st.markdown("## 🎯 Navigation")
-        st.markdown("---")
-        
-        # Home Button
-        if st.button("🏠 Dashboard Home", key="sb_home", use_container_width=True):
-            st.session_state.page = 'home'
-            st.rerun()
-        
-        # Handover Section
-        st.markdown('<p style="color:#F59E0B;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🚚 HANDOVER</p>', unsafe_allow_html=True)
-        if st.button(f"📦 All Handover ({len(handover):,})", key="sb_handover", use_container_width=True):
-            st.session_state.page = 'handover'
-            st.rerun()
-        
-        # PK Zone Section
-        st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📍 PK ZONE</p>', unsafe_allow_html=True)
-        if st.button(f"📋 Normal ({len(pk_normal):,})", key="sb_pk_normal", use_container_width=True):
-            st.session_state.page = 'pk_normal'
-            st.rerun()
-        if st.button(f"🤖 AI ({len(pk_ai):,})", key="sb_pk_ai", use_container_width=True):
-            st.session_state.page = 'pk_ai'
-            st.rerun()
-        
-        # QC Center Section
-        st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🏢 QC CENTER</p>', unsafe_allow_html=True)
-        if st.button(f"📋 Normal ({len(qc_normal):,})", key="sb_qc_normal", use_container_width=True):
-            st.session_state.page = 'qc_normal'
-            st.rerun()
-        if st.button(f"🤖 AI ({len(qc_ai):,})", key="sb_qc_ai", use_container_width=True):
-            st.session_state.page = 'qc_ai'
-            st.rerun()
-        
-        # Aging Analysis Section
-        st.markdown('<p style="color:#60A5FA;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📊 AGING</p>', unsafe_allow_html=True)
-        
-        # PK Zone Aging Dropdown
-        pk_aging_data = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        pk_aging_options = ["PK Zone Aging..."] + [f"{b} ({pk_aging_data.get(b, 0)})" for b in BUCKET_ORDER if pk_aging_data.get(b, 0) > 0]
-        selected_pk = st.selectbox("PK", pk_aging_options, key="sb_pk_aging_dd", label_visibility="collapsed")
-        if selected_pk != "PK Zone Aging...":
-            bucket = selected_pk.split(" (")[0]
-            st.session_state.page = 'aging_detail'
-            st.session_state.aging_zone = 'PK Zone'
-            st.session_state.aging_bucket = bucket
-            st.rerun()
-        
-        # QC Center Aging Dropdown
-        qc_aging_data = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        qc_aging_options = ["QC Center Aging..."] + [f"{b} ({qc_aging_data.get(b, 0)})" for b in BUCKET_ORDER if qc_aging_data.get(b, 0) > 0]
-        selected_qc = st.selectbox("QC", qc_aging_options, key="sb_qc_aging_dd", label_visibility="collapsed")
-        if selected_qc != "QC Center Aging...":
-            bucket = selected_qc.split(" (")[0]
-            st.session_state.page = 'aging_detail'
-            st.session_state.aging_zone = 'PK QC Center'
-            st.session_state.aging_bucket = bucket
-            st.rerun()
-        
-        # Handover Aging Dropdown
-        ho_aging_data = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
-        ho_aging_options = ["Handover Aging..."] + [f"{b} ({ho_aging_data.get(b, 0)})" for b in BUCKET_ORDER if ho_aging_data.get(b, 0) > 0]
-        selected_ho = st.selectbox("HO", ho_aging_options, key="sb_ho_aging_dd", label_visibility="collapsed")
-        if selected_ho != "Handover Aging...":
-            bucket = selected_ho.split(" (")[0]
-            st.session_state.page = 'handover_aging_detail'
-            st.session_state.handover_bucket = bucket
-            st.rerun()
+    # ==================== SIDEBAR TOGGLE BUTTON ====================
+    # This button toggles sidebar visibility
+    sidebar_col, empty_col = st.columns([1, 11])
+    with sidebar_col:
+        if st.session_state.show_sidebar:
+            if st.button("✕ Sidebar", key="hide_sidebar", help="Click to hide sidebar"):
+                st.session_state.show_sidebar = False
+                st.rerun()
+        else:
+            if st.button("☰ Sidebar", key="show_sidebar_btn", help="Click to show sidebar"):
+                st.session_state.show_sidebar = True
+                st.rerun()
+
+    # ==================== SIDEBAR CONTENT (only if visible) ====================
+    if st.session_state.show_sidebar:
+        with st.sidebar:
+            st.markdown("## 🎯 Navigation")
+            st.markdown("---")
+            
+            # Home Button
+            if st.button("🏠 Dashboard Home", key="sb_home", use_container_width=True):
+                st.session_state.page = 'home'
+                st.rerun()
+            
+            # Handover Section
+            st.markdown('<p style="color:#F59E0B;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🚚 HANDOVER</p>', unsafe_allow_html=True)
+            if st.button(f"📦 All Handover ({len(handover):,})", key="sb_handover", use_container_width=True):
+                st.session_state.page = 'handover'
+                st.rerun()
+            
+            # PK Zone Section
+            st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📍 PK ZONE</p>', unsafe_allow_html=True)
+            if st.button(f"📋 Normal ({len(pk_normal):,})", key="sb_pk_normal", use_container_width=True):
+                st.session_state.page = 'pk_normal'
+                st.rerun()
+            if st.button(f"🤖 AI ({len(pk_ai):,})", key="sb_pk_ai", use_container_width=True):
+                st.session_state.page = 'pk_ai'
+                st.rerun()
+            
+            # QC Center Section
+            st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🏢 QC CENTER</p>', unsafe_allow_html=True)
+            if st.button(f"📋 Normal ({len(qc_normal):,})", key="sb_qc_normal", use_container_width=True):
+                st.session_state.page = 'qc_normal'
+                st.rerun()
+            if st.button(f"🤖 AI ({len(qc_ai):,})", key="sb_qc_ai", use_container_width=True):
+                st.session_state.page = 'qc_ai'
+                st.rerun()
+            
+            # Aging Analysis Section
+            st.markdown('<p style="color:#60A5FA;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📊 AGING</p>', unsafe_allow_html=True)
+            
+            # PK Zone Aging Dropdown
+            pk_aging_data = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+            pk_aging_options = ["PK Zone Aging..."] + [f"{b} ({pk_aging_data.get(b, 0)})" for b in BUCKET_ORDER if pk_aging_data.get(b, 0) > 0]
+            selected_pk = st.selectbox("PK", pk_aging_options, key="sb_pk_aging_dd", label_visibility="collapsed")
+            if selected_pk != "PK Zone Aging...":
+                bucket = selected_pk.split(" (")[0]
+                st.session_state.page = 'aging_detail'
+                st.session_state.aging_zone = 'PK Zone'
+                st.session_state.aging_bucket = bucket
+                st.rerun()
+            
+            # QC Center Aging Dropdown
+            qc_aging_data = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+            qc_aging_options = ["QC Center Aging..."] + [f"{b} ({qc_aging_data.get(b, 0)})" for b in BUCKET_ORDER if qc_aging_data.get(b, 0) > 0]
+            selected_qc = st.selectbox("QC", qc_aging_options, key="sb_qc_aging_dd", label_visibility="collapsed")
+            if selected_qc != "QC Center Aging...":
+                bucket = selected_qc.split(" (")[0]
+                st.session_state.page = 'aging_detail'
+                st.session_state.aging_zone = 'PK QC Center'
+                st.session_state.aging_bucket = bucket
+                st.rerun()
+            
+            # Handover Aging Dropdown
+            ho_aging_data = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
+            ho_aging_options = ["Handover Aging..."] + [f"{b} ({ho_aging_data.get(b, 0)})" for b in BUCKET_ORDER if ho_aging_data.get(b, 0) > 0]
+            selected_ho = st.selectbox("HO", ho_aging_options, key="sb_ho_aging_dd", label_visibility="collapsed")
+            if selected_ho != "Handover Aging...":
+                bucket = selected_ho.split(" (")[0]
+                st.session_state.page = 'handover_aging_detail'
+                st.session_state.handover_bucket = bucket
+                st.rerun()
 
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
