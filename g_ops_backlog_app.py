@@ -424,8 +424,8 @@ try:
             st.markdown("""
                 <div style="margin-bottom: 25px;">
                     <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 8px;">
-                        <span style="font-size: 7rem;">⚡</span>
-                        <span style="font-size: 7rem; font-weight: 900; color: #ffffff;">G-Ops Backlog Dashboard</span>
+                        <span style="font-size: 6rem;">⚡</span>
+                        <span style="font-size: 6rem; font-weight: 900; color: #ffffff;">G-Ops Backlog Dashboard</span>
                     </div>
                     <p style="color: #666666; font-size: 1.1rem;">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
                 </div>
