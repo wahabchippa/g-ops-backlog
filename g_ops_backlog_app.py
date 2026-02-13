@@ -2,23 +2,14 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Sidebar state from URL
-params = st.query_params
-sidebar_mode = params.get("sidebar", "expanded")
+# IMPORTANT: Sidebar state MUST be set before set_page_config
+if 'show_sidebar' not in st.session_state:
+    st.session_state.show_sidebar = True
 
-st.set_page_config(
-    page_title="G-Ops Backlog Dashboard", 
-    page_icon="⚡", 
-    layout="wide", 
-    initial_sidebar_state=sidebar_mode
-)
+# Set page config based on sidebar state
+sidebar_state = "expanded" if st.session_state.show_sidebar else "collapsed"
+st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state=sidebar_state)
 
-# Sidebar Toggle Links
-c1, c2, _ = st.columns([1, 1, 10])
-with c1:
-    st.markdown('<a href="?sidebar=expanded" target="_self" style="background:#22c55e;color:white;padding:8px 16px;border-radius:5px;text-decoration:none;font-weight:bold;">☰ Open</a>', unsafe_allow_html=True)
-with c2:
-    st.markdown('<a href="?sidebar=collapsed" target="_self" style="background:#ef4444;color:white;padding:8px 16px;border-radius:5px;text-decoration:none;font-weight:bold;">✕ Close</a>', unsafe_allow_html=True)
 # Session state
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
