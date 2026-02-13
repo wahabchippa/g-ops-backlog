@@ -3,46 +3,26 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# Sidebar Toggle Button - White with Black Text
-st.markdown("""
-<style>
-    .sidebar-menu-btn {
-        position: fixed;
-        top: 70px;
-        left: 15px;
-        z-index: 999999;
-        background: #ffffff;
-        color: #000000;
-        border: 2px solid #333333;
-        padding: 10px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 700;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-    }
-    .sidebar-menu-btn:hover {
-        background: #f0f0f0;
-        transform: scale(1.05);
-    }
-</style>
+# Sidebar Toggle using Session State
+if 'sidebar_open' not in st.session_state:
+    st.session_state.sidebar_open = True
 
-<button class="sidebar-menu-btn" onclick="
-    var sidebar = window.parent.document.querySelector('[data-testid=stSidebar]');
-    var collapseBtn = window.parent.document.querySelector('[data-testid=collapsedControl]');
-    if(collapseBtn) { collapseBtn.click(); }
-    else if(sidebar) {
-        if(sidebar.style.marginLeft === '0px' || sidebar.style.display !== 'none') {
-            sidebar.style.marginLeft = '-300px';
-            sidebar.style.display = 'none';
-        } else {
-            sidebar.style.marginLeft = '0px';
-            sidebar.style.display = 'flex';
+# Toggle Button in main area
+col_btn, col_empty = st.columns([1, 11])
+with col_btn:
+    if st.button("☰ Sidebar", key="sidebar_toggle"):
+        st.session_state.sidebar_open = not st.session_state.sidebar_open
+        st.rerun()
+
+# Show/Hide Sidebar based on state
+if not st.session_state.sidebar_open:
+    st.markdown("""
+    <style>
+        section[data-testid="stSidebar"] {
+            display: none !important;
         }
-    }
-">Sidebar Menu</button>
-""", unsafe_allow_html=True)
+    </style>
+    """, unsafe_allow_html=True)
 
 # Add sidebar content
 with st.sidebar:
