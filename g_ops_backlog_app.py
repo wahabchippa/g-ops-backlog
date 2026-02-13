@@ -3,23 +3,41 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# Sidebar toggle button in header
+# Fixed Sidebar Toggle Button - Always Visible
 st.markdown("""
 <style>
-    .sidebar-toggle {
+    /* Make sure sidebar toggle arrow is always visible */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        color: white !important;
+        background: #ff4b4b !important;
+        border-radius: 5px !important;
+    }
+    
+    /* Fixed Menu Button */
+    .fixed-menu-btn {
         position: fixed;
-        top: 60px;
-        left: 10px;
+        top: 70px;
+        left: 15px;
         z-index: 999999;
-        background: #ff4b4b;
+        background: linear-gradient(145deg, #ff4b4b, #ff3333);
         color: white;
         border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
+        padding: 12px 18px;
+        border-radius: 10px;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(255,75,75,0.4);
+        text-decoration: none;
+    }
+    .fixed-menu-btn:hover {
+        background: linear-gradient(145deg, #ff3333, #ff1111);
+        transform: scale(1.05);
     }
 </style>
+<a href="?sidebar=expanded" class="fixed-menu-btn">☰ Menu</a>
 """, unsafe_allow_html=True)
 
 # Add sidebar content
