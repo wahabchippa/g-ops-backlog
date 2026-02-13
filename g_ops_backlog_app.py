@@ -21,7 +21,7 @@ if 'handover_bucket' not in st.session_state:
 if 'vendor_comments' not in st.session_state:
     st.session_state.vendor_comments = {}
 
-# Custom CSS + SMOOTH JavaScript Toggle
+# Custom CSS + JavaScript Toggle (FIXED - Works with Streamlit)
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -40,7 +40,6 @@ st.markdown("""
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%) !important;
     border-right: 1px solid #2a2a2a !important;
-    transition: transform 0.3s ease, margin-left 0.3s ease !important;
 }
 
 section[data-testid="stSidebar"] > div {
@@ -83,6 +82,30 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     background: #1a1a1a !important;
     border: 1px solid #3a3a3a !important;
     color: #d0d0d0 !important;
+}
+
+/* ============ CUSTOM TOGGLE BUTTON STYLE ============ */
+#sidebar-toggle-btn {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 999999;
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #333333;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+}
+
+#sidebar-toggle-btn:hover {
+    background: #f0f0f0;
+    transform: scale(1.02);
 }
 
 /* ============ TITLE - PERFECT SIZE ============ */
@@ -335,68 +358,80 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     border: 1px solid #333333;
 }
 </style>
+""", unsafe_allow_html=True)
 
-<!-- SMOOTH SIDEBAR TOGGLE BUTTON - JavaScript Only, No Page Reload -->
+# JavaScript for smooth sidebar toggle - injected via components
+import streamlit.components.v1 as components
+
+components.html("""
 <script>
 (function() {
-    var sidebarVisible = true;
-    
-    function createSidebarToggle() {
-        if (document.getElementById('customSidebarToggle')) return;
+    // Wait for Streamlit to fully load
+    function initToggle() {
+        // Check if button already exists
+        if (document.getElementById('sidebar-toggle-btn')) return;
         
+        // Find sidebar
+        var sidebar = parent.document.querySelector('section[data-testid="stSidebar"]');
+        if (!sidebar) {
+            setTimeout(initToggle, 300);
+            return;
+        }
+        
+        // Create toggle button
         var btn = document.createElement('button');
-        btn.id = 'customSidebarToggle';
-        btn.innerHTML = '✕ Sidebar';
-        btn.style.cssText = 'position:fixed;top:12px;left:12px;z-index:999999;background:#fff;color:#000;border:2px solid #333;padding:8px 16px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:all 0.2s ease;font-family:Inter,sans-serif;';
+        btn.id = 'sidebar-toggle-btn';
+        btn.innerHTML = '✕ Hide Menu';
+        btn.style.cssText = 'position:fixed;top:14px;left:14px;z-index:999999;background:#ffffff;color:#000000;border:2px solid #333333;padding:10px 18px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.4);font-family:Inter,sans-serif;transition:all 0.2s ease;';
         
-        btn.onmouseover = function() { this.style.background = '#f0f0f0'; };
-        btn.onmouseout = function() { this.style.background = '#fff'; };
+        var isVisible = true;
         
         btn.onclick = function() {
-            var sidebar = document.querySelector('section[data-testid="stSidebar"]');
-            if (!sidebar) return;
+            var sidebar = parent.document.querySelector('section[data-testid="stSidebar"]');
+            var sidebarContent = parent.document.querySelector('[data-testid="stSidebarContent"]');
             
-            if (sidebarVisible) {
-                sidebar.style.transform = 'translateX(-100%)';
-                sidebar.style.marginLeft = '-21rem';
-                btn.innerHTML = '☰ Sidebar';
-                sidebarVisible = false;
+            if (isVisible) {
+                // Hide sidebar
+                sidebar.style.width = '0px';
+                sidebar.style.minWidth = '0px';
+                sidebar.style.overflow = 'hidden';
+                if(sidebarContent) sidebarContent.style.display = 'none';
+                btn.innerHTML = '☰ Show Menu';
+                isVisible = false;
             } else {
-                sidebar.style.transform = 'translateX(0)';
-                sidebar.style.marginLeft = '0';
-                btn.innerHTML = '✕ Sidebar';
-                sidebarVisible = true;
+                // Show sidebar
+                sidebar.style.width = '';
+                sidebar.style.minWidth = '';
+                sidebar.style.overflow = '';
+                if(sidebarContent) sidebarContent.style.display = '';
+                btn.innerHTML = '✕ Hide Menu';
+                isVisible = true;
             }
         };
         
-        document.body.appendChild(btn);
+        btn.onmouseover = function() { this.style.background = '#f0f0f0'; };
+        btn.onmouseout = function() { this.style.background = '#ffffff'; };
+        
+        // Append to parent document body
+        parent.document.body.appendChild(btn);
     }
     
-    // Try multiple times to ensure button is created
-    function tryCreate() {
-        createSidebarToggle();
-        if (!document.getElementById('customSidebarToggle')) {
-            setTimeout(tryCreate, 500);
-        }
-    }
+    // Start after delay
+    setTimeout(initToggle, 500);
     
-    // Start trying after DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { setTimeout(tryCreate, 500); });
-    } else {
-        setTimeout(tryCreate, 500);
-    }
-    
-    // Also use MutationObserver to handle Streamlit reruns
+    // Also watch for DOM changes
     var observer = new MutationObserver(function() {
-        if (!document.getElementById('customSidebarToggle')) {
-            createSidebarToggle();
+        if (!parent.document.getElementById('sidebar-toggle-btn')) {
+            initToggle();
         }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    
+    if (parent.document.body) {
+        observer.observe(parent.document.body, { childList: true, subtree: true });
+    }
 })();
 </script>
-""", unsafe_allow_html=True)
+""", height=0)
 
 # Data Loading
 SHEET_ID = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
