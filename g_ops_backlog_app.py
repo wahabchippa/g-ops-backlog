@@ -3,6 +3,18 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
+# Force sidebar to show
+st.markdown("""
+<style>
+    [data-testid="collapsedControl"] {
+        display: block !important;
+    }
+    section[data-testid="stSidebar"] {
+        display: block !important;
+        width: 300px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Session state
 if 'page' not in st.session_state:
