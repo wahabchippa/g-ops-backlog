@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Set page config FIRST - before any other Streamlit command
+# Set page config FIRST
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
 
 # Session state initialization
@@ -21,7 +21,7 @@ if 'handover_bucket' not in st.session_state:
 if 'vendor_comments' not in st.session_state:
     st.session_state.vendor_comments = {}
 
-# Custom CSS - FIXED sidebar visibility
+# Custom CSS - FIXED: Removed header hiding that was blocking sidebar
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -33,15 +33,27 @@ st.markdown("""
     background: linear-gradient(145deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%) !important;
 }
 
-[data-testid="stHeader"] { background: transparent !important; }
-#MainMenu, footer, header { visibility: hidden; }
+/* FIXED: Only hide specific elements, NOT the sidebar button */
+[data-testid="stHeader"] { 
+    background: transparent !important; 
+}
+
+/* Hide only menu and footer, keep sidebar toggle visible */
+/* Hide menu and footer but keep sidebar toggle */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+
+/* IMPORTANT: Sidebar button styling */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+}
 
 /* ============ SIDEBAR STYLING ============ */
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%) !important;
     border-right: 1px solid #2a2a2a !important;
     min-width: 280px !important;
-    width: 280px !important;
 }
 
 section[data-testid="stSidebar"] > div {
@@ -85,6 +97,16 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     background: #1a1a1a !important;
     border: 1px solid #3a3a3a !important;
     color: #d0d0d0 !important;
+}
+
+/* Make sure sidebar collapse button is visible */
+button[data-testid="stSidebarCollapseButton"],
+[data-testid="collapsedControl"] {
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #ffffff !important;
+    background: #333333 !important;
+    border-radius: 8px !important;
 }
 
 /* ============ TITLE - PERFECT SIZE ============ */
