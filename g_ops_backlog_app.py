@@ -217,6 +217,31 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 ::-webkit-scrollbar-track { background: #0d0d0d; }
 ::-webkit-scrollbar-thumb { background: #444444; border-radius: 5px; }
 
+/* MAIN HEADER STYLES */
+.main-header-container {
+    margin-bottom: 25px !important;
+}
+.main-header-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 18px !important;
+    margin-bottom: 8px !important;
+}
+.main-header-icon {
+    font-size: 96px !important;
+    line-height: 1 !important;
+}
+.main-header-text {
+    font-size: 96px !important;
+    font-weight: 900 !important;
+    color: #ffffff !important;
+    line-height: 1 !important;
+}
+.main-header-subtitle {
+    color: #666666 !important;
+    font-size: 1.1rem !important;
+}
+
 .page-title {
     font-size: 2.5rem;
     font-weight: 800;
@@ -422,12 +447,12 @@ try:
         if st.session_state.page == 'home':
             
             st.markdown("""
-                <div style="margin-bottom: 25px !important;">
-                    <div style="display: flex !important; align-items: center !important; gap: 18px !important; margin-bottom: 8px !important;">
-                        <span style="font-size: 6rem !important; line-height: 1 !important;">⚡</span>
-                        <span style="font-size: 6rem !important; font-weight: 900 !important; color: #ffffff !important; line-height: 1 !important;">G-Ops Backlog Dashboard</span>
+                <div class="main-header-container">
+                    <div class="main-header-title">
+                        <span class="main-header-icon">⚡</span>
+                        <span class="main-header-text">G-Ops Backlog Dashboard</span>
                     </div>
-                    <p style="color: #666666 !important; font-size: 1.1rem !important;">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
+                    <p class="main-header-subtitle">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
                 </div>
             """, unsafe_allow_html=True)
             
