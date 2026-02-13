@@ -3,20 +3,10 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# Fixed Sidebar Toggle Button - Always Visible
+# JavaScript Toggle Button for Sidebar
 st.markdown("""
 <style>
-    /* Make sure sidebar toggle arrow is always visible */
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        color: white !important;
-        background: #ff4b4b !important;
-        border-radius: 5px !important;
-    }
-    
-    /* Fixed Menu Button */
-    .fixed-menu-btn {
+    .sidebar-toggle-btn {
         position: fixed;
         top: 70px;
         left: 15px;
@@ -30,14 +20,36 @@ st.markdown("""
         font-size: 18px;
         font-weight: bold;
         box-shadow: 0 4px 15px rgba(255,75,75,0.4);
-        text-decoration: none;
     }
-    .fixed-menu-btn:hover {
+    .sidebar-toggle-btn:hover {
         background: linear-gradient(145deg, #ff3333, #ff1111);
         transform: scale(1.05);
     }
 </style>
-<a href="?sidebar=expanded" class="fixed-menu-btn">☰ Menu</a>
+
+<button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰ Menu</button>
+
+<script>
+function toggleSidebar() {
+    const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+    const btn = window.parent.document.querySelector('[data-testid="collapsedControl"]');
+    
+    if (sidebar) {
+        if (sidebar.style.display === 'none' || sidebar.getAttribute('aria-expanded') === 'false') {
+            sidebar.style.display = 'flex';
+            sidebar.style.width = '300px';
+            sidebar.setAttribute('aria-expanded', 'true');
+        } else {
+            sidebar.style.display = 'none';
+            sidebar.setAttribute('aria-expanded', 'false');
+        }
+    }
+    
+    if (btn) {
+        btn.click();
+    }
+}
+</script>
 """, unsafe_allow_html=True)
 
 # Add sidebar content
