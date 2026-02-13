@@ -228,11 +228,11 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     margin-bottom: 8px !important;
 }
 .main-header-icon {
-    font-size: 96px !important;
+    font-size: 48px !important;
     line-height: 1 !important;
 }
 .main-header-text {
-    font-size: 96px !important;
+    font-size: 48px !important;
     font-weight: 900 !important;
     color: #ffffff !important;
     line-height: 1 !important;
