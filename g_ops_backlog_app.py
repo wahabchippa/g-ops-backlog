@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Page config - sidebar always expanded (JS will handle toggle)
+# Page config - sidebar expanded
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
 
 # Session state
@@ -18,12 +18,10 @@ if 'vendor_zone' not in st.session_state:
     st.session_state.vendor_zone = None
 if 'handover_bucket' not in st.session_state:
     st.session_state.handover_bucket = None
-
-# Initialize vendor comments storage
 if 'vendor_comments' not in st.session_state:
     st.session_state.vendor_comments = {}
 
-# Custom CSS + JavaScript for SMOOTH sidebar toggle
+# Custom CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -42,7 +40,6 @@ st.markdown("""
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%) !important;
     border-right: 1px solid #2a2a2a !important;
-    transition: transform 0.3s ease-in-out !important;
 }
 
 section[data-testid="stSidebar"] > div {
@@ -87,36 +84,7 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     color: #d0d0d0 !important;
 }
 
-/* ============ HIDE DEFAULT SIDEBAR TOGGLE ============ */
-button[kind="header"] {
-    display: none !important;
-}
-
-/* ============ CUSTOM SIDEBAR TOGGLE BUTTON ============ */
-#sidebar-toggle-btn {
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 999999;
-    background: #ffffff;
-    color: #000000;
-    border: 2px solid #333333;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    transition: all 0.2s ease;
-    font-family: 'Inter', sans-serif;
-}
-
-#sidebar-toggle-btn:hover {
-    background: #f0f0f0;
-    transform: scale(1.02);
-}
-
-/* ============ TITLE - PERFECT SIZE ============ */
+/* ============ TITLE ============ */
 .main-title-container {
     display: flex;
     align-items: center;
@@ -154,7 +122,7 @@ button[kind="header"] {
     font-weight: 500;
 }
 
-/* ============ TOP 4 METRIC CARDS - WHITE with BLACK TEXT ============ */
+/* ============ METRIC CARDS ============ */
 .metric-card-white {
     background: #ffffff;
     border-radius: 16px;
@@ -181,7 +149,7 @@ button[kind="header"] {
     color: #111111;
 }
 
-/* ============ SECTION HEADERS - WHITE ============ */
+/* ============ SECTION HEADERS ============ */
 .section-header-white {
     font-size: 1.4rem;
     font-weight: 700;
@@ -191,7 +159,7 @@ button[kind="header"] {
     border-bottom: 2px solid #333333;
 }
 
-/* ============ HANDOVER CARD - DARK BROWN ============ */
+/* ============ HANDOVER CARD ============ */
 .handover-card {
     background: linear-gradient(145deg, #4a2c17 0%, #2d1a0e 100%);
     border-radius: 16px;
@@ -213,7 +181,7 @@ button[kind="header"] {
     font-weight: 900;
 }
 
-/* ============ PK ZONE & QC CENTER CARDS - LIGHT GREEN SHADED ============ */
+/* ============ GREEN CARDS ============ */
 .green-card {
     background: linear-gradient(145deg, #1f4d1f 0%, #143314 100%);
     border-radius: 14px;
@@ -241,7 +209,7 @@ button[kind="header"] {
     font-weight: 800;
 }
 
-/* ============ AGING SECTION STYLING ============ */
+/* ============ AGING SECTION ============ */
 .aging-section-title {
     color: #ffffff;
     font-size: 1rem;
@@ -257,7 +225,7 @@ button[kind="header"] {
     font-weight: 500;
 }
 
-/* ============ GRAY BUTTONS ============ */
+/* ============ BUTTONS ============ */
 .stButton > button {
     background: #4a4a4a !important;
     color: #e0e0e0 !important;
@@ -278,7 +246,7 @@ button[kind="header"] {
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* ============ VENDOR TABLE STYLING ============ */
+/* ============ VENDOR TABLE ============ */
 .vendor-header {
     font-size: 0.8rem;
     font-weight: 700;
@@ -296,7 +264,7 @@ button[kind="header"] {
     font-weight: 500;
 }
 
-/* ============ DROPDOWN - GRAY ============ */
+/* ============ DROPDOWN ============ */
 .stSelectbox > div > div {
     background: #4a4a4a !important;
     border: 1px solid #5a5a5a !important;
@@ -329,7 +297,7 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 ::-webkit-scrollbar-thumb { background: #444444; border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: #555555; }
 
-/* ============ DETAIL PAGE STYLING ============ */
+/* ============ DETAIL PAGE ============ */
 .page-title {
     font-size: 2.5rem;
     font-weight: 800;
@@ -365,67 +333,7 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     border-radius: 14px;
     border: 1px solid #333333;
 }
-
 </style>
-
-<!-- SMOOTH SIDEBAR TOGGLE - NO PAGE RELOAD -->
-<script>
-(function() {
-    let sidebarOpen = true;
-    
-    function initToggle() {
-        // Check if button already exists
-        if (document.getElementById('sidebar-toggle-btn')) return;
-        
-        // Create toggle button
-        const btn = document.createElement('button');
-        btn.id = 'sidebar-toggle-btn';
-        btn.innerHTML = '✕ Sidebar';
-        
-        btn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const sidebar = document.querySelector('section[data-testid="stSidebar"]');
-            const mainContent = document.querySelector('section.main');
-            
-            if (sidebar) {
-                if (sidebarOpen) {
-                    // Hide sidebar
-                    sidebar.style.transform = 'translateX(-100%)';
-                    sidebar.style.marginLeft = '-100%';
-                    btn.innerHTML = '☰ Menu';
-                    sidebarOpen = false;
-                } else {
-                    // Show sidebar
-                    sidebar.style.transform = 'translateX(0)';
-                    sidebar.style.marginLeft = '0';
-                    btn.innerHTML = '✕ Sidebar';
-                    sidebarOpen = true;
-                }
-            }
-        };
-        
-        document.body.appendChild(btn);
-    }
-    
-    // Run on load
-    if (document.readyState === 'complete') {
-        setTimeout(initToggle, 300);
-    } else {
-        window.addEventListener('load', function() {
-            setTimeout(initToggle, 300);
-        });
-    }
-    
-    // Also run periodically to ensure button exists after Streamlit reruns
-    setInterval(function() {
-        if (!document.getElementById('sidebar-toggle-btn')) {
-            initToggle();
-        }
-    }, 1000);
-})();
-</script>
 """, unsafe_allow_html=True)
 
 # Data Loading
@@ -512,23 +420,20 @@ try:
     qc_normal = data['qc_normal']
     qc_ai = data['qc_ai']
 
-    # ==================== SIDEBAR CONTENT ====================
+    # ==================== SIDEBAR ====================
     with st.sidebar:
         st.markdown("## 🎯 Navigation")
         st.markdown("---")
         
-        # Home Button
         if st.button("🏠 Dashboard Home", key="sb_home", use_container_width=True):
             st.session_state.page = 'home'
             st.rerun()
         
-        # Handover Section
         st.markdown('<p style="color:#F59E0B;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🚚 HANDOVER</p>', unsafe_allow_html=True)
         if st.button(f"📦 All Handover ({len(handover):,})", key="sb_handover", use_container_width=True):
             st.session_state.page = 'handover'
             st.rerun()
         
-        # PK Zone Section
         st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📍 PK ZONE</p>', unsafe_allow_html=True)
         if st.button(f"📋 Normal ({len(pk_normal):,})", key="sb_pk_normal", use_container_width=True):
             st.session_state.page = 'pk_normal'
@@ -537,7 +442,6 @@ try:
             st.session_state.page = 'pk_ai'
             st.rerun()
         
-        # QC Center Section
         st.markdown('<p style="color:#22C55E;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">🏢 QC CENTER</p>', unsafe_allow_html=True)
         if st.button(f"📋 Normal ({len(qc_normal):,})", key="sb_qc_normal", use_container_width=True):
             st.session_state.page = 'qc_normal'
@@ -546,10 +450,8 @@ try:
             st.session_state.page = 'qc_ai'
             st.rerun()
         
-        # Aging Analysis Section
         st.markdown('<p style="color:#60A5FA;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 10px 0;">📊 AGING</p>', unsafe_allow_html=True)
         
-        # PK Zone Aging Dropdown
         pk_aging_data = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         pk_aging_options = ["PK Zone Aging..."] + [f"{b} ({pk_aging_data.get(b, 0)})" for b in BUCKET_ORDER if pk_aging_data.get(b, 0) > 0]
         selected_pk = st.selectbox("PK", pk_aging_options, key="sb_pk_aging_dd", label_visibility="collapsed")
@@ -560,7 +462,6 @@ try:
             st.session_state.aging_bucket = bucket
             st.rerun()
         
-        # QC Center Aging Dropdown
         qc_aging_data = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         qc_aging_options = ["QC Center Aging..."] + [f"{b} ({qc_aging_data.get(b, 0)})" for b in BUCKET_ORDER if qc_aging_data.get(b, 0) > 0]
         selected_qc = st.selectbox("QC", qc_aging_options, key="sb_qc_aging_dd", label_visibility="collapsed")
@@ -571,7 +472,6 @@ try:
             st.session_state.aging_bucket = bucket
             st.rerun()
         
-        # Handover Aging Dropdown
         ho_aging_data = handover.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
         ho_aging_options = ["Handover Aging..."] + [f"{b} ({ho_aging_data.get(b, 0)})" for b in BUCKET_ORDER if ho_aging_data.get(b, 0) > 0]
         selected_ho = st.selectbox("HO", ho_aging_options, key="sb_ho_aging_dd", label_visibility="collapsed")
@@ -584,7 +484,6 @@ try:
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
         
-        # ============ TITLE - PERFECT SIZE ============
         st.markdown("""
             <div style="margin-bottom: 25px;">
                 <div class="main-title-container">
@@ -597,113 +496,107 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ TOP 4 METRIC CARDS - WHITE with BLACK TEXT ============
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.markdown(f'''
+            st.markdown(f"""
                 <div class="metric-card-white">
                     <div class="metric-label">Total Approved</div>
                     <div class="metric-value">{len(approved):,}</div>
                 </div>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
         
         with col2:
-            st.markdown(f'''
+            st.markdown(f"""
                 <div class="metric-card-white">
                     <div class="metric-label">PK Zone</div>
                     <div class="metric-value">{len(pk_zone):,}</div>
                 </div>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
         
         with col3:
-            st.markdown(f'''
+            st.markdown(f"""
                 <div class="metric-card-white">
                     <div class="metric-label">QC Center</div>
                     <div class="metric-value">{len(qc_center):,}</div>
                 </div>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
         
         with col4:
-            st.markdown(f'''
+            st.markdown(f"""
                 <div class="metric-card-white">
                     <div class="metric-label">Handover</div>
                     <div class="metric-value">{len(handover):,}</div>
                 </div>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ 3RD ROW: HANDOVER + PK ZONE + QC CENTER ============
         col1, col2, col3 = st.columns(3)
         
-        # Handover - Dark Brown
         with col1:
             st.markdown('<div class="section-header-white">🚚 Handover</div>', unsafe_allow_html=True)
-            st.markdown(f'''
+            st.markdown(f"""
                 <div class="handover-card">
                     <div class="info-title">To Logistics Partner</div>
                     <div class="info-value">{len(handover):,}</div>
                 </div>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
             st.write("")
             if st.button("View Details", key="v_handover", use_container_width=True):
                 st.session_state.page = 'handover'
                 st.rerun()
         
-        # PK Zone - Light Green
         with col2:
             st.markdown('<div class="section-header-white">📍 PK Zone</div>', unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown(f'''
+                st.markdown(f"""
                     <div class="green-card">
                         <div class="metric-label">Normal</div>
                         <div class="metric-value">{len(pk_normal):,}</div>
                     </div>
-                ''', unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
                 if st.button("View", key="v_pk_n", use_container_width=True):
                     st.session_state.page = 'pk_normal'
                     st.rerun()
             with c2:
-                st.markdown(f'''
+                st.markdown(f"""
                     <div class="green-card">
                         <div class="metric-label">AI Orders</div>
                         <div class="metric-value">{len(pk_ai):,}</div>
                     </div>
-                ''', unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
                 if st.button("View", key="v_pk_a", use_container_width=True):
                     st.session_state.page = 'pk_ai'
                     st.rerun()
         
-        # QC Center - Light Green
         with col3:
             st.markdown('<div class="section-header-white">🏢 QC Center</div>', unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown(f'''
+                st.markdown(f"""
                     <div class="green-card">
                         <div class="metric-label">Normal</div>
                         <div class="metric-value">{len(qc_normal):,}</div>
                     </div>
-                ''', unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
                 if st.button("View", key="v_qc_n", use_container_width=True):
                     st.session_state.page = 'qc_normal'
                     st.rerun()
             with c2:
-                st.markdown(f'''
+                st.markdown(f"""
                     <div class="green-card">
                         <div class="metric-label">AI Orders</div>
                         <div class="metric-value">{len(qc_ai):,}</div>
                     </div>
-                ''', unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
                 if st.button("View", key="v_qc_a", use_container_width=True):
                     st.session_state.page = 'qc_ai'
                     st.rerun()
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ AGING ANALYSIS - WHITE HEADING ============
         st.markdown('<div class="section-header-white">📊 Aging Analysis - Normal Orders</div>', unsafe_allow_html=True)
         
         pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
@@ -712,7 +605,6 @@ try:
         
         col1, col2, col3 = st.columns(3)
         
-        # PK Zone Aging
         with col1:
             st.markdown('<div class="aging-section-title">📍 PK ZONE</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
@@ -730,7 +622,6 @@ try:
                             st.rerun()
             st.markdown(f"<p style='color:#ffffff;font-weight:800;font-size:1rem;margin-top:15px;'>Total: {len(pk_normal):,}</p>", unsafe_allow_html=True)
         
-        # QC Center Aging
         with col2:
             st.markdown('<div class="aging-section-title">🏢 QC CENTER</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
@@ -748,7 +639,6 @@ try:
                             st.rerun()
             st.markdown(f"<p style='color:#ffffff;font-weight:800;font-size:1rem;margin-top:15px;'>Total: {len(qc_normal):,}</p>", unsafe_allow_html=True)
         
-        # Handover Aging
         with col3:
             st.markdown('<div class="aging-section-title">🚚 HANDOVER</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
@@ -767,13 +657,11 @@ try:
         
         st.markdown("<hr>", unsafe_allow_html=True)
         
-        # ============ PK ZONE VENDOR TABLE ============
         st.markdown('<div class="section-header-white">🏪 PK Zone Vendors</div>', unsafe_allow_html=True)
         
         pk_vendor_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).reset_index()
         pk_vendor_counts.columns = ['Vendor', 'Orders']
         
-        # Header
         h1, h2, h3 = st.columns([5, 1, 2])
         with h1:
             st.markdown("<span class='vendor-header'>Vendor Name</span>", unsafe_allow_html=True)
@@ -784,8 +672,6 @@ try:
         
         for i, (_, row) in enumerate(pk_vendor_counts.iterrows()):
             vendor_key = f"pk_{row['Vendor']}"
-            
-            # Row with thin border
             st.markdown("<div style='border-bottom: 1px solid #2a2a2a;'></div>", unsafe_allow_html=True)
             
             c1, c2, c3 = st.columns([5, 1, 2])
