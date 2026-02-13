@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Set page config FIRST
-st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
+# Set page config FIRST - sidebar collapsed by default so user sees the button
+st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide", initial_sidebar_state="collapsed")
 
 # Session state initialization
 if 'page' not in st.session_state:
@@ -21,7 +21,7 @@ if 'handover_bucket' not in st.session_state:
 if 'vendor_comments' not in st.session_state:
     st.session_state.vendor_comments = {}
 
-# Custom CSS - FIXED: Removed header hiding that was blocking sidebar
+# Custom CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -33,20 +33,33 @@ st.markdown("""
     background: linear-gradient(145deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%) !important;
 }
 
-/* FIXED: Only hide specific elements, NOT the sidebar button */
-[data-testid="stHeader"] { 
-    background: transparent !important; 
-}
-
-/* Hide only menu and footer, keep sidebar toggle visible */
-/* Hide menu and footer but keep sidebar toggle */
+/* Hide default streamlit elements */
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
 
-/* IMPORTANT: Sidebar button styling */
-[data-testid="collapsedControl"] {
-    display: flex !important;
-    visibility: visible !important;
+/* ============ CUSTOM MENU BUTTON - TOP LEFT ============ */
+.menu-btn-container {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 999999;
+}
+
+.menu-btn {
+    background: linear-gradient(145deg, #3a3a3a 0%, #252525 100%);
+    border: 1px solid #4a4a4a;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
+}
+
+.menu-btn:hover {
+    background: linear-gradient(145deg, #4a4a4a 0%, #353535 100%);
+    transform: scale(1.05);
 }
 
 /* ============ SIDEBAR STYLING ============ */
@@ -99,56 +112,13 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     color: #d0d0d0 !important;
 }
 
-/* Make sidebar toggle button visible and styled */
-button[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"] {
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #ffffff !important;
-    background: linear-gradient(145deg, #4a4a4a 0%, #333333 100%) !important;
-    border-radius: 10px !important;
-    border: 1px solid #555555 !important;
-    padding: 8px 12px !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-    transition: all 0.3s ease !important;
-}
-
-button[data-testid="stSidebarCollapseButton"]:hover,
-[data-testid="collapsedControl"]:hover {
-    background: linear-gradient(145deg, #5a5a5a 0%, #444444 100%) !important;
-    transform: scale(1.05) !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
-}
-
-/* Fix for icon text showing instead of icon - hide text and use CSS arrow */
-[data-testid="collapsedControl"] span {
-    font-size: 0 !important;
-}
-
-[data-testid="collapsedControl"]::after {
-    content: "☰";
-    font-size: 1.2rem !important;
-    color: #ffffff !important;
-}
-
-/* Alternative: style the button better when sidebar is open/closed */
-section[data-testid="stSidebar"][aria-expanded="true"] ~ div [data-testid="collapsedControl"]::after {
-    content: "✕";
-}
-
-section[data-testid="stSidebar"][aria-expanded="false"] ~ div [data-testid="collapsedControl"]::after,
-[data-testid="collapsedControl"]::after {
-    content: "☰";
-}
-
 /* ============ TITLE - PERFECT SIZE ============ */
 .main-title-container {
     display: flex;
     align-items: center;
     gap: 18px;
     margin-bottom: 8px;
+    padding-left: 60px;
 }
 
 .title-icon {
@@ -179,6 +149,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] ~ div [data-testid="coll
     font-size: 1.1rem;
     margin-top: 12px;
     font-weight: 500;
+    padding-left: 60px;
 }
 
 /* ============ TOP 4 METRIC CARDS - WHITE with BLACK TEXT ============ */
@@ -551,6 +522,12 @@ try:
 
     # ==================== HOME PAGE ====================
     if st.session_state.page == 'home':
+        
+        # ============ TOP LEFT MENU BUTTON ============
+        menu_col, title_col = st.columns([1, 15])
+        with menu_col:
+            if st.button("☰", key="menu_toggle", help="Open Navigation Menu"):
+                st.info("👈 Click the arrow on the left edge to open sidebar, or use keyboard shortcut")
         
         # ============ TITLE - PERFECT SIZE ============
         st.markdown("""
