@@ -99,14 +99,48 @@ section[data-testid="stSidebar"] .stSelectbox > div > div {
     color: #d0d0d0 !important;
 }
 
-/* Make sure sidebar collapse button is visible */
+/* Make sidebar toggle button visible and styled */
 button[data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"] {
     visibility: visible !important;
     opacity: 1 !important;
     color: #ffffff !important;
-    background: #333333 !important;
-    border-radius: 8px !important;
+    background: linear-gradient(145deg, #4a4a4a 0%, #333333 100%) !important;
+    border-radius: 10px !important;
+    border: 1px solid #555555 !important;
+    padding: 8px 12px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+button[data-testid="stSidebarCollapseButton"]:hover,
+[data-testid="collapsedControl"]:hover {
+    background: linear-gradient(145deg, #5a5a5a 0%, #444444 100%) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* Fix for icon text showing instead of icon - hide text and use CSS arrow */
+[data-testid="collapsedControl"] span {
+    font-size: 0 !important;
+}
+
+[data-testid="collapsedControl"]::after {
+    content: "☰";
+    font-size: 1.2rem !important;
+    color: #ffffff !important;
+}
+
+/* Alternative: style the button better when sidebar is open/closed */
+section[data-testid="stSidebar"][aria-expanded="true"] ~ div [data-testid="collapsedControl"]::after {
+    content: "✕";
+}
+
+section[data-testid="stSidebar"][aria-expanded="false"] ~ div [data-testid="collapsedControl"]::after,
+[data-testid="collapsedControl"]::after {
+    content: "☰";
 }
 
 /* ============ TITLE - PERFECT SIZE ============ */
