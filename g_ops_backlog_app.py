@@ -3,36 +3,41 @@ import pandas as pd
 from datetime import datetime
 
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="🚀", layout="wide", initial_sidebar_state="expanded")
-# Sidebar Toggle using Session State
-if 'sidebar_open' not in st.session_state:
-    st.session_state.sidebar_open = True
+# Sidebar Toggle with CSS
+if 'show_sidebar' not in st.session_state:
+    st.session_state.show_sidebar = True
 
-# Toggle Button in main area
-col_btn, col_empty = st.columns([1, 11])
-with col_btn:
-    if st.button("☰ Sidebar", key="sidebar_toggle"):
-        st.session_state.sidebar_open = not st.session_state.sidebar_open
+# Create toggle button
+toggle_col, _ = st.columns([1, 10])
+with toggle_col:
+    btn_text = "✕ Close" if st.session_state.show_sidebar else "☰ Sidebar"
+    if st.button(btn_text, key="toggle_sidebar_btn"):
+        st.session_state.show_sidebar = not st.session_state.show_sidebar
         st.rerun()
 
-# Show/Hide Sidebar based on state
-if not st.session_state.sidebar_open:
+# Hide sidebar if closed
+if not st.session_state.show_sidebar:
     st.markdown("""
-    <style>
-        section[data-testid="stSidebar"] {
-            display: none !important;
-        }
-    </style>
+        <style>
+            section[data-testid="stSidebar"] {
+                display: none !important;
+                width: 0 !important;
+                min-width: 0 !important;
+            }
+            [data-testid="collapsedControl"] {
+                display: none !important;
+            }
+        </style>
     """, unsafe_allow_html=True)
-
-# Add sidebar content
-with st.sidebar:
-    st.markdown("### ⚙️ Controls")
-    if st.button("🔄 Refresh Data", use_container_width=True):
-        st.rerun()
-    st.markdown("---")
-    st.markdown("### 📊 Navigation")
-    st.markdown("Click anywhere to close sidebar")
-    st.markdown("Press **☰** (top-left) to open again")
+else:
+    st.markdown("""
+        <style>
+            section[data-testid="stSidebar"] {
+                display: flex !important;
+                width: 300px !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
 # Session state
 if 'page' not in st.session_state:
