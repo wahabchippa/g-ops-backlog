@@ -22,6 +22,10 @@ if 'handover_bucket' not in st.session_state:
     st.session_state.handover_bucket = None
 if 'vendor_comments' not in st.session_state:
     st.session_state.vendor_comments = {}
+if 'search_result_order' not in st.session_state:
+    st.session_state.search_result_order = None
+if 'search_result_vendor' not in st.session_state:
+    st.session_state.search_result_vendor = None
 
 def toggle_sidebar():
     st.session_state.show_sidebar = not st.session_state.show_sidebar
@@ -273,6 +277,69 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     border-radius: 14px;
     border: 1px solid #333333;
 }
+
+/* SEARCH BOX STYLES */
+.search-container {
+    background: linear-gradient(145deg, #1a1a1a 0%, #252525 100%);
+    border: 2px solid #3a3a3a;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.search-result-card {
+    background: linear-gradient(145deg, #1f1f1f 0%, #2a2a2a 100%);
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.search-result-title {
+    color: #22C55E;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.search-result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+}
+
+.search-label {
+    color: #888;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.search-value {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.vendor-match-card {
+    background: linear-gradient(145deg, #2d1f4e 0%, #1a1333 100%);
+    border: 1px solid #5c4d7a;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.vendor-match-name {
+    color: #a78bfa;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.vendor-match-count {
+    color: #c4b5fd;
+    font-size: 0.85rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -330,10 +397,13 @@ def process_data(df):
     qc_normal = qc_center[qc_center['Order Type'] == 'Normal Order']
     qc_ai = qc_center[qc_center['Order Type'] == 'AI Order']
     
+    # ALL data for search (both approved and handover)
+    all_data = pd.concat([approved, handover], ignore_index=True)
+    
     return {
         'approved': approved, 'handover': handover, 'pk_zone': pk_zone,
         'qc_center': qc_center, 'pk_normal': pk_normal, 'pk_ai': pk_ai,
-        'qc_normal': qc_normal, 'qc_ai': qc_ai
+        'qc_normal': qc_normal, 'qc_ai': qc_ai, 'all_data': all_data
     }
 
 BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
@@ -359,6 +429,7 @@ try:
     pk_ai = data['pk_ai']
     qc_normal = data['qc_normal']
     qc_ai = data['qc_ai']
+    all_data = data['all_data']
 
     # ==================== LAYOUT ====================
     if st.session_state.show_sidebar:
@@ -455,6 +526,80 @@ try:
                     <p class="main-header-subtitle">📊 Real-time Operations Monitoring | Last updated: """ + datetime.now().strftime("%d %b %Y, %I:%M %p") + """</p>
                 </div>
             """, unsafe_allow_html=True)
+            
+            # ==================== SEARCH BOX ====================
+            st.markdown('<div class="search-container">', unsafe_allow_html=True)
+            
+            search_col1, search_col2 = st.columns([4, 1])
+            with search_col1:
+                search_query = st.text_input(
+                    "🔍 Quick Search",
+                    placeholder="Enter Order Number or Vendor Name...",
+                    key="main_search",
+                    label_visibility="collapsed"
+                )
+            with search_col2:
+                search_btn = st.button("🔍 Search", key="search_btn", use_container_width=True)
+            
+            # Search Logic
+            if search_query and len(search_query) >= 3:
+                search_term = search_query.strip().lower()
+                
+                # 1. Check for ORDER NUMBER match (exact or partial)
+                order_matches = all_data[all_data['order_number'].astype(str).str.lower().str.contains(search_term, na=False)]
+                
+                # 2. Check for VENDOR match
+                vendor_matches = all_data[all_data['vendor'].astype(str).str.lower().str.contains(search_term, na=False)]
+                unique_vendors = vendor_matches['vendor'].dropna().unique()
+                
+                # Show ORDER results
+                if len(order_matches) > 0:
+                    st.markdown(f"<p style='color:#22C55E;font-weight:700;margin-top:15px;'>✅ Found {len(order_matches)} order(s)</p>", unsafe_allow_html=True)
+                    
+                    for idx, (_, order) in enumerate(order_matches.head(5).iterrows()):
+                        with st.expander(f"📦 Order: {order.get('order_number', 'N/A')}", expanded=(idx==0)):
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown(f"**Order Number:** {order.get('order_number', 'N/A')}")
+                                st.markdown(f"**Fleek ID:** {order.get('fleek_id', 'N/A')}")
+                                st.markdown(f"**Customer:** {order.get('customer_name', 'N/A')}")
+                                st.markdown(f"**Country:** {order.get('customer_country', 'N/A')}")
+                                st.markdown(f"**Status:** {order.get('latest_status', 'N/A')}")
+                            with col2:
+                                st.markdown(f"**Vendor:** {order.get('vendor', 'N/A')}")
+                                st.markdown(f"**Item:** {order.get('item_name', 'N/A')[:50]}...")
+                                st.markdown(f"**Amount:** ${order.get('total_order_line_amount', 'N/A')}")
+                                st.markdown(f"**Brand:** {order.get('product_brand', 'N/A')}")
+                                st.markdown(f"**Aging:** {order.get('aging_days', 'N/A')} days ({order.get('aging_bucket', 'N/A')})")
+                    
+                    if len(order_matches) > 5:
+                        st.info(f"Showing first 5 of {len(order_matches)} orders. Be more specific to narrow results.")
+                
+                # Show VENDOR results
+                if len(unique_vendors) > 0 and len(order_matches) == 0:
+                    st.markdown(f"<p style='color:#A78BFA;font-weight:700;margin-top:15px;'>🏪 Found {len(unique_vendors)} vendor(s)</p>", unsafe_allow_html=True)
+                    
+                    for vendor in unique_vendors[:10]:
+                        vendor_order_count = len(vendor_matches[vendor_matches['vendor'] == vendor])
+                        col1, col2 = st.columns([4, 1])
+                        with col1:
+                            st.markdown(f"""
+                                <div class="vendor-match-card">
+                                    <span class="vendor-match-name">{vendor}</span><br>
+                                    <span class="vendor-match-count">{vendor_order_count} orders in backlog</span>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        with col2:
+                            if st.button(f"View", key=f"view_vendor_{vendor[:20]}", use_container_width=True):
+                                st.session_state.page = 'search_vendor_orders'
+                                st.session_state.search_result_vendor = vendor
+                                st.rerun()
+                
+                # No results
+                if len(order_matches) == 0 and len(unique_vendors) == 0:
+                    st.warning(f"❌ No orders or vendors found for '{search_query}'")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
             
             st.markdown("<hr>", unsafe_allow_html=True)
             
@@ -691,6 +836,10 @@ try:
                 bucket = st.session_state.handover_bucket
                 title = f"🚚 Handover - {bucket}"
                 data_view = handover[handover['aging_bucket'] == bucket]
+            elif page == 'search_vendor_orders':
+                vendor = st.session_state.search_result_vendor
+                title = f"🏪 {vendor[:40]}"
+                data_view = all_data[all_data['vendor'] == vendor]
             else:
                 title, data_view = "📋 Orders", approved
             
