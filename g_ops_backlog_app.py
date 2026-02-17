@@ -350,13 +350,40 @@ REQUIRED_COLS = [
     'latest_status', 'QC or zone', 'Order Type', 'order_number', 'fleek_id',
     'customer_name', 'customer_country', 'vendor', 'item_name', 
     'total_order_line_amount', 'product_brand', 'logistics_partner_name',
-    'qc_approved_at', 'logistics_partner_handedover_at'
+    'qc_approved_at', 'logistics_partner_handedover_at',
+    'is_zone_vendor', 'vendor_country'
 ]
 
 @st.cache_data(ttl=600, show_spinner=False)
 def load_data():
-    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Dump"
-    df = pd.read_csv(url, usecols=lambda c: c in REQUIRED_COLS, low_memory=False)
+    # Changed to Extract 1 - auto-updated from BigQuery
+    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Extract%201"
+    df = pd.read_csv(url, low_memory=False)
+    
+    # ===== DERIVE "QC or zone" from is_zone_vendor + vendor_country =====
+    def get_qc_zone(row):
+        is_zone = str(row.get('is_zone_vendor', '')).strip().upper()
+        vendor_country = str(row.get('vendor_country', '')).strip().upper()
+        
+        if vendor_country == 'PK':
+            if is_zone == 'TRUE':
+                return 'PK Zone'
+            else:
+                return 'PK QC Center'
+        elif vendor_country == 'IN':
+            if is_zone == 'TRUE':
+                return 'IN Zone'
+            else:
+                return 'IN QC Center'
+        return 'Other'
+    
+    df['QC or zone'] = df.apply(get_qc_zone, axis=1)
+    
+    # ===== DERIVE "Order Type" from item_name (BAB = AI Order) =====
+    df['Order Type'] = df['item_name'].apply(
+        lambda x: 'AI Order' if 'BAB' in str(x).upper() else 'Normal Order'
+    )
+    
     return df
 
 @st.cache_data(ttl=600, show_spinner=False)
@@ -367,10 +394,27 @@ def process_data(df):
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
                   (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))].copy()
     
-    approved['qc_date'] = pd.to_datetime(approved['qc_approved_at'], format='%B %d, %Y, %H:%M', errors='coerce')
+    # Parse dates - handle both formats (Extract 1 format: DD/MM/YYYY HH:MM:SS)
+    def parse_date(date_str):
+        if pd.isna(date_str) or date_str == '':
+            return pd.NaT
+        date_str = str(date_str).strip()
+        # Try Extract 1 format first: DD/MM/YYYY HH:MM:SS
+        for fmt in ['%d/%m/%Y %H:%M:%S', '%d/%m/%Y', '%B %d, %Y, %H:%M', '%Y-%m-%d %H:%M:%S']:
+            try:
+                return pd.to_datetime(date_str, format=fmt)
+            except:
+                continue
+        # Fallback to pandas auto-parse
+        try:
+            return pd.to_datetime(date_str, dayfirst=True)
+        except:
+            return pd.NaT
+    
+    approved['qc_date'] = approved['qc_approved_at'].apply(parse_date)
     approved['aging_days'] = (now - approved['qc_date']).dt.days
     
-    handover['handover_date'] = pd.to_datetime(handover['logistics_partner_handedover_at'], format='%B %d, %Y, %H:%M', errors='coerce')
+    handover['handover_date'] = handover['logistics_partner_handedover_at'].apply(parse_date)
     handover['aging_days'] = (now - handover['handover_date']).dt.days
     
     def assign_buckets(days_series):
