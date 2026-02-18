@@ -346,19 +346,21 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 # Data Loading
 SHEET_ID = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
 
-REQUIRED_COLS = [
-    'latest_status', 'QC or zone', 'Order Type', 'order_number', 'fleek_id',
-    'customer_name', 'customer_country', 'vendor', 'item_name', 
-    'total_order_line_amount', 'product_brand', 'logistics_partner_name',
-    'qc_approved_at', 'logistics_partner_handedover_at',
-    'is_zone_vendor', 'vendor_country'
-]
+@st.cache_data(ttl=600, show_spinner=False)
+def load_ai_fleek_ids():
+    """Load AI fleek_ids from AI tab"""
+    ai_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=AI"
+    ai_df = pd.read_csv(ai_url, low_memory=False)
+    return set(ai_df['fleek_id'].astype(str).str.strip().tolist())
 
 @st.cache_data(ttl=600, show_spinner=False)
 def load_data():
-    # Changed to Extract 1 - auto-updated from BigQuery
+    # Load main data from Extract 1
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Extract%201"
     df = pd.read_csv(url, low_memory=False)
+    
+    # Load AI fleek_ids
+    ai_fleek_ids = load_ai_fleek_ids()
     
     # ===== DERIVE "QC or zone" from is_zone_vendor + vendor_country =====
     def get_qc_zone(row):
@@ -379,9 +381,9 @@ def load_data():
     
     df['QC or zone'] = df.apply(get_qc_zone, axis=1)
     
-    # ===== DERIVE "Order Type" from item_name (BAB = AI Order) =====
-    df['Order Type'] = df['item_name'].apply(
-        lambda x: 'AI Order' if 'BAB' in str(x).upper() else 'Normal Order'
+    # ===== DERIVE "Order Type" from AI tab fleek_id list =====
+    df['Order Type'] = df['fleek_id'].apply(
+        lambda x: 'AI Order' if str(x).strip() in ai_fleek_ids else 'Normal Order'
     )
     
     return df
@@ -394,18 +396,16 @@ def process_data(df):
     handover = df[(df['latest_status'] == 'HANDED_OVER_TO_LOGISTICS_PARTNER') & 
                   (df['QC or zone'].isin(['PK Zone', 'PK QC Center']))].copy()
     
-    # Parse dates - handle both formats (Extract 1 format: DD/MM/YYYY HH:MM:SS)
+    # Parse dates
     def parse_date(date_str):
         if pd.isna(date_str) or date_str == '':
             return pd.NaT
         date_str = str(date_str).strip()
-        # Try Extract 1 format first: DD/MM/YYYY HH:MM:SS
         for fmt in ['%d/%m/%Y %H:%M:%S', '%d/%m/%Y', '%B %d, %Y, %H:%M', '%Y-%m-%d %H:%M:%S']:
             try:
                 return pd.to_datetime(date_str, format=fmt)
             except:
                 continue
-        # Fallback to pandas auto-parse
         try:
             return pd.to_datetime(date_str, dayfirst=True)
         except:
@@ -441,7 +441,6 @@ def process_data(df):
     qc_normal = qc_center[qc_center['Order Type'] == 'Normal Order']
     qc_ai = qc_center[qc_center['Order Type'] == 'AI Order']
     
-    # ALL data for search (both approved and handover)
     all_data = pd.concat([approved, handover], ignore_index=True)
     
     return {
@@ -485,7 +484,6 @@ try:
     # ==================== SIDEBAR ====================
     if st.session_state.show_sidebar and sidebar_col:
         with sidebar_col:
-            # CLOSE BUTTON - ✕
             if st.button("✕ Close Sidebar", key="close_btn", use_container_width=True):
                 st.session_state.show_sidebar = False
                 st.rerun()
@@ -552,7 +550,6 @@ try:
     # ==================== MAIN CONTENT ====================
     with main_col:
         
-        # SIDEBAR OPEN BUTTON - only shows when sidebar is closed
         if not st.session_state.show_sidebar:
             if st.button("☰ Sidebar", key="open_btn"):
                 st.session_state.show_sidebar = True
@@ -585,18 +582,13 @@ try:
             with search_col2:
                 search_btn = st.button("🔍 Search", key="search_btn", use_container_width=True)
             
-            # Search Logic
             if search_query and len(search_query) >= 3:
                 search_term = search_query.strip().lower()
                 
-                # 1. Check for ORDER NUMBER match (exact or partial)
                 order_matches = all_data[all_data['order_number'].astype(str).str.lower().str.contains(search_term, na=False)]
-                
-                # 2. Check for VENDOR match
                 vendor_matches = all_data[all_data['vendor'].astype(str).str.lower().str.contains(search_term, na=False)]
                 unique_vendors = vendor_matches['vendor'].dropna().unique()
                 
-                # Show ORDER results
                 if len(order_matches) > 0:
                     st.markdown(f"<p style='color:#22C55E;font-weight:700;margin-top:15px;'>✅ Found {len(order_matches)} order(s)</p>", unsafe_allow_html=True)
                     
@@ -619,7 +611,6 @@ try:
                     if len(order_matches) > 5:
                         st.info(f"Showing first 5 of {len(order_matches)} orders. Be more specific to narrow results.")
                 
-                # Show VENDOR results
                 if len(unique_vendors) > 0 and len(order_matches) == 0:
                     st.markdown(f"<p style='color:#A78BFA;font-weight:700;margin-top:15px;'>🏪 Found {len(unique_vendors)} vendor(s)</p>", unsafe_allow_html=True)
                     
@@ -639,7 +630,6 @@ try:
                                 st.session_state.search_result_vendor = vendor
                                 st.rerun()
                 
-                # No results
                 if len(order_matches) == 0 and len(unique_vendors) == 0:
                     st.warning(f"❌ No orders or vendors found for '{search_query}'")
             
