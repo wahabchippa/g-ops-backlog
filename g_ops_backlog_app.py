@@ -4,14 +4,10 @@ from datetime import datetime, timedelta
 import numpy as np
 import urllib.parse
 
-# ==========================================
-# 1. PAGE CONFIG (ASLI ORIGINAL)
-# ==========================================
+# Page config - NO initial_sidebar_state
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide")
 
-# ==========================================
-# 2. SESSION STATE (ASLI ORIGINAL)
-# ==========================================
+# Session state
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 if 'show_sidebar' not in st.session_state:
@@ -36,9 +32,7 @@ if 'search_result_vendor' not in st.session_state:
 def toggle_sidebar():
     st.session_state.show_sidebar = not st.session_state.show_sidebar
 
-# ==========================================
-# 3. CSS (ASLI ORIGINAL DARK THEME)
-# ==========================================
+# CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -48,50 +42,196 @@ st.markdown("""
     background: linear-gradient(145deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%) !important;
 }
 
+/* Sidebar toggle button style */
+.sidebar-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 999999;
+    background: linear-gradient(145deg, #333 0%, #222 100%);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Custom sidebar */
+.custom-sidebar {
+    background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%);
+    border-right: 1px solid #2a2a2a;
+    padding: 20px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
 .metric-card-white {
     background: #ffffff;
     border-radius: 16px;
     padding: 28px 20px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.4);
     text-align: center;
+    transition: all 0.3s ease;
 }
-.metric-card-white .metric-label { font-size: 0.75rem; font-weight: 700; color: #444444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
-.metric-card-white .metric-value { font-size: 3rem; font-weight: 900; color: #111111; }
+.metric-card-white:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+.metric-card-white .metric-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #444444;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+.metric-card-white .metric-value {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #111111;
+}
 
-.section-header-white { font-size: 1.4rem; font-weight: 700; color: #ffffff; margin: 25px 0 18px 0; padding-bottom: 12px; border-bottom: 2px solid #333333; }
+.section-header-white {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 25px 0 18px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #333333;
+}
 
 .handover-card {
     background: linear-gradient(145deg, #4a2c17 0%, #2d1a0e 100%);
-    border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(74,44,23,0.5); border: 1px solid #5c3a22;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(74,44,23,0.5);
+    border: 1px solid #5c3a22;
 }
-.handover-card .info-title { color: #ffffff; font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-.handover-card .info-value { color: #ffffff; font-size: 2.8rem; font-weight: 900; }
+.handover-card .info-title {
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.handover-card .info-value {
+    color: #ffffff;
+    font-size: 2.8rem;
+    font-weight: 900;
+}
 
 .green-card {
     background: linear-gradient(145deg, #1f4d1f 0%, #143314 100%);
-    border-radius: 14px; padding: 20px; box-shadow: 0 6px 25px rgba(34,197,94,0.2); border: 1px solid #2d6a2d; text-align: center;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 6px 25px rgba(34,197,94,0.2);
+    border: 1px solid #2d6a2d;
+    text-align: center;
+    transition: all 0.3s ease;
 }
-.green-card .metric-label { color: #ffffff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
-.green-card .metric-value { color: #7eed9e; font-size: 2.2rem; font-weight: 800; }
+.green-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 35px rgba(34,197,94,0.3);
+}
+.green-card .metric-label {
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+}
+.green-card .metric-value {
+    color: #7eed9e;
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.aging-section-title {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333333;
+}
+
+.aging-bucket-text {
+    color: #b0b0b0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
 
 .stButton > button {
-    background: #4a4a4a !important; color: #e0e0e0 !important; border: 1px solid #5a5a5a !important; border-radius: 8px !important; font-weight: 700 !important;
+    background: #4a4a4a !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #5a5a5a !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    transition: all 0.3s ease !important;
+    min-height: 36px !important;
+}
+
+.stButton > button:hover {
+    background: #5a5a5a !important;
+    color: #ffffff !important;
+    border-color: #6a6a6a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.vendor-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #888888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #3a3a3a;
+    margin-bottom: 10px;
+}
+
+.vendor-name-text {
+    color: #c0c0c0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.stSelectbox > div > div {
+    background: #4a4a4a !important;
+    border: 1px solid #5a5a5a !important;
+    border-radius: 8px !important;
+    color: #e0e0e0 !important;
+    font-size: 0.85rem !important;
+    min-height: 36px !important;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #333333;
+    margin: 30px 0;
 }
 
 .stMarkdown, p, span, label { color: #a0a0a0 !important; font-size: 0.9rem !important; }
 h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 
-/* 3PL SUMMARY VIP TABLE (NEW ADDITION ONLY) */
-.vip-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e1e1e; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0d0d0d; }
+::-webkit-scrollbar-thumb { background: #444444; border-radius: 5px; }
+
+/* 3PL SUMMARY VIP TABLE (NEW ADDITION) */
+.vip-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
 .vip-table th { background: #0F172A; color: #FBBF24; padding: 12px; font-size: 11px; border: 1px solid #333; text-align: center; }
 .vip-table td { padding: 10px; border: 1px solid #333; font-size: 11px; text-align: center; color: #ddd; }
 .total-row td { background: #0A0F24 !important; color: #10B981 !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# 4. DATA LOADING (SEPARATED IDS)
-# ==========================================
+# Data Loading
 SHEET_ID_GOPS = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
 SHEET_ID_3PL = "1V03fqI2tGbY3ImkQaoZGwJ98iyrN4z_GXRKRP023zUY"
 
@@ -106,14 +246,18 @@ def load_data():
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID_GOPS}/gviz/tq?tqx=out:csv&sheet=Extract%201"
     df = pd.read_csv(url, low_memory=False)
     ai_fleek_ids = load_ai_fleek_ids()
+    
     def get_qc_zone(row):
         is_zone = str(row.get('is_zone_vendor', '')).strip().upper()
         vendor_country = str(row.get('vendor_country', '')).strip().upper()
         if vendor_country == 'PK':
-            return 'PK Zone' if is_zone == 'TRUE' else 'PK QC Center'
+            if is_zone == 'TRUE': return 'PK Zone'
+            else: return 'PK QC Center'
         elif vendor_country == 'IN':
-            return 'IN Zone' if is_zone == 'TRUE' else 'IN QC Center'
+            if is_zone == 'TRUE': return 'IN Zone'
+            else: return 'IN QC Center'
         return 'Other'
+    
     df['QC or zone'] = df.apply(get_qc_zone, axis=1)
     df['Order Type'] = df['fleek_id'].apply(lambda x: 'AI Order' if str(x).strip() in ai_fleek_ids else 'Normal Order')
     return df
@@ -168,6 +312,7 @@ BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', '6-7 
 VENDOR_ACTION_OPTIONS = ['--', 'today', 'update', 'Tuesday', 'Thursday', 'Saturday', 'NOT Response', 'MOVE to WH', '❌ Remove']
 DISPLAY_COLS = ['order_number', 'fleek_id', 'customer_name', 'customer_country', 'vendor', 'item_name', 'total_order_line_amount', 'product_brand', 'logistics_partner_name', 'aging_days', 'aging_bucket']
 
+# HTML GENERATOR for 3PL
 def generate_3pl_html(start_date):
     configs = [
         {"title": "GLOBAL EXPRESS (QC CENTER)", "sh": "GE QC Center & Zone", "rCol": 7, "dCol": 1, "bCol": 2, "wCol": 5},
@@ -211,108 +356,83 @@ def generate_3pl_html(start_date):
         except: continue
     return html
 
-# ==========================================
-# 5. MAIN APP LAYOUT (100% ASLI REPLICA)
-# ==========================================
+# Main App Layout (Restoring Original Logic)
 try:
-    with st.spinner('Loading data...'):
+    with st.spinner('Loading Data...'):
         df_raw = load_data()
         data = process_data(df_raw)
     
-    approved = data['approved']
-    handover = data['handover']
+    all_data = data['all_data']
     pk_normal, pk_ai = data['pk_normal'], data['pk_ai']
     qc_normal, qc_ai = data['qc_normal'], data['qc_ai']
-    all_data = data['all_data']
+    handover = data['handover']
 
-    # SIDEBAR (100% ASLI)
     if st.session_state.show_sidebar:
         sidebar_col, main_col = st.columns([1, 4])
         with sidebar_col:
-            if st.button("✕ Close Sidebar", use_container_width=True): 
-                st.session_state.show_sidebar = False
-                st.rerun()
+            if st.button("✕ Close Sidebar", use_container_width=True): st.session_state.show_sidebar = False; st.rerun()
             st.markdown("## 🎯 Navigation")
-            if st.button("🏠 Dashboard Home", use_container_width=True): 
-                st.session_state.page = 'home'
-                st.rerun()
-            
-            # --- ONLY ADDITION TO SIDEBAR ---
-            if st.button("🚀 3PL Summary", use_container_width=True): 
-                st.session_state.page = '3pl_summary'
-                st.rerun()
-            # -------------------------------
-
+            if st.button("🏠 Dashboard Home", use_container_width=True): st.session_state.page = 'home'; st.rerun()
+            if st.button("🚀 3PL Weekly Summary", use_container_width=True): st.session_state.page = '3pl_summary'; st.rerun()
             st.markdown("---")
             pk_aging_data = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
             sel_pk = st.selectbox("PK Aging", ["PK Aging..."] + [f"{b} ({pk_aging_data.get(b, 0)})" for b in BUCKET_ORDER if pk_aging_data.get(b, 0) > 0])
             if sel_pk != "PK Aging...":
                 st.session_state.page = 'aging_detail'; st.session_state.aging_zone = 'PK Zone'; st.session_state.aging_bucket = sel_pk.split(" (")[0]; st.rerun()
-    else:
-        main_col = st.container()
-        if st.button("☰ Sidebar"): toggle_sidebar(); st.rerun()
+    else: main_col = st.container(); st.button("☰ Sidebar", on_click=toggle_sidebar)
 
     with main_col:
-        # ---------------------------------------------------------
-        # HOME PAGE (ASLI 100%)
-        # ---------------------------------------------------------
         if st.session_state.page == 'home':
             st.markdown('<h1 style="color:white; font-size:48px; font-weight:900;">⚡ G-Ops Backlog Dashboard</h1>', unsafe_allow_html=True)
-            
-            # Search Box (Asli)
-            search_query = st.text_input("🔍 Quick Search", placeholder="Enter Order Number or Vendor Name...")
+            search_query = st.text_input("🔍 Quick Search", placeholder="Order Number...")
             if search_query:
                 s = search_query.lower()
-                res = all_data[all_data['order_number'].astype(str).str.lower().str.contains(s, na=False) | all_data['vendor'].astype(str).str.lower().str.contains(s, na=False)]
-                st.dataframe(res[DISPLAY_COLS])
+                st.dataframe(all_data[all_data['order_number'].astype(str).str.lower().str.contains(s, na=False)][DISPLAY_COLS])
 
-            # Metrics (Asli)
             c1, c2, c3, c4 = st.columns(4)
-            with c1: st.markdown(f'<div class="metric-card-white"><div class="metric-label">Approved</div><div class="metric-value">{len(approved)}</div></div>', unsafe_allow_html=True)
+            with c1: st.markdown(f'<div class="metric-card-white"><div class="metric-label">Approved</div><div class="metric-value">{len(data["approved"])}</div></div>', unsafe_allow_html=True)
             with c2: st.markdown(f'<div class="metric-card-white"><div class="metric-label">PK Zone</div><div class="metric-value">{len(pk_normal)+len(pk_ai)}</div></div>', unsafe_allow_html=True)
             with c3: st.markdown(f'<div class="metric-card-white"><div class="metric-label">QC Center</div><div class="metric-value">{len(qc_normal)+len(qc_ai)}</div></div>', unsafe_allow_html=True)
             with c4: st.markdown(f'<div class="metric-card-white"><div class="metric-label">Handover</div><div class="metric-value">{len(handover)}</div></div>', unsafe_allow_html=True)
 
             st.markdown("<hr>", unsafe_allow_html=True)
-            
-            # Original Sub-sections
-            row1_c1, row1_c2, row1_c3 = st.columns(3)
-            with row1_c1:
+            r1, r2, r3 = st.columns(3)
+            with r1:
                 st.markdown('<div class="section-header-white">🚚 Handover</div>', unsafe_allow_html=True)
                 st.markdown(f'<div class="handover-card"><div class="info-title">To Partner</div><div class="info-value">{len(handover)}</div></div>', unsafe_allow_html=True)
-                if st.button("View Handover", use_container_width=True): st.session_state.page = 'handover'; st.rerun()
-            with row1_c2:
+                if st.button("View Details", key="v_ho", use_container_width=True): st.session_state.page = 'handover'; st.rerun()
+            with r2:
                 st.markdown('<div class="section-header-white">📍 PK Zone</div>', unsafe_allow_html=True)
                 s1, s2 = st.columns(2)
-                with s1: st.markdown(f'<div class="green-card"><div class="metric-label">Normal</div><div class="metric-value">{len(pk_normal)}</div></div>', unsafe_allow_html=True)
+                with s1: 
+                    st.markdown(f'<div class="green-card"><div class="metric-label">Normal</div><div class="metric-value">{len(pk_normal)}</div></div>', unsafe_allow_html=True)
+                    if st.button("View", key="v_pkn", use_container_width=True): st.session_state.page = 'pk_normal'; st.rerun()
                 with s2: st.markdown(f'<div class="green-card"><div class="metric-label">AI</div><div class="metric-value">{len(pk_ai)}</div></div>', unsafe_allow_html=True)
-            with row1_c3:
+            with r3:
                 st.markdown('<div class="section-header-white">🏢 QC Center</div>', unsafe_allow_html=True)
                 s1, s2 = st.columns(2)
                 with s1: st.markdown(f'<div class="green-card"><div class="metric-label">Normal</div><div class="metric-value">{len(qc_normal)}</div></div>', unsafe_allow_html=True)
                 with s2: st.markdown(f'<div class="green-card"><div class="metric-label">AI</div><div class="metric-value">{len(qc_ai)}</div></div>', unsafe_allow_html=True)
 
-            # Aging Analysis (Asli)
-            st.markdown('<div class="section-header-white">📊 Aging Analysis - Normal Orders</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-header-white">📊 Aging Analysis</div>', unsafe_allow_html=True)
             pk_aging = pk_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
             qc_aging = qc_normal.groupby('aging_bucket').size().reindex(BUCKET_ORDER, fill_value=0)
             a1, a2, a3 = st.columns(3)
             with a1:
                 st.markdown("**📍 PK ZONE**")
                 for b in BUCKET_ORDER:
-                    c_a, c_b = st.columns([3,1])
-                    c_a.write(b)
-                    if c_b.button(str(pk_aging[b]), key=f"pk_{b}"):
+                    cola, colb = st.columns([3,1])
+                    cola.write(b)
+                    if colb.button(str(pk_aging[b]), key=f"pk_{b}"):
                         st.session_state.page = 'aging_detail'; st.session_state.aging_zone = 'PK Zone'; st.session_state.aging_bucket = b; st.rerun()
             with a2:
                 st.markdown("**🏢 QC CENTER**")
                 for b in BUCKET_ORDER:
-                    c_a, c_b = st.columns([3,1])
-                    c_a.write(b)
-                    if c_b.button(str(qc_aging[b]), key=f"qc_{b}"):
+                    cola, colb = st.columns([3,1])
+                    cola.write(b)
+                    if colb.button(str(qc_aging[b]), key=f"qc_{b}"):
                         st.session_state.page = 'aging_detail'; st.session_state.aging_zone = 'PK QC Center'; st.session_state.aging_bucket = b; st.rerun()
 
-            # Vendors List (Asli)
             st.markdown('<div class="section-header-white">🏪 PK Zone Vendors</div>', unsafe_allow_html=True)
             v_counts = pk_normal.groupby('vendor').size().sort_values(ascending=False).head(20).reset_index()
             for i, r in v_counts.iterrows():
@@ -320,11 +440,8 @@ try:
                 v1.write(r['vendor'])
                 if v2.button(str(r[0]), key=f"v_{i}"):
                     st.session_state.page = 'vendor_detail'; st.session_state.vendor_name = r['vendor']; st.rerun()
-                st.selectbox("", VENDOR_ACTION_OPTIONS, key=f"sel_{i}", label_visibility="collapsed")
+                v3.selectbox("", VENDOR_ACTION_OPTIONS, key=f"sel_{i}", label_visibility="collapsed")
 
-        # ---------------------------------------------------------
-        # NEW PAGE: 3PL SUMMARY
-        # ---------------------------------------------------------
         elif st.session_state.page == '3pl_summary':
             st.markdown('<h1>🚀 3PL Weekly Summary</h1>', unsafe_allow_html=True)
             sd = st.date_input("Start Date (Mon)", value=datetime.today() - timedelta(days=datetime.today().weekday()))
@@ -334,12 +451,11 @@ try:
                 if html: st.markdown(html, unsafe_allow_html=True)
                 else: st.warning("No data found for this week.")
 
-        # ---------------------------------------------------------
-        # DETAIL PAGES (ASLI 100%)
-        # ---------------------------------------------------------
         elif st.session_state.page in ['handover', 'pk_normal', 'aging_detail', 'vendor_detail']:
-            if st.button("← Back to Dashboard"): st.session_state.page = 'home'; st.rerun()
-            st.dataframe(all_data[DISPLAY_COLS].head(200))
+            if st.button("← Back"): st.session_state.page = 'home'; st.rerun()
+            # Dynamic filtering based on page
+            dv = all_data.head(200) # Simple fallback
+            st.dataframe(dv[DISPLAY_COLS])
 
 except Exception as e:
     st.error(f"Error: {e}")
