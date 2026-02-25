@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Page config - USE NATIVE SIDEBAR
+# Page config
 st.set_page_config(
     page_title="G-Ops Backlog Dashboard", 
     page_icon="⚡", 
@@ -41,6 +41,31 @@ st.markdown("""
     background: linear-gradient(145deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%) !important;
 }
 
+/* Hide menu and footer only - keep header for sidebar arrow */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+
+/* ============ SIDEBAR ARROW BUTTON STYLING ============ */
+[data-testid="collapsedControl"] {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%) !important;
+    border: 1px solid #3b82f6 !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+    margin: 10px !important;
+}
+
+[data-testid="collapsedControl"] svg {
+    fill: #3b82f6 !important;
+    stroke: #3b82f6 !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+[data-testid="collapsedControl"]:hover {
+    background: linear-gradient(135deg, #2d4a6f 0%, #1e293b 100%) !important;
+    border-color: #60a5fa !important;
+}
+
 /* ============ PROFESSIONAL SIDEBAR ============ */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #111827 0%, #0f172a 50%, #020617 100%) !important;
@@ -67,9 +92,6 @@ st.markdown("""
 
 .sidebar-logo-icon {
     font-size: 32px;
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .sidebar-logo-text {
@@ -97,72 +119,6 @@ st.markdown("""
     padding-left: 5px;
 }
 
-/* Sidebar Navigation Items */
-.nav-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 15px;
-    margin: 4px 0;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: transparent;
-    border: 1px solid transparent;
-}
-
-.nav-item:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-    transform: translateX(4px);
-}
-
-.nav-item-active {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%) !important;
-    border-color: rgba(59, 130, 246, 0.4) !important;
-}
-
-.nav-item-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.nav-icon {
-    font-size: 1.1rem;
-    width: 24px;
-    text-align: center;
-}
-
-.nav-text {
-    color: #e2e8f0;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.nav-badge {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-    color: white;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    min-width: 35px;
-    text-align: center;
-}
-
-.nav-badge-orange {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
-
-.nav-badge-green {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.nav-badge-purple {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-}
-
 /* Sidebar Divider */
 .sidebar-divider {
     height: 1px;
@@ -181,9 +137,7 @@ st.markdown("""
     font-size: 0.85rem !important;
     transition: all 0.3s ease !important;
     width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+    text-align: left !important;
 }
 
 [data-testid="stSidebar"] .stButton > button:hover {
@@ -205,10 +159,36 @@ st.markdown("""
     border-color: #3b82f6 !important;
 }
 
-/* Refresh Button Special */
-.refresh-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    border: none !important;
+/* Stats in sidebar */
+.sidebar-stats {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    border: 1px solid #334155;
+}
+
+.sidebar-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #1e3a5f;
+}
+
+.sidebar-stat-row:last-child {
+    border-bottom: none;
+}
+
+.sidebar-stat-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.sidebar-stat-value {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
 }
 
 /* ============ MAIN CONTENT STYLES ============ */
@@ -310,7 +290,8 @@ st.markdown("""
     font-weight: 500;
 }
 
-.stButton > button {
+/* Main content buttons */
+.main .stButton > button {
     background: #4a4a4a !important;
     color: #e0e0e0 !important;
     border: 1px solid #5a5a5a !important;
@@ -322,7 +303,7 @@ st.markdown("""
     min-height: 36px !important;
 }
 
-.stButton > button:hover {
+.main .stButton > button:hover {
     background: #5a5a5a !important;
     color: #ffffff !important;
     border-color: #6a6a6a !important;
@@ -435,47 +416,12 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     margin-bottom: 25px;
 }
 
-.search-result-card {
-    background: linear-gradient(145deg, #1f1f1f 0%, #2a2a2a 100%);
-    border: 1px solid #444;
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 15px;
-}
-
-.search-result-title {
-    color: #22C55E;
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-
-.search-result-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #333;
-}
-
-.search-label {
-    color: #888;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.search-value {
-    color: #fff;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
 .vendor-match-card {
     background: linear-gradient(145deg, #2d1f4e 0%, #1a1333 100%);
     border: 1px solid #5c4d7a;
     border-radius: 12px;
     padding: 15px 20px;
     margin-top: 10px;
-    cursor: pointer;
 }
 
 .vendor-match-name {
@@ -487,38 +433,6 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 .vendor-match-count {
     color: #c4b5fd;
     font-size: 0.85rem;
-}
-
-/* Stats in sidebar */
-.sidebar-stats {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border-radius: 12px;
-    padding: 15px;
-    margin: 15px 0;
-    border: 1px solid #334155;
-}
-
-.sidebar-stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #1e3a5f;
-}
-
-.sidebar-stat-row:last-child {
-    border-bottom: none;
-}
-
-.sidebar-stat-label {
-    color: #94a3b8;
-    font-size: 0.8rem;
-}
-
-.sidebar-stat-value {
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-weight: 700;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -817,7 +731,7 @@ try:
                             st.markdown(f"**Status:** {order.get('latest_status', 'N/A')}")
                         with col2:
                             st.markdown(f"**Vendor:** {order.get('vendor', 'N/A')}")
-                            st.markdown(f"**Item:** {order.get('item_name', 'N/A')[:50]}...")
+                            st.markdown(f"**Item:** {str(order.get('item_name', 'N/A'))[:50]}...")
                             st.markdown(f"**Amount:** ${order.get('total_order_line_amount', 'N/A')}")
                             st.markdown(f"**Brand:** {order.get('product_brand', 'N/A')}")
                             st.markdown(f"**Aging:** {order.get('aging_days', 'N/A')} days ({order.get('aging_bucket', 'N/A')})")
@@ -839,7 +753,7 @@ try:
                             </div>
                         """, unsafe_allow_html=True)
                     with col2:
-                        if st.button(f"View", key=f"view_vendor_{vendor[:20]}", use_container_width=True):
+                        if st.button(f"View", key=f"view_vendor_{str(vendor)[:20]}", use_container_width=True):
                             st.session_state.page = 'search_vendor_orders'
                             st.session_state.search_result_vendor = vendor
                             st.rerun()
@@ -1030,7 +944,7 @@ try:
             st.markdown("<div style='border-bottom: 1px solid #2a2a2a;'></div>", unsafe_allow_html=True)
             c1, c2, c3 = st.columns([5, 1, 2])
             with c1:
-                v_name = row['Vendor'][:40] + "..." if len(str(row['Vendor'])) > 40 else row['Vendor']
+                v_name = str(row['Vendor'])[:40] + "..." if len(str(row['Vendor'])) > 40 else str(row['Vendor'])
                 st.markdown(f"<span class='vendor-name-text'>{v_name}</span>", unsafe_allow_html=True)
             with c2:
                 if st.button(f"{row['Orders']}", key=f"pv_{i}", use_container_width=True):
@@ -1078,7 +992,7 @@ try:
             data_view = pk_normal[pk_normal['aging_bucket'] == bucket] if zone == 'PK Zone' else qc_normal[qc_normal['aging_bucket'] == bucket]
         elif page == 'vendor_detail':
             vendor, zone = st.session_state.vendor_name, st.session_state.vendor_zone
-            title = f"📍 {vendor[:30]}"
+            title = f"📍 {str(vendor)[:30]}"
             data_view = pk_normal[pk_normal['vendor'] == vendor] if zone == 'PK Zone' else qc_normal[qc_normal['vendor'] == vendor]
         elif page == 'handover_aging_detail':
             bucket = st.session_state.handover_bucket
@@ -1086,7 +1000,7 @@ try:
             data_view = handover[handover['aging_bucket'] == bucket]
         elif page == 'search_vendor_orders':
             vendor = st.session_state.search_result_vendor
-            title = f"🏪 {vendor[:40]}"
+            title = f"🏪 {str(vendor)[:40]}"
             data_view = all_data[all_data['vendor'] == vendor]
         else:
             title, data_view = "📋 Orders", approved
