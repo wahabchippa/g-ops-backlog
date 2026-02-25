@@ -541,22 +541,59 @@ def load_3pl_sheet(sheet_name):
     encoded_name = urllib.parse.quote(sheet_name)
     url = f"https://docs.google.com/spreadsheets/d/{TPL_SHEET_ID}/gviz/tq?tqx=out:csv&sheet={encoded_name}"
     try:
-        df = pd.read_csv(url, low_memory=False)
+        # Load with no header so we get raw rows with positional access
+        df = pd.read_csv(url, header=None, low_memory=False)
         return df
     except Exception as e:
         return pd.DataFrame()
 
-# Provider -> Sheet tab mapping
-TPL_PROVIDERS = {
-    "GLOBAL EXPRESS (QC CENTER)": "GE QC Center & Zone",
-    "GLOBAL EXPRESS (ZONES)":     "GE QC Center & Zone",
-    "ECL LOGISTICS (QC CENTER)":  "ECL QC Center & Zone",
-    "ECL LOGISTICS (ZONES)":      "ECL QC Center & Zone",
-    "KERRY LOGISTICS":            "Kerry Logistics",
-    "APX EXPRESS":                "APX Express",
+# Provider config:
+# sheet      = tab name in Google Sheet
+# marker     = text in col A that identifies this provider's section header row
+# total_marker = text in col A that identifies the TOTAL SUMMARY row for this provider
+# day_col_start = 0-indexed column index where Monday's first metric (Orders) starts
+# Each day has 5 columns: Orders, Boxes, Weight, <20kg, 20kg+
+TPL_PROVIDER_CONFIG = {
+    "GLOBAL EXPRESS (QC CENTER)": {
+        "sheet": "GE QC Center & Zone",
+        "section_marker": "GLOBAL EXPRESS (QC CENTER)",
+        "total_marker": "TOTAL SUMMARY",
+        "day_col_start": 1,   # col B = index 1
+    },
+    "GLOBAL EXPRESS (ZONES)": {
+        "sheet": "GE QC Center & Zone",
+        "section_marker": "GLOBAL EXPRESS (ZONES)",
+        "total_marker": "TOTAL SUMMARY",
+        "day_col_start": 1,
+    },
+    "ECL LOGISTICS (QC CENTER)": {
+        "sheet": "ECL QC Center & Zone",
+        "section_marker": "ECL LOGISTICS (QC CENTER)",
+        "total_marker": "TOTAL SUMMARY",
+        "day_col_start": 1,
+    },
+    "ECL LOGISTICS (ZONES)": {
+        "sheet": "ECL QC Center & Zone",
+        "section_marker": "ECL LOGISTICS (ZONES)",
+        "total_marker": "TOTAL SUMMARY",
+        "day_col_start": 1,
+    },
+    "KERRY LOGISTICS": {
+        "sheet": "Kerry",
+        "section_marker": "KERRY LOGISTICS",
+        "total_marker": "TOTAL SUMMARY",
+        "day_col_start": 1,
+    },
+    "APX EXPRESS": {
+        "sheet": "APX",
+        "section_marker": "APX EXPRESS",
+        "total_marker": "TOTAL SUMMARY",
+        "day_col_start": 1,
+    },
 }
 
-# Which providers come from which sheet (to load once)
+# Which sheets to load (unique)
+TPL_PROVIDERS = {k: v["sheet"] for k, v in TPL_PROVIDER_CONFIG.items()}
 TPL_SHEETS_NEEDED = list(set(TPL_PROVIDERS.values()))
 
 BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
@@ -992,108 +1029,113 @@ try:
             
             st.markdown(f"<p style='color:#666;font-size:0.85rem;margin-bottom:20px;'>Showing week: <strong style='color:#a78bfa;'>{week_days[0].strftime('%d %b %Y')}</strong> → <strong style='color:#a78bfa;'>{week_days[6].strftime('%d %b %Y')}</strong></p>", unsafe_allow_html=True)
             
-            # --- Load all needed sheets once ---
+            # --- Load all needed sheets once (raw, no header) ---
             with st.spinner("Loading 3PL data from Google Sheets..."):
                 sheet_cache = {}
                 for sheet_name in TPL_SHEETS_NEEDED:
                     sheet_cache[sheet_name] = load_3pl_sheet(sheet_name)
             
-            # --- Helper: aggregate metrics for a provider+sheet for a given date ---
-            def get_day_metrics(sheet_df, provider_label, date_str):
+            # ⚠️ Note: sheet_cache values are raw DataFrames with no header row (header=None)
+            # Row indices are 0-based. Col A = index 0, Col B = index 1, etc.
+            
+            # --- Helper: get TOTAL SUMMARY row for a provider section ---
+            def get_provider_total_row(sheet_df, provider_label):
                 """
-                Returns dict with Orders, Boxes, Weight, lt20, gte20
-                Tries to find a date column and filter rows by provider if needed.
-                Adjust column names below to match your actual sheet headers.
+                Sheet has multiple provider sections stacked vertically.
+                Each section starts with a header row containing provider name in col A (col index 0).
+                TOTAL SUMMARY row comes after region rows within that section.
+                We find the section start, then find the NEXT TOTAL SUMMARY row after it.
                 """
-                if sheet_df.empty:
-                    return {"Orders": 0, "Boxes": 0, "Weight": 0.0, "<20kg": 0, "20kg+": 0}
-                
-                df_work = sheet_df.copy()
-                cols_lower = {c: c.lower().strip() for c in df_work.columns}
-                
-                # Try to find date column (common names)
-                date_col = None
-                for c in df_work.columns:
-                    cl = c.lower().strip()
-                    if cl in ['date', 'handover_date', 'pickup_date', 'created_date', 'dispatch_date']:
-                        date_col = c
-                        break
-                if date_col is None:
-                    for c in df_work.columns:
-                        if 'date' in c.lower():
-                            date_col = c
-                            break
-                
-                # Filter by date
-                if date_col:
-                    try:
-                        df_work[date_col] = pd.to_datetime(df_work[date_col], dayfirst=True, errors='coerce')
-                        target_date = pd.to_datetime(date_str)
-                        df_work = df_work[df_work[date_col].dt.date == target_date.date()]
-                    except:
-                        pass
-                
-                # Filter by provider type (QC CENTER vs ZONES) if sheet has both
-                if "QC CENTER" in provider_label and "ZONE" not in provider_label:
-                    for c in df_work.columns:
-                        cl = c.lower().strip()
-                        if cl in ['type', 'center_type', 'location_type', 'qc_type', 'category']:
-                            df_work = df_work[df_work[c].astype(str).str.upper().str.contains('QC|CENTER|QC CENTER', na=False)]
-                            break
-                elif "ZONE" in provider_label and "QC CENTER" not in provider_label:
-                    for c in df_work.columns:
-                        cl = c.lower().strip()
-                        if cl in ['type', 'center_type', 'location_type', 'qc_type', 'category']:
-                            df_work = df_work[df_work[c].astype(str).str.upper().str.contains('ZONE', na=False)]
-                            break
-                
-                # Find metric columns (flexible naming)
-                def find_col(keywords):
-                    for kw in keywords:
-                        for c in df_work.columns:
-                            if kw in c.lower().strip():
-                                return c
+                if sheet_df.empty or len(sheet_df.columns) < 5:
                     return None
                 
-                orders_col  = find_col(['orders', 'order_count', 'total_orders', 'shipments', 'no_of_orders'])
-                boxes_col   = find_col(['boxes', 'box_count', 'total_boxes', 'no_of_boxes', 'parcels'])
-                weight_col  = find_col(['weight', 'total_weight', 'kg', 'gross_weight'])
-                lt20_col    = find_col(['<20', 'lt_20', 'below_20', 'under_20', 'less_20'])
-                gte20_col   = find_col(['20+', '>=20', 'gte_20', 'above_20', 'over_20', 'more_20'])
+                cfg = TPL_PROVIDER_CONFIG[provider_label]
+                section_marker = cfg["section_marker"].upper().strip()
                 
-                def safe_sum(col):
-                    if col and col in df_work.columns:
-                        try:
-                            return pd.to_numeric(df_work[col], errors='coerce').fillna(0).sum()
-                        except:
+                col_a = sheet_df.iloc[:, 0].astype(str).str.upper().str.strip()
+                
+                # Find section header row
+                section_start = None
+                for i, val in enumerate(col_a):
+                    if section_marker in val:
+                        section_start = i
+                        break
+                
+                if section_start is None:
+                    # Try partial match
+                    # Extract key words from marker
+                    key_words = section_marker.replace('(', '').replace(')', '').split()
+                    for i, val in enumerate(col_a):
+                        if all(w in val for w in key_words):
+                            section_start = i
+                            break
+                
+                if section_start is None:
+                    return None
+                
+                # Find TOTAL SUMMARY row after section_start
+                for i in range(section_start + 1, min(section_start + 30, len(sheet_df))):
+                    val = str(sheet_df.iloc[i, 0]).upper().strip()
+                    if 'TOTAL' in val and 'SUMMARY' in val:
+                        return sheet_df.iloc[i]
+                    # Also accept just TOTAL
+                    if val.startswith('TOTAL'):
+                        return sheet_df.iloc[i]
+                
+                return None
+            
+            # --- Get metrics for a provider for a specific day index (0=Mon, 6=Sun) ---
+            def get_provider_day_metrics(sheet_df, provider_label, day_index):
+                """
+                day_index: 0=Monday, 1=Tuesday, ..., 6=Sunday
+                Each day has 5 columns: Orders, Boxes, Weight, <20kg, 20kg+
+                Starting at day_col_start (col index 1 = B)
+                So Monday = cols 1,2,3,4,5 | Tuesday = cols 6,7,8,9,10 | etc.
+                """
+                total_row = get_provider_total_row(sheet_df, provider_label)
+                
+                if total_row is None:
+                    return {"Orders": 0, "Boxes": 0, "Weight": 0.0, "<20kg": 0, "20kg+": 0}
+                
+                cfg = TPL_PROVIDER_CONFIG[provider_label]
+                base = cfg["day_col_start"]  # e.g. 1 for col B
+                
+                # Column offsets within each day block: Orders=0, Boxes=1, Weight=2, <20kg=3, 20kg+=4
+                day_base = base + (day_index * 5)
+                
+                def safe_val(col_idx, is_float=False):
+                    try:
+                        if col_idx >= len(total_row):
                             return 0
-                    return 0
+                        v = total_row.iloc[col_idx]
+                        if pd.isna(v) or str(v).strip() in ['', '-', '—', 'nan']:
+                            return 0
+                        return round(float(str(v).replace(',', '')), 1) if is_float else int(float(str(v).replace(',', '')))
+                    except:
+                        return 0
                 
-                orders  = int(safe_sum(orders_col)) if orders_col else len(df_work)
-                boxes   = int(safe_sum(boxes_col))
-                weight  = round(float(safe_sum(weight_col)), 1)
-                lt20    = int(safe_sum(lt20_col))
-                gte20   = int(safe_sum(gte20_col))
-                
-                return {"Orders": orders, "Boxes": boxes, "Weight": weight, "<20kg": lt20, "20kg+": gte20}
+                return {
+                    "Orders": safe_val(day_base + 0),
+                    "Boxes":  safe_val(day_base + 1),
+                    "Weight": safe_val(day_base + 2, is_float=True),
+                    "<20kg":  safe_val(day_base + 3),
+                    "20kg+":  safe_val(day_base + 4),
+                }
             
             # --- Build table data ---
-            providers_list = list(TPL_PROVIDERS.keys())
+            providers_list = list(TPL_PROVIDER_CONFIG.keys())
             metrics_keys = ["Orders", "Boxes", "Weight", "<20kg", "20kg+"]
             
-            # table_data[provider][day_str] = {Orders, Boxes, Weight, <20kg, 20kg+}
+            # table_data[provider][day_index] = {Orders, Boxes, Weight, <20kg, 20kg+}
             table_data = {}
             for prov in providers_list:
-                sheet_name = TPL_PROVIDERS[prov]
+                sheet_name = TPL_PROVIDER_CONFIG[prov]["sheet"]
                 sheet_df   = sheet_cache.get(sheet_name, pd.DataFrame())
                 table_data[prov] = {}
-                for ds in day_strs:
-                    table_data[prov][ds] = get_day_metrics(sheet_df, prov, ds)
+                for day_idx in range(7):
+                    table_data[prov][day_idx] = get_provider_day_metrics(sheet_df, prov, day_idx)
             
             # --- Build HTML table ---
-            # Header row 1: Provider | Mon (5 cols) | Tue (5 cols) | ... | Total (5 cols)
-            # Header row 2: sub-cols
-            
             metric_short = {"Orders": "Ord", "Boxes": "Box", "Weight": "Wt", "<20kg": "<20", "20kg+": "20+"}
             
             html = '<div class="tpl-table-wrapper"><table class="tpl-table">'
@@ -1118,7 +1160,7 @@ try:
             html += '<tbody>'
             
             # Grand totals across all providers
-            grand_day_totals = {ds: {mk: 0 for mk in metrics_keys} for ds in day_strs}
+            grand_day_totals = {day_idx: {mk: 0 for mk in metrics_keys} for day_idx in range(7)}
             grand_week_total = {mk: 0 for mk in metrics_keys}
             
             for prov in providers_list:
@@ -1127,12 +1169,12 @@ try:
                 
                 prov_week_total = {mk: 0 for mk in metrics_keys}
                 
-                for ds in day_strs:
-                    day_m = table_data[prov][ds]
+                for day_idx in range(7):
+                    day_m = table_data[prov][day_idx]
                     for mk in metrics_keys:
                         val = day_m[mk]
                         prov_week_total[mk] += val
-                        grand_day_totals[ds][mk] += val
+                        grand_day_totals[day_idx][mk] += val
                         
                         if val == 0:
                             html += f'<td class="tpl-zero">—</td>'
@@ -1155,9 +1197,9 @@ try:
             # Grand total row
             html += '<tr class="total-row">'
             html += '<td class="provider-name">🏆 GRAND TOTAL</td>'
-            for ds in day_strs:
+            for day_idx in range(7):
                 for mk in metrics_keys:
-                    val = grand_day_totals[ds][mk]
+                    val = grand_day_totals[day_idx][mk]
                     if val == 0:
                         html += f'<td class="tpl-zero">—</td>'
                     else:
