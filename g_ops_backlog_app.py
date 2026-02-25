@@ -303,34 +303,41 @@ st.markdown("""
         margin-bottom: 0.8rem;
     }
     
-    /* ===== AGING CARDS ===== */
-    .aging-card {
+    /* ===== AGING GRID - FIXED ===== */
+    .aging-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .aging-item {
         background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         border: 1px solid #475569;
-        border-radius: 12px;
-        padding: 1rem;
+        border-radius: 10px;
+        padding: 10px 8px;
         text-align: center;
         cursor: pointer;
         transition: all 0.3s ease;
     }
     
-    .aging-card:hover {
-        background: linear-gradient(135deg, #334155 0%, #475569 100%);
+    .aging-item:hover {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         border-color: #3b82f6;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+        transform: scale(1.05);
     }
     
-    .aging-card .bucket {
+    .aging-item .bucket-name {
         color: #94a3b8;
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         font-weight: 600;
-        margin-bottom: 0.3rem;
+        margin-bottom: 2px;
+        white-space: nowrap;
     }
     
-    .aging-card .count {
+    .aging-item .bucket-count {
         color: #ffffff;
-        font-size: 1.5rem;
+        font-size: 1.1rem;
         font-weight: 800;
     }
     
@@ -645,7 +652,7 @@ with st.sidebar:
 # HELPER FUNCTIONS
 # ============================================
 def render_aging_pivot(data, title, zone_key):
-    """Render aging analysis with clickable buckets"""
+    """Render aging analysis with clickable buttons - 2 rows of 4"""
     bucket_order = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
                     '6-7 days', '8-10 days', '11-15 days', '16-20 days', 
                     '21-25 days', '26-30 days', '30+ days']
@@ -654,20 +661,34 @@ def render_aging_pivot(data, title, zone_key):
     
     st.markdown(f'<div class="aging-section-title">{title}</div>', unsafe_allow_html=True)
     
-    cols = st.columns(len(bucket_order))
-    for i, bucket in enumerate(bucket_order):
+    # Row 1: First 7 buckets (0-6-7 days)
+    cols1 = st.columns(7)
+    for i, bucket in enumerate(bucket_order[:7]):
         count = aging_counts.get(bucket, 0)
-        with cols[i]:
-            if st.button(f"{bucket}\n**{count}**", key=f"aging_{zone_key}_{bucket}", use_container_width=True):
+        with cols1[i]:
+            short_label = bucket.replace(' days', 'd').replace(' day', 'd')
+            if st.button(f"{short_label}\n{count}", key=f"aging_{zone_key}_{bucket}", use_container_width=True):
+                st.session_state.page = 'aging_detail'
+                st.session_state.aging_zone = zone_key
+                st.session_state.aging_bucket = bucket
+                st.rerun()
+    
+    # Row 2: Remaining 6 buckets
+    cols2 = st.columns(6)
+    for i, bucket in enumerate(bucket_order[7:]):
+        count = aging_counts.get(bucket, 0)
+        with cols2[i]:
+            short_label = bucket.replace(' days', 'd')
+            if st.button(f"{short_label}\n{count}", key=f"aging_{zone_key}_{bucket}", use_container_width=True):
                 st.session_state.page = 'aging_detail'
                 st.session_state.aging_zone = zone_key
                 st.session_state.aging_bucket = bucket
                 st.rerun()
 
-def render_vendor_table(data, zone_key):
+def render_vendor_table(data, zone_key, limit=10):
     """Render vendor table with counts and comments"""
     vendor_counts = data.groupby('vendor').size().reset_index(name='count')
-    vendor_counts = vendor_counts.sort_values('count', ascending=False)
+    vendor_counts = vendor_counts.sort_values('count', ascending=False).head(limit)
     
     comment_options = ['--', 'today', 'update', 'Tuesday', 'Thursday', 'Saturday', 'NOT Response', 'MOVE to WH', '❌ Remove']
     
@@ -678,7 +699,7 @@ def render_vendor_table(data, zone_key):
         col1, col2, col3 = st.columns([3, 1, 2])
         
         with col1:
-            if st.button(f"🏪 {vendor}", key=f"vendor_{zone_key}_{vendor}", use_container_width=True):
+            if st.button(f"🏪 {vendor[:20]}", key=f"vendor_{zone_key}_{vendor}", use_container_width=True):
                 st.session_state.page = 'vendor_detail'
                 st.session_state.vendor_name = vendor
                 st.session_state.vendor_zone = zone_key
@@ -809,14 +830,14 @@ if st.session_state.page == 'home':
         render_aging_pivot(pk_zone, "Aging Analysis", "pk_zone")
         st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
         st.markdown("**Top Vendors**")
-        render_vendor_table(pk_zone.head(50), "pk_zone")
+        render_vendor_table(pk_zone, "pk_zone", limit=10)
     
     with col3:
         st.markdown('<div class="section-title">🏢 QC Center</div>', unsafe_allow_html=True)
         render_aging_pivot(qc_center, "Aging Analysis", "qc_center")
         st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
         st.markdown("**Top Vendors**")
-        render_vendor_table(qc_center.head(50), "qc_center")
+        render_vendor_table(qc_center, "qc_center", limit=10)
 
 # ============================================
 # HANDOVER PAGE
@@ -833,7 +854,7 @@ elif st.session_state.page == 'handover':
         </div>
     """, unsafe_allow_html=True)
     
-    render_aging_pivot(handover_df, "Aging Analysis", "handover")
+    render_aging_pivot(handover_df, "Aging Analysis", "handover_page")
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     render_orders_table(handover_df)
 
@@ -852,10 +873,10 @@ elif st.session_state.page == 'pk_normal':
         </div>
     """, unsafe_allow_html=True)
     
-    render_aging_pivot(pk_normal, "Aging Analysis", "pk_normal")
+    render_aging_pivot(pk_normal, "Aging Analysis", "pk_normal_page")
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     st.markdown("**Vendors**")
-    render_vendor_table(pk_normal, "pk_normal")
+    render_vendor_table(pk_normal, "pk_normal_v", limit=50)
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     render_orders_table(pk_normal)
 
@@ -874,10 +895,10 @@ elif st.session_state.page == 'pk_ai':
         </div>
     """, unsafe_allow_html=True)
     
-    render_aging_pivot(pk_ai, "Aging Analysis", "pk_ai")
+    render_aging_pivot(pk_ai, "Aging Analysis", "pk_ai_page")
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     st.markdown("**Vendors**")
-    render_vendor_table(pk_ai, "pk_ai")
+    render_vendor_table(pk_ai, "pk_ai_v", limit=50)
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     render_orders_table(pk_ai)
 
@@ -896,10 +917,10 @@ elif st.session_state.page == 'qc_normal':
         </div>
     """, unsafe_allow_html=True)
     
-    render_aging_pivot(qc_normal, "Aging Analysis", "qc_normal")
+    render_aging_pivot(qc_normal, "Aging Analysis", "qc_normal_page")
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     st.markdown("**Vendors**")
-    render_vendor_table(qc_normal, "qc_normal")
+    render_vendor_table(qc_normal, "qc_normal_v", limit=50)
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     render_orders_table(qc_normal)
 
@@ -918,10 +939,10 @@ elif st.session_state.page == 'qc_ai':
         </div>
     """, unsafe_allow_html=True)
     
-    render_aging_pivot(qc_ai, "Aging Analysis", "qc_ai")
+    render_aging_pivot(qc_ai, "Aging Analysis", "qc_ai_page")
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     st.markdown("**Vendors**")
-    render_vendor_table(qc_ai, "qc_ai")
+    render_vendor_table(qc_ai, "qc_ai_v", limit=50)
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     render_orders_table(qc_ai)
 
@@ -936,28 +957,26 @@ elif st.session_state.page == 'aging_detail':
     zone = st.session_state.aging_zone
     bucket = st.session_state.aging_bucket
     
-    # Get correct dataset
-    if zone == 'handover':
-        data = handover_df[handover_df['aging_bucket'] == bucket]
-        title = f"📦 Handover - {bucket}"
-    elif zone == 'pk_zone':
-        data = pk_zone[pk_zone['aging_bucket'] == bucket]
-        title = f"🇵🇰 PK Zone - {bucket}"
-    elif zone == 'qc_center':
-        data = qc_center[qc_center['aging_bucket'] == bucket]
-        title = f"🏢 QC Center - {bucket}"
-    elif zone == 'pk_normal':
-        data = pk_normal[pk_normal['aging_bucket'] == bucket]
-        title = f"🇵🇰 PK Zone Normal - {bucket}"
-    elif zone == 'pk_ai':
-        data = pk_ai[pk_ai['aging_bucket'] == bucket]
-        title = f"🇵🇰 PK Zone AI - {bucket}"
-    elif zone == 'qc_normal':
-        data = qc_normal[qc_normal['aging_bucket'] == bucket]
-        title = f"🏢 QC Center Normal - {bucket}"
-    elif zone == 'qc_ai':
-        data = qc_ai[qc_ai['aging_bucket'] == bucket]
-        title = f"🏢 QC Center AI - {bucket}"
+    # Get correct dataset based on zone
+    zone_map = {
+        'handover': (handover_df, "📦 Handover"),
+        'handover_page': (handover_df, "📦 Handover"),
+        'pk_zone': (pk_zone, "🇵🇰 PK Zone"),
+        'qc_center': (qc_center, "🏢 QC Center"),
+        'pk_normal': (pk_normal, "🇵🇰 PK Zone Normal"),
+        'pk_normal_page': (pk_normal, "🇵🇰 PK Zone Normal"),
+        'pk_ai': (pk_ai, "🇵🇰 PK Zone AI"),
+        'pk_ai_page': (pk_ai, "🇵🇰 PK Zone AI"),
+        'qc_normal': (qc_normal, "🏢 QC Center Normal"),
+        'qc_normal_page': (qc_normal, "🏢 QC Center Normal"),
+        'qc_ai': (qc_ai, "🏢 QC Center AI"),
+        'qc_ai_page': (qc_ai, "🏢 QC Center AI"),
+    }
+    
+    if zone in zone_map:
+        base_data, zone_label = zone_map[zone]
+        data = base_data[base_data['aging_bucket'] == bucket]
+        title = f"{zone_label} - {bucket}"
     else:
         data = pd.DataFrame()
         title = "Orders"
@@ -983,24 +1002,22 @@ elif st.session_state.page == 'vendor_detail':
     zone = st.session_state.vendor_zone
     
     # Get correct dataset
-    if zone == 'pk_zone':
-        data = pk_zone[pk_zone['vendor'].astype(str) == vendor]
-        zone_label = "PK Zone"
-    elif zone == 'qc_center':
-        data = qc_center[qc_center['vendor'].astype(str) == vendor]
-        zone_label = "QC Center"
-    elif zone == 'pk_normal':
-        data = pk_normal[pk_normal['vendor'].astype(str) == vendor]
-        zone_label = "PK Zone Normal"
-    elif zone == 'pk_ai':
-        data = pk_ai[pk_ai['vendor'].astype(str) == vendor]
-        zone_label = "PK Zone AI"
-    elif zone == 'qc_normal':
-        data = qc_normal[qc_normal['vendor'].astype(str) == vendor]
-        zone_label = "QC Center Normal"
-    elif zone == 'qc_ai':
-        data = qc_ai[qc_ai['vendor'].astype(str) == vendor]
-        zone_label = "QC Center AI"
+    zone_map = {
+        'pk_zone': (pk_zone, "PK Zone"),
+        'qc_center': (qc_center, "QC Center"),
+        'pk_normal': (pk_normal, "PK Zone Normal"),
+        'pk_normal_v': (pk_normal, "PK Zone Normal"),
+        'pk_ai': (pk_ai, "PK Zone AI"),
+        'pk_ai_v': (pk_ai, "PK Zone AI"),
+        'qc_normal': (qc_normal, "QC Center Normal"),
+        'qc_normal_v': (qc_normal, "QC Center Normal"),
+        'qc_ai': (qc_ai, "QC Center AI"),
+        'qc_ai_v': (qc_ai, "QC Center AI"),
+    }
+    
+    if zone in zone_map:
+        base_data, zone_label = zone_map[zone]
+        data = base_data[base_data['vendor'].astype(str) == vendor]
     else:
         data = pd.DataFrame()
         zone_label = ""
@@ -1012,6 +1029,6 @@ elif st.session_state.page == 'vendor_detail':
         </div>
     """, unsafe_allow_html=True)
     
-    render_aging_pivot(data, "Aging Analysis", f"vendor_{zone}")
+    render_aging_pivot(data, "Aging Analysis", f"vendor_{zone}_detail")
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
     render_orders_table(data)
