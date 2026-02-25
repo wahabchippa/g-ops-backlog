@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
+import urllib.parse
 
 # Page config - NO initial_sidebar_state
 st.set_page_config(page_title="G-Ops Backlog Dashboard", page_icon="⚡", layout="wide")
@@ -340,11 +341,95 @@ h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
     color: #c4b5fd;
     font-size: 0.85rem;
 }
+
+/* 3PL SUMMARY TABLE STYLES */
+.tpl-table-wrapper {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid #2a2a2a;
+    margin-top: 20px;
+}
+.tpl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.tpl-table th {
+    background: #1a1a2e;
+    color: #a78bfa;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 10px;
+    border: 1px solid #2a2a3a;
+    text-align: center;
+    font-size: 0.75rem;
+}
+.tpl-table th.provider-header {
+    background: #0f0f1a;
+    color: #e0e0e0;
+    text-align: left;
+    min-width: 180px;
+}
+.tpl-table th.day-group {
+    background: #111827;
+    color: #60a5fa;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #3b82f6;
+}
+.tpl-table td {
+    padding: 10px 10px;
+    border: 1px solid #1f1f1f;
+    text-align: center;
+    color: #c0c0c0;
+    font-size: 0.82rem;
+}
+.tpl-table td.provider-name {
+    text-align: left;
+    font-weight: 700;
+    color: #f0f0f0;
+    background: #111111;
+    padding-left: 14px;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+}
+.tpl-table tr:nth-child(even) td {
+    background: #0f0f0f;
+}
+.tpl-table tr:nth-child(odd) td {
+    background: #141414;
+}
+.tpl-table tr:hover td {
+    background: #1c1c2e !important;
+}
+.tpl-table td.provider-name:hover {
+    background: #1c1c2e !important;
+}
+.tpl-table .total-row td {
+    background: #1a1a2e !important;
+    color: #7eed9e;
+    font-weight: 800;
+    border-top: 2px solid #2d6a2d;
+}
+.tpl-table .total-row td.provider-name {
+    color: #7eed9e;
+    background: #0f1a0f !important;
+}
+.tpl-value-highlight {
+    color: #ffffff;
+    font-weight: 700;
+}
+.tpl-zero {
+    color: #3a3a3a;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # Data Loading
 SHEET_ID = "1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o"
+TPL_SHEET_ID = "1V03fqI2tGbY3ImkQaoZGwJ98iyrN4z_GXRKRP023zUY"
 
 @st.cache_data(ttl=600, show_spinner=False)
 def load_ai_fleek_ids():
@@ -449,6 +534,31 @@ def process_data(df):
         'qc_normal': qc_normal, 'qc_ai': qc_ai, 'all_data': all_data
     }
 
+# ==================== 3PL DATA LOADING ====================
+@st.cache_data(ttl=300, show_spinner=False)
+def load_3pl_sheet(sheet_name):
+    """Load a single tab from the 3PL Google Sheet using URL-encoded sheet name"""
+    encoded_name = urllib.parse.quote(sheet_name)
+    url = f"https://docs.google.com/spreadsheets/d/{TPL_SHEET_ID}/gviz/tq?tqx=out:csv&sheet={encoded_name}"
+    try:
+        df = pd.read_csv(url, low_memory=False)
+        return df
+    except Exception as e:
+        return pd.DataFrame()
+
+# Provider -> Sheet tab mapping
+TPL_PROVIDERS = {
+    "GLOBAL EXPRESS (QC CENTER)": "GE QC Center & Zone",
+    "GLOBAL EXPRESS (ZONES)":     "GE QC Center & Zone",
+    "ECL LOGISTICS (QC CENTER)":  "ECL QC Center & Zone",
+    "ECL LOGISTICS (ZONES)":      "ECL QC Center & Zone",
+    "KERRY LOGISTICS":            "Kerry Logistics",
+    "APX EXPRESS":                "APX Express",
+}
+
+# Which providers come from which sheet (to load once)
+TPL_SHEETS_NEEDED = list(set(TPL_PROVIDERS.values()))
+
 BUCKET_ORDER = ['0 days', '1 day', '2 days', '3 days', '4 days', '5 days', 
                 '6-7 days', '8-10 days', '11-15 days', '16-20 days', 
                 '21-25 days', '26-30 days', '30+ days']
@@ -493,6 +603,10 @@ try:
             
             if st.button("🏠 Dashboard Home", key="sb_home", use_container_width=True):
                 st.session_state.page = 'home'
+                st.rerun()
+            
+            if st.button("🚀 3PL Summary", key="sb_3pl", use_container_width=True):
+                st.session_state.page = '3pl_summary'
                 st.rerun()
             
             st.markdown('<p style="color:#F59E0B;font-size:0.75rem;font-weight:700;margin:20px 0 10px 0;">🚚 HANDOVER</p>', unsafe_allow_html=True)
@@ -838,6 +952,247 @@ try:
                         st.session_state.vendor_comments[vendor_key] = sel
             
             st.markdown(f"<p style='color:#888888;font-size:0.9rem;margin-top:20px;'>{len(pk_vendor_counts)} vendors | {len(pk_normal):,} total orders</p>", unsafe_allow_html=True)
+
+        # ==================== 3PL WEEKLY SUMMARY PAGE ====================
+        elif st.session_state.page == '3pl_summary':
+            
+            if st.button("← Back to Dashboard", key="back_3pl"):
+                st.session_state.page = 'home'
+                st.rerun()
+            
+            st.markdown("""
+                <div class="main-header-container" style="margin-top:15px;">
+                    <div class="main-header-title">
+                        <span class="main-header-icon">🚀</span>
+                        <span class="main-header-text" style="font-size:36px;">3PL Weekly Summary</span>
+                    </div>
+                    <p class="main-header-subtitle">📦 Logistics Partner Performance | Weekly Aggregated View</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<hr>", unsafe_allow_html=True)
+            
+            # --- Week selector: default = current week's Monday ---
+            today = datetime.now().date()
+            days_since_monday = today.weekday()  # Monday=0, Sunday=6
+            default_monday = today - timedelta(days=days_since_monday)
+            
+            dc1, dc2 = st.columns([2, 4])
+            with dc1:
+                selected_monday = st.date_input(
+                    "📅 Week Start (Monday)",
+                    value=default_monday,
+                    key="tpl_week_start"
+                )
+            
+            # Build 7 days Mon-Sun
+            week_days = [selected_monday + timedelta(days=i) for i in range(7)]
+            day_labels = [d.strftime("%a %d %b") for d in week_days]
+            day_strs   = [d.strftime("%Y-%m-%d") for d in week_days]
+            
+            st.markdown(f"<p style='color:#666;font-size:0.85rem;margin-bottom:20px;'>Showing week: <strong style='color:#a78bfa;'>{week_days[0].strftime('%d %b %Y')}</strong> → <strong style='color:#a78bfa;'>{week_days[6].strftime('%d %b %Y')}</strong></p>", unsafe_allow_html=True)
+            
+            # --- Load all needed sheets once ---
+            with st.spinner("Loading 3PL data from Google Sheets..."):
+                sheet_cache = {}
+                for sheet_name in TPL_SHEETS_NEEDED:
+                    sheet_cache[sheet_name] = load_3pl_sheet(sheet_name)
+            
+            # --- Helper: aggregate metrics for a provider+sheet for a given date ---
+            def get_day_metrics(sheet_df, provider_label, date_str):
+                """
+                Returns dict with Orders, Boxes, Weight, lt20, gte20
+                Tries to find a date column and filter rows by provider if needed.
+                Adjust column names below to match your actual sheet headers.
+                """
+                if sheet_df.empty:
+                    return {"Orders": 0, "Boxes": 0, "Weight": 0.0, "<20kg": 0, "20kg+": 0}
+                
+                df_work = sheet_df.copy()
+                cols_lower = {c: c.lower().strip() for c in df_work.columns}
+                
+                # Try to find date column (common names)
+                date_col = None
+                for c in df_work.columns:
+                    cl = c.lower().strip()
+                    if cl in ['date', 'handover_date', 'pickup_date', 'created_date', 'dispatch_date']:
+                        date_col = c
+                        break
+                if date_col is None:
+                    for c in df_work.columns:
+                        if 'date' in c.lower():
+                            date_col = c
+                            break
+                
+                # Filter by date
+                if date_col:
+                    try:
+                        df_work[date_col] = pd.to_datetime(df_work[date_col], dayfirst=True, errors='coerce')
+                        target_date = pd.to_datetime(date_str)
+                        df_work = df_work[df_work[date_col].dt.date == target_date.date()]
+                    except:
+                        pass
+                
+                # Filter by provider type (QC CENTER vs ZONES) if sheet has both
+                if "QC CENTER" in provider_label and "ZONE" not in provider_label:
+                    for c in df_work.columns:
+                        cl = c.lower().strip()
+                        if cl in ['type', 'center_type', 'location_type', 'qc_type', 'category']:
+                            df_work = df_work[df_work[c].astype(str).str.upper().str.contains('QC|CENTER|QC CENTER', na=False)]
+                            break
+                elif "ZONE" in provider_label and "QC CENTER" not in provider_label:
+                    for c in df_work.columns:
+                        cl = c.lower().strip()
+                        if cl in ['type', 'center_type', 'location_type', 'qc_type', 'category']:
+                            df_work = df_work[df_work[c].astype(str).str.upper().str.contains('ZONE', na=False)]
+                            break
+                
+                # Find metric columns (flexible naming)
+                def find_col(keywords):
+                    for kw in keywords:
+                        for c in df_work.columns:
+                            if kw in c.lower().strip():
+                                return c
+                    return None
+                
+                orders_col  = find_col(['orders', 'order_count', 'total_orders', 'shipments', 'no_of_orders'])
+                boxes_col   = find_col(['boxes', 'box_count', 'total_boxes', 'no_of_boxes', 'parcels'])
+                weight_col  = find_col(['weight', 'total_weight', 'kg', 'gross_weight'])
+                lt20_col    = find_col(['<20', 'lt_20', 'below_20', 'under_20', 'less_20'])
+                gte20_col   = find_col(['20+', '>=20', 'gte_20', 'above_20', 'over_20', 'more_20'])
+                
+                def safe_sum(col):
+                    if col and col in df_work.columns:
+                        try:
+                            return pd.to_numeric(df_work[col], errors='coerce').fillna(0).sum()
+                        except:
+                            return 0
+                    return 0
+                
+                orders  = int(safe_sum(orders_col)) if orders_col else len(df_work)
+                boxes   = int(safe_sum(boxes_col))
+                weight  = round(float(safe_sum(weight_col)), 1)
+                lt20    = int(safe_sum(lt20_col))
+                gte20   = int(safe_sum(gte20_col))
+                
+                return {"Orders": orders, "Boxes": boxes, "Weight": weight, "<20kg": lt20, "20kg+": gte20}
+            
+            # --- Build table data ---
+            providers_list = list(TPL_PROVIDERS.keys())
+            metrics_keys = ["Orders", "Boxes", "Weight", "<20kg", "20kg+"]
+            
+            # table_data[provider][day_str] = {Orders, Boxes, Weight, <20kg, 20kg+}
+            table_data = {}
+            for prov in providers_list:
+                sheet_name = TPL_PROVIDERS[prov]
+                sheet_df   = sheet_cache.get(sheet_name, pd.DataFrame())
+                table_data[prov] = {}
+                for ds in day_strs:
+                    table_data[prov][ds] = get_day_metrics(sheet_df, prov, ds)
+            
+            # --- Build HTML table ---
+            # Header row 1: Provider | Mon (5 cols) | Tue (5 cols) | ... | Total (5 cols)
+            # Header row 2: sub-cols
+            
+            metric_short = {"Orders": "Ord", "Boxes": "Box", "Weight": "Wt", "<20kg": "<20", "20kg+": "20+"}
+            
+            html = '<div class="tpl-table-wrapper"><table class="tpl-table">'
+            
+            # Row 1: day group headers
+            html += '<thead><tr>'
+            html += '<th class="provider-header" rowspan="2">Provider</th>'
+            for dl in day_labels:
+                html += f'<th class="day-group" colspan="5">{dl}</th>'
+            html += '<th class="day-group" colspan="5">📊 TOTAL</th>'
+            html += '</tr>'
+            
+            # Row 2: metric sub-headers
+            html += '<tr>'
+            total_cols = len(day_labels) + 1  # 7 days + 1 total
+            for _ in range(total_cols):
+                for mk in metrics_keys:
+                    html += f'<th>{metric_short[mk]}</th>'
+            html += '</tr></thead>'
+            
+            # Body rows
+            html += '<tbody>'
+            
+            # Grand totals across all providers
+            grand_day_totals = {ds: {mk: 0 for mk in metrics_keys} for ds in day_strs}
+            grand_week_total = {mk: 0 for mk in metrics_keys}
+            
+            for prov in providers_list:
+                html += '<tr>'
+                html += f'<td class="provider-name">{prov}</td>'
+                
+                prov_week_total = {mk: 0 for mk in metrics_keys}
+                
+                for ds in day_strs:
+                    day_m = table_data[prov][ds]
+                    for mk in metrics_keys:
+                        val = day_m[mk]
+                        prov_week_total[mk] += val
+                        grand_day_totals[ds][mk] += val
+                        
+                        if val == 0:
+                            html += f'<td class="tpl-zero">—</td>'
+                        else:
+                            disp = f"{val:,.1f}" if mk == "Weight" else f"{val:,}"
+                            html += f'<td class="tpl-value-highlight">{disp}</td>'
+                
+                # Provider week total
+                for mk in metrics_keys:
+                    val = prov_week_total[mk]
+                    grand_week_total[mk] += val
+                    if val == 0:
+                        html += f'<td class="tpl-zero">—</td>'
+                    else:
+                        disp = f"{val:,.1f}" if mk == "Weight" else f"{val:,}"
+                        html += f'<td class="tpl-value-highlight">{disp}</td>'
+                
+                html += '</tr>'
+            
+            # Grand total row
+            html += '<tr class="total-row">'
+            html += '<td class="provider-name">🏆 GRAND TOTAL</td>'
+            for ds in day_strs:
+                for mk in metrics_keys:
+                    val = grand_day_totals[ds][mk]
+                    if val == 0:
+                        html += f'<td class="tpl-zero">—</td>'
+                    else:
+                        disp = f"{val:,.1f}" if mk == "Weight" else f"{val:,}"
+                        html += f'<td>{disp}</td>'
+            for mk in metrics_keys:
+                val = grand_week_total[mk]
+                if val == 0:
+                    html += f'<td class="tpl-zero">—</td>'
+                else:
+                    disp = f"{val:,.1f}" if mk == "Weight" else f"{val:,}"
+                    html += f'<td>{disp}</td>'
+            html += '</tr>'
+            
+            html += '</tbody></table></div>'
+            
+            # Legend
+            html += """
+            <div style="margin-top:15px;padding:12px 18px;background:#111;border-radius:10px;border:1px solid #222;">
+                <span style="color:#666;font-size:0.78rem;font-weight:600;">
+                📌 Column Key: &nbsp;
+                <span style="color:#a78bfa;">Ord</span> = Orders &nbsp;|&nbsp;
+                <span style="color:#a78bfa;">Box</span> = Boxes &nbsp;|&nbsp;
+                <span style="color:#a78bfa;">Wt</span> = Weight (kg) &nbsp;|&nbsp;
+                <span style="color:#a78bfa;">&lt;20</span> = Below 20kg &nbsp;|&nbsp;
+                <span style="color:#a78bfa;">20+</span> = 20kg &amp; above &nbsp;|&nbsp;
+                <span style="color:#3a3a3a;">—</span> = No data / Zero
+                </span>
+            </div>
+            """
+            
+            st.markdown(html, unsafe_allow_html=True)
+            
+            st.markdown("<hr>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#444;font-size:0.78rem;text-align:center;'>Data refreshes every 5 minutes · 3PL Sheet ID: {TPL_SHEET_ID}</p>", unsafe_allow_html=True)
 
         # ==================== DETAIL PAGES ====================
         else:
