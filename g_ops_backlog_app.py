@@ -33,7 +33,10 @@ if 'search_result_vendor' not in st.session_state:
 # ==================== PROFESSIONAL CSS ====================
 st.markdown("""
 <style>
+/* ============ GOOGLE FONTS ============ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
 * { font-family: 'Inter', sans-serif !important; }
 
 /* ============ MAIN APP BACKGROUND ============ */
@@ -41,29 +44,45 @@ st.markdown("""
     background: linear-gradient(145deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%) !important;
 }
 
-/* Hide menu and footer only - keep header for sidebar arrow */
+/* Hide menu and footer only */
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
 
-/* ============ SIDEBAR ARROW BUTTON STYLING ============ */
+/* ============ FIX SIDEBAR ARROW - HIDE TEXT, SHOW CUSTOM ICON ============ */
 [data-testid="collapsedControl"] {
     background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%) !important;
     border: 1px solid #3b82f6 !important;
-    border-radius: 8px !important;
-    padding: 8px !important;
-    margin: 10px !important;
-}
-
-[data-testid="collapsedControl"] svg {
-    fill: #3b82f6 !important;
-    stroke: #3b82f6 !important;
-    width: 20px !important;
-    height: 20px !important;
+    border-radius: 10px !important;
+    padding: 10px 12px !important;
+    margin: 12px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
 [data-testid="collapsedControl"]:hover {
     background: linear-gradient(135deg, #2d4a6f 0%, #1e293b 100%) !important;
     border-color: #60a5fa !important;
+    transform: scale(1.05) !important;
+}
+
+/* Hide the broken text */
+[data-testid="collapsedControl"] span,
+[data-testid="collapsedControl"] div {
+    font-size: 0 !important;
+    color: transparent !important;
+}
+
+/* Add arrow icon using CSS ::after */
+[data-testid="collapsedControl"]::after {
+    content: "☰";
+    font-size: 20px !important;
+    color: #3b82f6 !important;
+    font-family: Arial, sans-serif !important;
 }
 
 /* ============ PROFESSIONAL SIDEBAR ============ */
@@ -591,7 +610,7 @@ try:
         # Navigation Section
         st.markdown('<div class="sidebar-section">📍 Navigation</div>', unsafe_allow_html=True)
         
-        if st.button(f"🏠 Dashboard Home", key="nav_home", use_container_width=True):
+        if st.button("🏠 Dashboard Home", key="nav_home", use_container_width=True):
             st.session_state.page = 'home'
             st.rerun()
         
@@ -673,7 +692,7 @@ try:
         
         # Footer
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
-        st.markdown(f"""
+        st.markdown("""
             <div style="text-align: center; padding: 10px;">
                 <span style="color: #475569; font-size: 0.7rem;">
                     v2.0 • Made with ❤️
@@ -753,7 +772,7 @@ try:
                             </div>
                         """, unsafe_allow_html=True)
                     with col2:
-                        if st.button(f"View", key=f"view_vendor_{str(vendor)[:20]}", use_container_width=True):
+                        if st.button("View", key=f"view_vendor_{str(vendor)[:20]}", use_container_width=True):
                             st.session_state.page = 'search_vendor_orders'
                             st.session_state.search_result_vendor = vendor
                             st.rerun()
@@ -878,7 +897,7 @@ try:
             st.markdown('<div class="aging-section-title">📍 PK ZONE</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
                 count = pk_aging.get(bucket, 0)
-                st.markdown(f"<div style='border-bottom:1px solid #222;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='border-bottom:1px solid #222;'></div>", unsafe_allow_html=True)
                 c1, c2 = st.columns([3, 1])
                 with c1:
                     st.markdown(f"<span class='aging-bucket-text'>{bucket}</span>", unsafe_allow_html=True)
@@ -895,7 +914,7 @@ try:
             st.markdown('<div class="aging-section-title">🏢 QC CENTER</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
                 count = qc_aging.get(bucket, 0)
-                st.markdown(f"<div style='border-bottom:1px solid #222;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='border-bottom:1px solid #222;'></div>", unsafe_allow_html=True)
                 c1, c2 = st.columns([3, 1])
                 with c1:
                     st.markdown(f"<span class='aging-bucket-text'>{bucket}</span>", unsafe_allow_html=True)
@@ -912,7 +931,7 @@ try:
             st.markdown('<div class="aging-section-title">🚚 HANDOVER</div>', unsafe_allow_html=True)
             for bucket in BUCKET_ORDER:
                 count = handover_aging.get(bucket, 0)
-                st.markdown(f"<div style='border-bottom:1px solid #222;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='border-bottom:1px solid #222;'></div>", unsafe_allow_html=True)
                 c1, c2 = st.columns([3, 1])
                 with c1:
                     st.markdown(f"<span class='aging-bucket-text'>{bucket}</span>", unsafe_allow_html=True)
