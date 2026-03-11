@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useMemo } from 'react'
 import { 
   ArrowLeft, Download, Search, MoreVertical, 
@@ -13,7 +12,6 @@ interface DetailViewProps {
   title: string
   orders: OrderRow[]
 }
-
 const COLUMN_LABELS: Record<string, string> = {
   order_number: 'Order',
   fleek_id: 'Fleek ID',
