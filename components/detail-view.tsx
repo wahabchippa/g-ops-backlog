@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import {
   ArrowLeft, Download, Search, MoreVertical,
-  ArrowDownAZ, ArrowUpZA, EyeOff, Pin, Maximize2, Eye
+  ArrowDown, ArrowUp, EyeOff, Pin, Maximize, Eye
 } from 'lucide-react'
 import { useNavigation } from '@/components/navigation-provider'
 import { DISPLAY_COLS } from '@/lib/types'
@@ -45,7 +45,7 @@ export function DetailView({ title, orders }: DetailViewProps) {
     [orders]
   )
 
-  // 1. First Filter the Data
+  // 1. Filter the Data
   const filtered = useMemo(() => {
     let result = orders
     const s = search.toLowerCase()
@@ -63,13 +63,13 @@ export function DetailView({ title, orders }: DetailViewProps) {
     return result
   }, [orders, search, country])
 
-  // 2. Then Sort the Data based on SortConfig
+  // 2. Sort the Data (TypeScript Fix Applied Here)
   const sortedAndFiltered = useMemo(() => {
     let res = [...filtered]
     if (sortConfig) {
       res.sort((a, b) => {
-        const valA = String(a[sortConfig.key] || '').toLowerCase()
-        const valB = String(b[sortConfig.key] || '').toLowerCase()
+        const valA = String(a[sortConfig.key as keyof OrderRow] || '').toLowerCase()
+        const valB = String(b[sortConfig.key as keyof OrderRow] || '').toLowerCase()
         if (valA < valB) return sortConfig.dir === 'asc' ? -1 : 1
         if (valA > valB) return sortConfig.dir === 'asc' ? 1 : -1
         return 0
@@ -78,7 +78,7 @@ export function DetailView({ title, orders }: DetailViewProps) {
     return res
   }, [filtered, sortConfig])
 
-  // 3. Determine visible & pinned columns order
+  // 3. Visible & Pinned Columns
   const activeCols = useMemo(() => {
     const visible = DISPLAY_COLS.filter(c => !hiddenCols.has(c))
     const left = visible.filter(c => pinnedCols[c] === 'left')
@@ -88,7 +88,7 @@ export function DetailView({ title, orders }: DetailViewProps) {
 
   const downloadCSV = () => {
     const header = activeCols.map(c => COLUMN_LABELS[c] || c).join(',')
-    const rows = sortedAndFiltered.map(r => activeCols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(','))
+    const rows = sortedAndFiltered.map(r => activeCols.map(c => `"${String(r[c as keyof OrderRow] || '').replace(/"/g, '""')}"`).join(','))
     const csv = [header, ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -99,7 +99,7 @@ export function DetailView({ title, orders }: DetailViewProps) {
     URL.revokeObjectURL(url)
   }
 
-  // --- Menu Action Handlers ---
+  // --- Actions ---
   const handleSort = (col: string, dir: 'asc' | 'desc') => { setSortConfig({ key: col, dir }); setOpenMenu(null); }
   const handleHide = (col: string) => { setHiddenCols(p => { const n = new Set(p); n.add(col); return n; }); setOpenMenu(null); }
   const handleAutoSize = (col: string) => { setAutoSizedCols(p => { const n = new Set(p); if (n.has(col)) n.delete(col); else n.add(col); return n; }); setOpenMenu(null); }
@@ -107,12 +107,8 @@ export function DetailView({ title, orders }: DetailViewProps) {
 
   return (
     <div className="relative">
-      {/* Click outside overlay to close 3-dots menu */}
-      {openMenu && (
-        <div className="fixed inset-0 z-40" onClick={() => setOpenMenu(null)} />
-      )}
+      {openMenu && <div className="fixed inset-0 z-40" onClick={() => setOpenMenu(null)} />}
 
-      {/* Back + Title */}
       <div className="mb-6">
         <button
           onClick={() => nav.goHome()}
@@ -127,7 +123,6 @@ export function DetailView({ title, orders }: DetailViewProps) {
         </p>
       </div>
 
-      {/* Filters & Actions */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -168,7 +163,6 @@ export function DetailView({ title, orders }: DetailViewProps) {
         </button>
       </div>
 
-      {/* Advanced Data Table */}
       <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
         <table className="w-full min-w-[900px] border-collapse">
           <thead>
@@ -185,7 +179,7 @@ export function DetailView({ title, orders }: DetailViewProps) {
                       <span className="flex items-center gap-1">
                         {COLUMN_LABELS[col] || col}
                         {sortConfig?.key === col && (
-                          sortConfig.dir === 'asc' ? <ArrowDownAZ size={12} className="text-primary" /> : <ArrowUpZA size={12} className="text-primary" />
+                          sortConfig.dir === 'asc' ? <ArrowDown size={12} className="text-primary" /> : <ArrowUp size={12} className="text-primary" />
                         )}
                       </span>
                       <button
@@ -196,18 +190,17 @@ export function DetailView({ title, orders }: DetailViewProps) {
                       </button>
                     </div>
 
-                    {/* 3-Dots Dropdown Menu */}
                     {openMenu === col && (
                       <div className="absolute left-4 top-full mt-1 w-48 rounded-lg border border-border bg-popover py-1.5 shadow-xl z-50">
                         <button onClick={() => handleSort(col, 'asc')} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent">
-                          <ArrowDownAZ size={14} /> Sort A to Z
+                          <ArrowDown size={14} /> Sort A to Z
                         </button>
                         <button onClick={() => handleSort(col, 'desc')} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent">
-                          <ArrowUpZA size={14} /> Sort Z to A
+                          <ArrowUp size={14} /> Sort Z to A
                         </button>
                         <div className="my-1 h-px bg-border" />
                         <button onClick={() => handleAutoSize(col)} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent">
-                          <Maximize2 size={14} /> {autoSizedCols.has(col) ? 'Reset Size' : 'Auto-size'}
+                          <Maximize size={14} /> {autoSizedCols.has(col) ? 'Reset Size' : 'Auto-size'}
                         </button>
                         {isPinned ? (
                           <button onClick={() => handlePin(col, null)} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent">
@@ -242,9 +235,9 @@ export function DetailView({ title, orders }: DetailViewProps) {
                         } ${!isAutoSize ? 'max-w-[200px] truncate whitespace-nowrap' : 'whitespace-nowrap'}`}
                     >
                       {col === 'aging_days' ? (
-                        <span className="font-mono tabular-nums">{String(row[col])}</span>
+                        <span className="font-mono tabular-nums">{String(row[col as keyof OrderRow] || '')}</span>
                       ) : (
-                        String(row[col])
+                        String(row[col as keyof OrderRow] || '')
                       )}
                     </td>
                   )
