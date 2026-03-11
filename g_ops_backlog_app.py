@@ -1300,51 +1300,7 @@ try:
             if country != 'All Countries':
                 filtered = filtered[filtered['customer_country'] == country]
             
-            # --- NAYA TABLE CODE SHURU ---
-            display_df = filtered[[c for c in DISPLAY_COLS if c in filtered.columns]].copy()
-            
-            gb = GridOptionsBuilder.from_dataframe(display_df)
-            
-            # Har column me 3-dots, filter, aur sort enable karna
-            gb.configure_default_column(
-                sortable=True,
-                filterable=True,
-                resizable=True,
-                groupable=True
-            )
-            
-            # Table ki settings (3-dots hamesha show honge)
-            gb.configure_grid_options(
-                suppressMenuHide=False,
-                rowHeight=40,
-                headerHeight=45
-            )
-            
-            # Order Number column ko left par freeze (pin) karna
-            if 'order_number' in display_df.columns:
-                gb.configure_column("order_number", pinned='left')
-                
-            gridOptions = gb.build()
-            
-            # Dark theme CSS match karne ke liye
-            custom_css = {
-                ".ag-root-wrapper": {"background-color": "#111111", "border": "1px solid #333333", "border-radius": "14px"},
-                ".ag-header": {"background-color": "#1a1a2e", "color": "#a78bfa"},
-                ".ag-row": {"background-color": "#0f0f0f", "color": "#c0c0c0"},
-                ".ag-row-hover": {"background-color": "#1c1c2e !important"},
-                ".ag-header-cell-label": {"font-weight": "700"}
-            }
-            
-            AgGrid(
-                display_df,
-                gridOptions=gridOptions,
-                custom_css=custom_css,
-                theme='balham',
-                height=500,
-                width='100%',
-                fit_columns_on_grid_load=True  # Yeh automatically columns ko screen par fit kar dega
-            )
-            # --- NAYA TABLE CODE KHATAM ---
+            st.dataframe(filtered[[c for c in DISPLAY_COLS if c in filtered.columns]], use_container_width=True, height=500)
 
 except Exception as e:
     st.error(f"Error: {e}")
