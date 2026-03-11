@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import {
-  ArrowLeft, Download, Search, MoreVertical,
-  ArrowDown, ArrowUp, EyeOff, Pin, Maximize, Eye
+import { 
+  ArrowLeft, Download, Search, MoreVertical, 
+  ArrowDown, ArrowUp, EyeOff, Pin, Maximize, Eye 
 } from 'lucide-react'
 import { useNavigation } from '@/components/navigation-provider'
 import { DISPLAY_COLS } from '@/lib/types'
@@ -172,17 +172,18 @@ export function DetailView({ title, orders }: DetailViewProps) {
                 return (
                   <th
                     key={col}
-                    className={`relative px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 ${isPinned ? 'sticky left-0 z-30 bg-card shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]' : 'bg-transparent'
-                      }`}
+                    className={`relative px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-muted/50 ${
+                      isPinned ? 'sticky left-0 z-30 bg-card shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]' : 'bg-transparent'
+                    }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-1">
                         {COLUMN_LABELS[col] || col}
                         {sortConfig?.key === col && (
-                          sortConfig.dir === 'asc' ? <ArrowDown size={12} className="text-primary" /> : <ArrowUp size={12} className="text-primary" />
+                          sortConfig.dir === 'asc' ? <ArrowDown size={12} className="text-primary"/> : <ArrowUp size={12} className="text-primary"/>
                         )}
                       </span>
-                      <button
+                      <button 
                         onClick={() => setOpenMenu(openMenu === col ? null : col)}
                         className="rounded hover:bg-accent p-1 text-muted-foreground hover:text-foreground"
                       >
@@ -229,10 +230,11 @@ export function DetailView({ title, orders }: DetailViewProps) {
                   const isPinned = pinnedCols[col] === 'left'
                   const isAutoSize = autoSizedCols.has(col)
                   return (
-                    <td
-                      key={col}
-                      className={`px-4 py-3 text-sm text-foreground ${isPinned ? 'sticky left-0 z-20 bg-card shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] group-hover:bg-accent/30' : 'bg-transparent'
-                        } ${!isAutoSize ? 'max-w-[200px] truncate whitespace-nowrap' : 'whitespace-nowrap'}`}
+                    <td 
+                      key={col} 
+                      className={`px-4 py-3 text-sm text-foreground ${
+                        isPinned ? 'sticky left-0 z-20 bg-card shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)] group-hover:bg-accent/30' : 'bg-transparent'
+                      } ${!isAutoSize ? 'max-w-[200px] truncate whitespace-nowrap' : 'whitespace-nowrap'}`}
                     >
                       {col === 'aging_days' ? (
                         <span className="font-mono tabular-nums">{String(row[col as keyof OrderRow] || '')}</span>
@@ -246,7 +248,7 @@ export function DetailView({ title, orders }: DetailViewProps) {
             ))}
           </tbody>
         </table>
-
+        
         {sortedAndFiltered.length === 0 && (
           <div className="py-12 text-center text-sm text-muted-foreground">No orders found matching your filters.</div>
         )}
