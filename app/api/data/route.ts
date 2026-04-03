@@ -4,10 +4,11 @@ import type { OrderRow } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const SHEET_ID = '1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o'
+// Wo jo naya Web App URL mila hai, wo yahan dalen
+const SCRIPT_URL = 'https://script.google.com/a/macros/joinfleek.com/s/AKfycbwJDSBRGcS_Wl-Jph2jucoRupE-p4VChCWGj4TIJBSYitr8UkD_qrS7GyikSWrmIeP-/exec'
 
 async function fetchSheet(sheetName: string): Promise<string> {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`
+  const url = `${SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`
   const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`)
   return res.text()
