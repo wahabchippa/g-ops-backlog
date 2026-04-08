@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G-Ops Backlog · Fleek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090f;
+  --bg2: #0d1018;
+  --bg3: #131720;
+  --border: #1e2535;
+  --border2: #252d3d;
+  --text: #e8eaf0;
+  --text2: #8891a8;
+  --text3: #4a5468;
+  --accent: #4f9eff;
+  --accent2: #7b5cf0;
+  --green: #22c55e;
+  --orange: #f97316;
+  --red: #ef4444;
+  --yellow: #eab308;
+  --cyan: #06b6d4;
+  --purple: #a855f7;
+  --pink: #ec4899;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:14px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+.header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.header-left { display:flex; align-items:center; gap:16px; }
+.logo {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #4f9eff, #7b5cf0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-sep { width:1px; height:20px; background:var(--border2); }
+.header-title { font-size:13px; color:var(--text2); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.last-refresh { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); }
+.refresh-btn {
+  display:flex; align-items:center; gap:6px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); padding: 6px 14px; border-radius:6px;
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:600;
+  cursor:pointer; transition:all .2s;
+}
+.refresh-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
+.refresh-btn svg { width:13px; height:13px; }
+.refresh-btn.loading svg { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* LOADING */
+.loading-screen {
+  position: fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  z-index:999;
+}
+.loading-screen.hidden { display:none; }
+.loading-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:32px;
+  background: linear-gradient(135deg, #4f9eff, #7b5cf0);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.loading-bar-wrap { width:200px; height:2px; background:var(--border); border-radius:2px; overflow:hidden; }
+.loading-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2));
+  animation: loadbar 1.5s ease-in-out infinite; }
+@keyframes loadbar { 0%{width:0;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0;margin-left:100%} }
+.loading-text { font-size:12px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+
+/* ERROR */
+.error-banner {
+  background: rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
+  color:#fca5a5; padding:12px 24px; font-size:12px; font-family:'IBM Plex Mono',monospace;
+  display:none;
+}
+.error-banner.visible { display:block; }
+
+/* MAIN */
+.main { padding: 20px 24px; max-width:1800px; margin:0 auto; }
+
+/* STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: var(--card-color, var(--accent));
+}
+.stat-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
+.stat-value { font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:600; color:var(--text); line-height:1; }
+.stat-sub { font-size:10px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
+
+/* FILTERS */
+.filters-bar {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.search-wrap { position:relative; flex:1; min-width:200px; }
+.search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text3); width:14px; height:14px; }
+.search-input {
+  width:100%; background:var(--bg3); border:1px solid var(--border2);
+  color:var(--text); padding:8px 12px 8px 32px; border-radius:7px;
+  font-family:'Syne',sans-serif; font-size:13px; outline:none;
+  transition:border-color .2s;
+}
+.search-input:focus { border-color:var(--accent); }
+.search-input::placeholder { color:var(--text3); }
+select {
+  background:var(--bg3); border:1px solid var(--border2); color:var(--text);
+  padding:8px 12px; border-radius:7px; font-family:'Syne',sans-serif; font-size:12px;
+  font-weight:600; outline:none; cursor:pointer; min-width:140px;
+}
+select:focus { border-color:var(--accent); }
+.filter-label { font-size:11px; color:var(--text3); font-weight:600; white-space:nowrap; }
+.filter-group { display:flex; align-items:center; gap:8px; }
+.results-count { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); margin-left:auto; white-space:nowrap; }
+
+/* STATUS STRIP */
+.status-strip {
+  background: var(--bg2); border:1px solid var(--border);
+  border-radius:10px; padding:14px 16px; margin-bottom:16px;
+}
+.status-strip-title { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); margin-bottom:10px; }
+.status-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; gap:1px; margin-bottom:10px; }
+.status-bar-seg { flex:0; min-width:2px; border-radius:1px; transition:flex .5s ease; cursor:pointer; }
+.status-legend { display:flex; flex-wrap:wrap; gap:12px; }
+.legend-item { display:flex; align-items:center; gap:5px; cursor:pointer; }
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.legend-label { font-size:11px; color:var(--text2); }
+.legend-count { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); }
+
+/* TABLE */
+.table-wrap {
+  background: var(--bg2); border:1px solid var(--border);
+  border-radius:10px; overflow:hidden;
+}
+.table-header-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 16px; border-bottom:1px solid var(--border);
+}
+.table-title { font-size:13px; font-weight:700; }
+.export-btn {
+  display:flex; align-items:center; gap:5px;
+  background:transparent; border:1px solid var(--border2); color:var(--text2);
+  padding:5px 12px; border-radius:6px; font-family:'Syne',sans-serif;
+  font-size:11px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.export-btn:hover { border-color:var(--accent); color:var(--accent); }
+.table-container { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+thead th {
+  background:var(--bg3); padding:10px 12px; text-align:left;
+  font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase;
+  color:var(--text3); border-bottom:1px solid var(--border); white-space:nowrap;
+  cursor:pointer; user-select:none; position:sticky; top:0;
+}
+thead th:hover { color:var(--text2); }
+thead th .sort-icon { opacity:0.4; margin-left:4px; }
+thead th.sorted .sort-icon { opacity:1; color:var(--accent); }
+tbody tr {
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+  cursor:pointer;
+}
+tbody tr:hover { background:var(--bg3); }
+tbody tr:last-child { border-bottom:none; }
+tbody td { padding:10px 12px; color:var(--text); vertical-align:middle; white-space:nowrap; }
+.cell-mono { font-family:'IBM Plex Mono',monospace; }
+.cell-dim { color:var(--text2); }
+.cell-muted { color:var(--text3); font-size:11px; }
+
+/* STATUS BADGES */
+.badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px; border-radius:100px; font-size:10px; font-weight:700;
+  letter-spacing:0.4px; text-transform:uppercase; white-space:nowrap;
+}
+.badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+/* EXPANDED ROW */
+.expanded-row { display:none; }
+.expanded-row.open { display:table-row; }
+.expanded-content {
+  padding:16px; background:var(--bg);
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+}
+.detail-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+.detail-item { }
+.detail-key { font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:3px; }
+.detail-val { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text); word-break:break-all; }
+
+/* PAGINATION */
+.pagination {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px; border-top:1px solid var(--border);
+}
+.page-info { font-size:11px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+.page-btns { display:flex; gap:6px; }
+.page-btn {
+  background:var(--bg3); border:1px solid var(--border2); color:var(--text2);
+  padding:5px 12px; border-radius:6px; font-family:'Syne',sans-serif;
+  font-size:11px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.page-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+.page-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.page-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+/* SETUP NOTICE */
+.setup-notice {
+  background:rgba(79,158,255,.08); border:1px solid rgba(79,158,255,.2);
+  border-radius:10px; padding:16px 20px; margin-bottom:16px;
+  font-size:12px; display:none;
+}
+.setup-notice.visible { display:block; }
+.setup-notice strong { color:var(--accent); }
+.setup-notice code { background:var(--bg3); padding:2px 6px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; }
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .header { padding:0 16px; }
+  .main { padding:16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading">
+  <div class="loading-logo">FLEEK</div>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+  <div class="loading-text" id="loadingText">Connecting to data source...</div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">FLEEK</div>
+    <div class="header-sep"></div>
+    <div class="header-title">G-Ops Backlog</div>
+  </div>
+  <div class="header-right">
+    <span class="last-refresh" id="lastRefresh">—</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+        <path d="M8 16H3v5"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+</header>
+
+<!-- ERROR -->
+<div class="error-banner" id="errorBanner"></div>
+
+<!-- SETUP NOTICE (shown when sheet not public) -->
+<div class="setup-notice" id="setupNotice">
+  ⚠️ <strong>Sheet Access Required:</strong> To load live data, open the G-Ops Backlog sheet → <strong>File → Share → Publish to web</strong> → Select "Extract 1" sheet → Publish. Or update <code>SHEET_ID</code> in this file with a public sheet.
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- STATS -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card" style="--card-color:#4f9eff">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-sub" id="statTotalSub">Loading...</div>
+    </div>
+    <div class="stat-card" style="--card-color:#22c55e">
+      <div class="stat-label">Delivered</div>
+      <div class="stat-value" id="statDelivered">—</div>
+      <div class="stat-sub" id="statDeliveredSub">—%</div>
+    </div>
+    <div class="stat-card" style="--card-color:#f97316">
+      <div class="stat-label">In Transit</div>
+      <div class="stat-value" id="statTransit">—</div>
+      <div class="stat-sub">Freight + Courier</div>
+    </div>
+    <div class="stat-card" style="--card-color:#eab308">
+      <div class="stat-label">QC Hold</div>
+      <div class="stat-value" id="statQcHold">—</div>
+      <div class="stat-sub">Needs Attention</div>
+    </div>
+    <div class="stat-card" style="--card-color:#ef4444">
+      <div class="stat-label">Cancelled</div>
+      <div class="stat-value" id="statCancelled">—</div>
+      <div class="stat-sub" id="statCancelledSub">—%</div>
+    </div>
+    <div class="stat-card" style="--card-color:#7b5cf0">
+      <div class="stat-label">Total GMV</div>
+      <div class="stat-value" id="statGmv">—</div>
+      <div class="stat-sub">GBP</div>
+    </div>
+  </div>
+
+  <!-- STATUS STRIP -->
+  <div class="status-strip">
+    <div class="status-strip-title">Status Breakdown</div>
+    <div class="status-bar" id="statusBar"></div>
+    <div class="status-legend" id="statusLegend"></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input class="search-input" type="text" id="searchInput" placeholder="Search order #, fleek ID, customer, vendor..." oninput="applyFilters()">
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Status</span>
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="">All Statuses</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Country</span>
+      <select id="filterCountry" onchange="applyFilters()">
+        <option value="">All Countries</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Vendor Zone</span>
+      <select id="filterZone" onchange="applyFilters()">
+        <option value="">All Zones</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Product</span>
+      <select id="filterType" onchange="applyFilters()">
+        <option value="">All Types</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Sort</span>
+      <select id="sortBy" onchange="applyFilters()">
+        <option value="created_at_desc">Newest First</option>
+        <option value="created_at_asc">Oldest First</option>
+        <option value="amount_desc">Amount ↓</option>
+        <option value="amount_asc">Amount ↑</option>
+        <option value="status">Status A-Z</option>
+      </select>
+    </div>
+    <span class="results-count" id="resultsCount">—</span>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-header-row">
+      <span class="table-title">Orders</span>
+      <button class="export-btn" onclick="exportCSV()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable('order_number')">Order # <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('fleek_id')">Fleek ID <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('latest_status')">Status <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('latest_status_date')">Status Date <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('created_at')">Created <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('total_order_line_amount')">Amount <span class="sort-icon">↕</span></th>
+            <th>Customer</th>
+            <th>Country</th>
+            <th>Vendor</th>
+            <th>Zone</th>
+            <th>Product Type</th>
+            <th>Courier</th>
+            <th onclick="sortTable('days_taken_to_delivery')">Days <span class="sort-icon">↕</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span class="page-info" id="pageInfo">—</span>
+      <div class="page-btns" id="pageBtns"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG — Update SHEET_ID to your Google Sheet
+// Sheet must be shared: "Anyone with the link can view"
+// ═══════════════════════════════════════════════════════
+const SHEET_ID = '1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o';
+const SHEET_NAME = 'Extract 1';
+const PAGE_SIZE = 50;
+
+// ═══════════════════════════════════════════════════════
+// STATUS CONFIG
+// ═══════════════════════════════════════════════════════
+const STATUS_CONFIG = {
+  'CREATED':                            { color:'#4f9eff', bg:'rgba(79,158,255,.12)', label:'Created' },
+  'ACCEPTED':                           { color:'#06b6d4', bg:'rgba(6,182,212,.12)',  label:'Accepted' },
+  'PICKUP_READY':                       { color:'#8b5cf6', bg:'rgba(139,92,246,.12)', label:'Pickup Ready' },
+  'PICKUP_SUCCESSFULL':                 { color:'#7b5cf0', bg:'rgba(123,92,240,.12)', label:'Pickup Done' },
+  'PICKUP_FAILED':                      { color:'#f97316', bg:'rgba(249,115,22,.12)', label:'Pickup Failed' },
+  'QC_PENDING':                         { color:'#eab308', bg:'rgba(234,179,8,.12)',  label:'QC Pending' },
+  'QC_APPROVED':                        { color:'#22c55e', bg:'rgba(34,197,94,.12)',  label:'QC Approved' },
+  'QC_HOLD':                            { color:'#f97316', bg:'rgba(249,115,22,.15)', label:'QC Hold' },
+  'QC_REJECTED':                        { color:'#ef4444', bg:'rgba(239,68,68,.12)',  label:'QC Rejected' },
+  'HANDED_OVER_TO_LOGISTICS_PARTNER':   { color:'#a855f7', bg:'rgba(168,85,247,.12)', label:'Logistics' },
+  'FREIGHT':                            { color:'#ec4899', bg:'rgba(236,72,153,.12)', label:'Freight' },
+  'FREIGHT_DEPARTED':                   { color:'#ec4899', bg:'rgba(236,72,153,.12)', label:'Freight Dep.' },
+  'FREIGHT_CUSTOMS':                    { color:'#f59e0b', bg:'rgba(245,158,11,.12)', label:'Fr. Customs' },
+  'COURIER':                            { color:'#10b981', bg:'rgba(16,185,129,.12)', label:'Courier' },
+  'COURIER_CUSTOMS':                    { color:'#10b981', bg:'rgba(16,185,129,.12)', label:'Cour. Customs' },
+  'DELIVERED':                          { color:'#22c55e', bg:'rgba(34,197,94,.15)',  label:'Delivered' },
+  'CANCELLED':                          { color:'#ef4444', bg:'rgba(239,68,68,.12)',  label:'Cancelled' },
+};
+
+function getStatusCfg(s) {
+  return STATUS_CONFIG[s?.toUpperCase()] || { color:'#8891a8', bg:'rgba(136,145,168,.1)', label: s || '—' };
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let allData = [];
+let filtered = [];
+let currentPage = 1;
+let sortCol = 'created_at';
+let sortDir = -1;
+
+// ═══════════════════════════════════════════════════════
+// FETCH DATA
+// ═══════════════════════════════════════════════════════
+async function loadData() {
+  const btn = document.getElementById('refreshBtn');
+  const loading = document.getElementById('loading');
+  const loadingText = document.getElementById('loadingText');
+  
+  btn.classList.add('loading');
+  loading.classList.remove('hidden');
+  document.getElementById('errorBanner').classList.remove('visible');
+  document.getElementById('setupNotice').classList.remove('visible');
+
+  try {
+    loadingText.textContent = 'Fetching order data...';
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&headers=1`;
+    const res = await fetch(url);
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+    if (!match) throw new Error('Invalid response format. Make sure the sheet is shared publicly.');
+    
+    const json = JSON.parse(match[1]);
+    if (json.status === 'error') {
+      throw new Error(json.errors?.[0]?.message || 'Sheet access denied. Share the sheet publicly.');
+    }
+    
+    loadingText.textContent = 'Processing data...';
+    
+    // Map columns by label
+    const cols = {};
+    json.table.cols.forEach((c, i) => { if(c.label) cols[c.label] = i; });
+    
+    allData = json.table.rows
+      .filter(r => r && r.f)
+      .map(r => {
+        const g = (key) => {
+          const i = cols[key];
+          if (i === undefined) return '';
+          const cell = r.f[i];
+          return cell?.v !== null && cell?.v !== undefined ? String(cell.v) : (cell?.f || '');
+        };
+        return {
+          created_at:                 g('created_at'),
+          order_number:               g('order_number'),
+          fleek_id:                   g('fleek_id'),
+          order_line_id:              g('order_line_id'),
+          latest_status:              g('latest_status'),
+          latest_status_date:         g('latest_status_date'),
+          total_order_line_amount:    parseFloat(g('total_order_line_amount')) || 0,
+          days_taken_to_delivery:     g('days_taken_to_delivery'),
+          item_name:                  g('item_name'),
+          product_type:               g('product_type'),
+          customer_name:              g('customer_name'),
+          customer_email:             g('customer_email'),
+          customer_country:           g('customer_country'),
+          customer_country_region:    g('customer_country_region'),
+          customer_type:              g('customer_type'),
+          vendor:                     g('vendor'),
+          vendor_country:             g('vendor_country'),
+          vendor_zone:                g('vendor_zone'),
+          is_zone_vendor:             g('is_zone_vendor'),
+          courier_company:            g('courier_company'),
+          tracking_number:            g('tracking_number'),
+          shipping_method:            g('shipping_method'),
+          cancellation_reason:        g('cancellation_reason'),
+          logistics_partner_name:     g('logistics_partner_name'),
+          flight_number:              g('flight_number'),
+          accepted_at:                g('accepted_at'),
+          qc_approved_at:             g('qc_approved_at'),
+          delivered_at:               g('delivered_at'),
+          replacement_status:         g('replacement_status'),
+          ot_helper:                  g('ot_helper'),
+          customer_status:            g('customer_status'),
+          boxes:                      g('boxes'),
+          went_to_qc_hold:            g('went_to_qc_hold'),
+          status_after_qc_hold:       g('status_after_qc_hold'),
+          affiliate:                  g('affiliate'),
+          is_bargain_bin:             g('is_bargain_bin'),
+          _expanded: false,
+        };
+      });
+
+    loadingText.textContent = 'Rendering...';
+    populateFilters();
+    applyFilters();
+    updateStats();
+    
+    document.getElementById('lastRefresh').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+    loading.classList.add('hidden');
+    
+  } catch(e) {
+    loading.classList.add('hidden');
+    const msg = e.message || 'Failed to load data';
+    document.getElementById('errorBanner').textContent = `⚠ ${msg}`;
+    document.getElementById('errorBanner').classList.add('visible');
+    document.getElementById('setupNotice').classList.add('visible');
+    console.error(e);
+  }
+  
+  btn.classList.remove('loading');
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════════════════
+function populateFilters() {
+  const statuses = [...new Set(allData.map(d=>d.latest_status).filter(Boolean))].sort();
+  const countries = [...new Set(allData.map(d=>d.customer_country).filter(Boolean))].sort();
+  const zones = [...new Set(allData.map(d=>d.vendor_zone).filter(Boolean))].sort();
+  const types = [...new Set(allData.map(d=>d.product_type).filter(Boolean))].sort();
+  
+  fillSelect('filterStatus', statuses);
+  fillSelect('filterCountry', countries);
+  fillSelect('filterZone', zones);
+  fillSelect('filterType', types);
+}
+
+function fillSelect(id, opts) {
+  const sel = document.getElementById(id);
+  const cur = sel.value;
+  while(sel.options.length > 1) sel.remove(1);
+  opts.forEach(o => {
+    const opt = new Option(o, o);
+    sel.add(opt);
+  });
+  sel.value = cur;
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  const status = document.getElementById('filterStatus').value;
+  const country = document.getElementById('filterCountry').value;
+  const zone = document.getElementById('filterZone').value;
+  const type = document.getElementById('filterType').value;
+  const sortVal = document.getElementById('sortBy').value;
+
+  filtered = allData.filter(d => {
+    if(status && d.latest_status !== status) return false;
+    if(country && d.customer_country !== country) return false;
+    if(zone && d.vendor_zone !== zone) return false;
+    if(type && d.product_type !== type) return false;
+    if(search) {
+      const haystack = [d.order_number,d.fleek_id,d.customer_name,d.vendor,d.item_name,d.tracking_number,d.customer_email].join(' ').toLowerCase();
+      if(!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a,b) => {
+    switch(sortVal) {
+      case 'created_at_desc': return b.created_at.localeCompare(a.created_at);
+      case 'created_at_asc':  return a.created_at.localeCompare(b.created_at);
+      case 'amount_desc':     return b.total_order_line_amount - a.total_order_line_amount;
+      case 'amount_asc':      return a.total_order_line_amount - b.total_order_line_amount;
+      case 'status':          return (a.latest_status||'').localeCompare(b.latest_status||'');
+      default: return 0;
+    }
+  });
+
+  document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} orders`;
+  currentPage = 1;
+  renderTable();
+  renderStatusBar(filtered);
+}
+
+function sortTable(col) {
+  const sortSel = document.getElementById('sortBy');
+  // map col to sort option
+  const map = {
+    'order_number': null, 'fleek_id': null, 'latest_status': 'status',
+    'latest_status_date': null, 'created_at': 'created_at_desc',
+    'total_order_line_amount': 'amount_desc', 'days_taken_to_delivery': null
+  };
+  if(map[col]) { sortSel.value = map[col]; applyFilters(); }
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════
+function updateStats() {
+  const total = allData.length;
+  const delivered = allData.filter(d=>d.latest_status==='DELIVERED').length;
+  const cancelled = allData.filter(d=>d.latest_status==='CANCELLED').length;
+  const qcHold = allData.filter(d=>d.latest_status==='QC_HOLD').length;
+  const inTransit = allData.filter(d=>['FREIGHT','FREIGHT_DEPARTED','FREIGHT_CUSTOMS','COURIER','COURIER_CUSTOMS'].includes(d.latest_status)).length;
+  const gmv = allData.reduce((s,d)=>s+d.total_order_line_amount,0);
+
+  document.getElementById('statTotal').textContent = total.toLocaleString();
+  document.getElementById('statTotalSub').textContent = 'All orders loaded';
+  document.getElementById('statDelivered').textContent = delivered.toLocaleString();
+  document.getElementById('statDeliveredSub').textContent = `${total?((delivered/total)*100).toFixed(1):0}% of total`;
+  document.getElementById('statTransit').textContent = inTransit.toLocaleString();
+  document.getElementById('statQcHold').textContent = qcHold.toLocaleString();
+  document.getElementById('statCancelled').textContent = cancelled.toLocaleString();
+  document.getElementById('statCancelledSub').textContent = `${total?((cancelled/total)*100).toFixed(1):0}% of total`;
+  document.getElementById('statGmv').textContent = '£'+gmv.toLocaleString('en-GB',{maximumFractionDigits:0});
+}
+
+// ═══════════════════════════════════════════════════════
+// STATUS BAR
+// ═══════════════════════════════════════════════════════
+function renderStatusBar(data) {
+  const counts = {};
+  data.forEach(d => { counts[d.latest_status] = (counts[d.latest_status]||0)+1; });
+  const total = data.length || 1;
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  
+  const bar = document.getElementById('statusBar');
+  const legend = document.getElementById('statusLegend');
+  bar.innerHTML = '';
+  legend.innerHTML = '';
+  
+  sorted.forEach(([st, cnt]) => {
+    const cfg = getStatusCfg(st);
+    const pct = (cnt/total*100).toFixed(1);
+    const seg = document.createElement('div');
+    seg.className = 'status-bar-seg';
+    seg.style.cssText = `flex:${cnt};background:${cfg.color};`;
+    seg.title = `${cfg.label}: ${cnt}`;
+    seg.onclick = () => {
+      document.getElementById('filterStatus').value = st;
+      applyFilters();
+    };
+    bar.appendChild(seg);
+    
+    const li = document.createElement('div');
+    li.className = 'legend-item';
+    li.innerHTML = `<div class="legend-dot" style="background:${cfg.color}"></div><span class="legend-label">${cfg.label}</span><span class="legend-count">${cnt.toLocaleString()} (${pct}%)</span>`;
+    li.onclick = () => {
+      document.getElementById('filterStatus').value = st;
+      applyFilters();
+    };
+    legend.appendChild(li);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// TABLE RENDER
+// ═══════════════════════════════════════════════════════
+function renderTable() {
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page = filtered.slice(start, start+PAGE_SIZE);
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  
+  if(!page.length) {
+    tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text3);">No orders found</td></tr>`;
+  }
+
+  page.forEach((d, idx) => {
+    const cfg = getStatusCfg(d.latest_status);
+    const amt = d.total_order_line_amount ? '£'+d.total_order_line_amount.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    const days = d.days_taken_to_delivery || '—';
+    const rowId = `row_${start+idx}`;
+    const expId = `exp_${start+idx}`;
+    
+    const tr = document.createElement('tr');
+    tr.id = rowId;
+    tr.onclick = () => toggleExpand(start+idx, expId);
+    tr.innerHTML = `
+      <td class="cell-mono" style="font-weight:600;color:var(--accent)">${d.order_number||'—'}</td>
+      <td class="cell-mono cell-dim" style="font-size:11px">${d.fleek_id||'—'}</td>
+      <td><span class="badge" style="color:${cfg.color};background:${cfg.bg}">${cfg.label}</span></td>
+      <td class="cell-mono cell-muted">${formatDate(d.latest_status_date)}</td>
+      <td class="cell-mono cell-muted">${formatDate(d.created_at)}</td>
+      <td class="cell-mono" style="font-weight:600">${amt}</td>
+      <td class="cell-dim">${d.customer_name||'—'}</td>
+      <td class="cell-dim">${d.customer_country||'—'}</td>
+      <td class="cell-dim">${d.vendor||'—'}</td>
+      <td class="cell-muted" style="font-size:11px">${d.vendor_zone||'—'}</td>
+      <td class="cell-muted" style="font-size:11px">${d.product_type||'—'}</td>
+      <td class="cell-muted" style="font-size:11px">${d.courier_company||'—'}</td>
+      <td class="cell-mono cell-muted" style="text-align:center">${days}</td>
+      <td style="color:var(--text3);font-size:10px">▼</td>
+    `;
+    tbody.appendChild(tr);
+    
+    // Expanded row
+    const expTr = document.createElement('tr');
+    expTr.id = expId;
+    expTr.className = 'expanded-row';
+    const expTd = document.createElement('td');
+    expTd.colSpan = 14;
+    expTd.className = 'expanded-content';
+    
+    const fields = [
+      ['Order Line ID', d.order_line_id],
+      ['Item Name', d.item_name],
+      ['Customer Email', d.customer_email],
+      ['Customer Type', d.customer_type],
+      ['Customer Status', d.customer_status],
+      ['Vendor Country', d.vendor_country],
+      ['Is Zone Vendor', d.is_zone_vendor],
+      ['Tracking #', d.tracking_number],
+      ['Shipping Method', d.shipping_method],
+      ['Logistics Partner', d.logistics_partner_name],
+      ['Flight #', d.flight_number],
+      ['Boxes', d.boxes],
+      ['Accepted At', formatDate(d.accepted_at)],
+      ['QC Approved At', formatDate(d.qc_approved_at)],
+      ['Delivered At', formatDate(d.delivered_at)],
+      ['Cancellation Reason', d.cancellation_reason],
+      ['Replacement Status', d.replacement_status],
+      ['Went to QC Hold', d.went_to_qc_hold],
+      ['Status After QC Hold', d.status_after_qc_hold],
+      ['OT Helper', d.ot_helper],
+      ['Affiliate', d.affiliate],
+      ['Is Bargain Bin', d.is_bargain_bin],
+    ].filter(([,v])=>v&&v!=='—'&&v!=='undefined'&&v!=='null'&&v!=='');
+    
+    expTd.innerHTML = `<div class="detail-grid">${fields.map(([k,v])=>`<div class="detail-item"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>`;
+    expTr.appendChild(expTd);
+    tbody.appendChild(expTr);
+  });
+  
+  renderPagination();
+}
+
+function toggleExpand(idx, expId) {
+  const expRow = document.getElementById(expId);
+  if(!expRow) return;
+  expRow.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════════════
+// PAGINATION
+// ═══════════════════════════════════════════════════════
+function renderPagination() {
+  const total = filtered.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const start = (currentPage-1)*PAGE_SIZE+1;
+  const end = Math.min(currentPage*PAGE_SIZE, total);
+  
+  document.getElementById('pageInfo').textContent = total ? `${start}–${end} of ${total.toLocaleString()}` : '0 results';
+  
+  const container = document.getElementById('pageBtns');
+  container.innerHTML = '';
+  
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn'; prevBtn.textContent = '← Prev';
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => { currentPage--; renderTable(); window.scrollTo(0,0); };
+  container.appendChild(prevBtn);
+  
+  // Page number buttons (max 5)
+  const pageRange = getPageRange(currentPage, pages);
+  pageRange.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (p===currentPage?' active':'');
+    btn.textContent = p;
+    btn.onclick = () => { currentPage=p; renderTable(); window.scrollTo(0,0); };
+    container.appendChild(btn);
+  });
+  
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn'; nextBtn.textContent = 'Next →';
+  nextBtn.disabled = currentPage >= pages;
+  nextBtn.onclick = () => { currentPage++; renderTable(); window.scrollTo(0,0); };
+  container.appendChild(nextBtn);
+}
+
+function getPageRange(current, total) {
+  if(total <= 5) return Array.from({length:total},(_,i)=>i+1);
+  if(current<=3) return [1,2,3,4,5];
+  if(current>=total-2) return [total-4,total-3,total-2,total-1,total];
+  return [current-2,current-1,current,current+1,current+2];
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function formatDate(val) {
+  if(!val||val==='null'||val==='undefined') return '—';
+  // Try to parse various formats
+  const d = new Date(val);
+  if(!isNaN(d)) return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+  return val.split('T')[0] || val;
+}
+
+function exportCSV() {
+  const headers = ['Order#','Fleek ID','Status','Status Date','Created','Amount','Customer','Country','Vendor','Zone','Product Type','Courier','Days'];
+  const rows = filtered.map(d => [
+    d.order_number, d.fleek_id, d.latest_status, d.latest_status_date, d.created_at,
+    d.total_order_line_amount, d.customer_name, d.customer_country, d.vendor,
+    d.vendor_zone, d.product_type, d.courier_company, d.days_taken_to_delivery
+  ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`));
+  
+  const csv = [headers.join(','), ...rows.map(r=>r.join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `g-ops-backlog-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTO-REFRESH every 5 minutes
+// ═══════════════════════════════════════════════════════
+setInterval(() => loadData(), 5 * 60 * 1000);
+
+// INIT
+loadData();
+</script>
+</body>
+</html>
