@@ -4,889 +4,297 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>G-Ops Backlog · Fleek</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #07090f;
-  --bg2: #0d1018;
-  --bg3: #131720;
-  --border: #1e2535;
-  --border2: #252d3d;
-  --text: #e8eaf0;
-  --text2: #8891a8;
-  --text3: #4a5468;
-  --accent: #4f9eff;
-  --accent2: #7b5cf0;
-  --green: #22c55e;
-  --orange: #f97316;
-  --red: #ef4444;
-  --yellow: #eab308;
-  --cyan: #06b6d4;
-  --purple: #a855f7;
-  --pink: #ec4899;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-html { font-size:14px; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* HEADER */
-.header {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(12px);
-}
-.header-left { display:flex; align-items:center; gap:16px; }
-.logo {
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #4f9eff, #7b5cf0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.header-sep { width:1px; height:20px; background:var(--border2); }
-.header-title { font-size:13px; color:var(--text2); font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
-.header-right { display:flex; align-items:center; gap:12px; }
-.last-refresh { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); }
-.refresh-btn {
-  display:flex; align-items:center; gap:6px;
-  background: var(--bg3); border: 1px solid var(--border2);
-  color: var(--text); padding: 6px 14px; border-radius:6px;
-  font-family:'Syne',sans-serif; font-size:12px; font-weight:600;
-  cursor:pointer; transition:all .2s;
-}
-.refresh-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
-.refresh-btn svg { width:13px; height:13px; }
-.refresh-btn.loading svg { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* LOADING */
-.loading-screen {
-  position: fixed; inset:0; background:var(--bg);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
-  z-index:999;
-}
-.loading-screen.hidden { display:none; }
-.loading-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:32px;
-  background: linear-gradient(135deg, #4f9eff, #7b5cf0);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-.loading-bar-wrap { width:200px; height:2px; background:var(--border); border-radius:2px; overflow:hidden; }
-.loading-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2));
-  animation: loadbar 1.5s ease-in-out infinite; }
-@keyframes loadbar { 0%{width:0;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0;margin-left:100%} }
-.loading-text { font-size:12px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
-
-/* ERROR */
-.error-banner {
-  background: rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
-  color:#fca5a5; padding:12px 24px; font-size:12px; font-family:'IBM Plex Mono',monospace;
-  display:none;
-}
-.error-banner.visible { display:block; }
-
-/* MAIN */
-.main { padding: 20px 24px; max-width:1800px; margin:0 auto; }
-
-/* STATS */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.stat-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color .2s;
-}
-.stat-card:hover { border-color: var(--border2); }
-.stat-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:2px;
-  background: var(--card-color, var(--accent));
-}
-.stat-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
-.stat-value { font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:600; color:var(--text); line-height:1; }
-.stat-sub { font-size:10px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
-
-/* FILTERS */
-.filters-bar {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.search-wrap { position:relative; flex:1; min-width:200px; }
-.search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text3); width:14px; height:14px; }
-.search-input {
-  width:100%; background:var(--bg3); border:1px solid var(--border2);
-  color:var(--text); padding:8px 12px 8px 32px; border-radius:7px;
-  font-family:'Syne',sans-serif; font-size:13px; outline:none;
-  transition:border-color .2s;
-}
-.search-input:focus { border-color:var(--accent); }
-.search-input::placeholder { color:var(--text3); }
-select {
-  background:var(--bg3); border:1px solid var(--border2); color:var(--text);
-  padding:8px 12px; border-radius:7px; font-family:'Syne',sans-serif; font-size:12px;
-  font-weight:600; outline:none; cursor:pointer; min-width:140px;
-}
-select:focus { border-color:var(--accent); }
-.filter-label { font-size:11px; color:var(--text3); font-weight:600; white-space:nowrap; }
-.filter-group { display:flex; align-items:center; gap:8px; }
-.results-count { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); margin-left:auto; white-space:nowrap; }
-
-/* STATUS STRIP */
-.status-strip {
-  background: var(--bg2); border:1px solid var(--border);
-  border-radius:10px; padding:14px 16px; margin-bottom:16px;
-}
-.status-strip-title { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); margin-bottom:10px; }
-.status-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; gap:1px; margin-bottom:10px; }
-.status-bar-seg { flex:0; min-width:2px; border-radius:1px; transition:flex .5s ease; cursor:pointer; }
-.status-legend { display:flex; flex-wrap:wrap; gap:12px; }
-.legend-item { display:flex; align-items:center; gap:5px; cursor:pointer; }
-.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.legend-label { font-size:11px; color:var(--text2); }
-.legend-count { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); }
-
-/* TABLE */
-.table-wrap {
-  background: var(--bg2); border:1px solid var(--border);
-  border-radius:10px; overflow:hidden;
-}
-.table-header-row {
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 12px 16px; border-bottom:1px solid var(--border);
-}
-.table-title { font-size:13px; font-weight:700; }
-.export-btn {
-  display:flex; align-items:center; gap:5px;
-  background:transparent; border:1px solid var(--border2); color:var(--text2);
-  padding:5px 12px; border-radius:6px; font-family:'Syne',sans-serif;
-  font-size:11px; font-weight:600; cursor:pointer; transition:all .2s;
-}
-.export-btn:hover { border-color:var(--accent); color:var(--accent); }
-.table-container { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; font-size:12px; }
-thead th {
-  background:var(--bg3); padding:10px 12px; text-align:left;
-  font-size:10px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase;
-  color:var(--text3); border-bottom:1px solid var(--border); white-space:nowrap;
-  cursor:pointer; user-select:none; position:sticky; top:0;
-}
-thead th:hover { color:var(--text2); }
-thead th .sort-icon { opacity:0.4; margin-left:4px; }
-thead th.sorted .sort-icon { opacity:1; color:var(--accent); }
-tbody tr {
-  border-bottom:1px solid var(--border);
-  transition:background .15s;
-  cursor:pointer;
-}
-tbody tr:hover { background:var(--bg3); }
-tbody tr:last-child { border-bottom:none; }
-tbody td { padding:10px 12px; color:var(--text); vertical-align:middle; white-space:nowrap; }
-.cell-mono { font-family:'IBM Plex Mono',monospace; }
-.cell-dim { color:var(--text2); }
-.cell-muted { color:var(--text3); font-size:11px; }
-
-/* STATUS BADGES */
-.badge {
-  display:inline-flex; align-items:center; gap:4px;
-  padding:2px 8px; border-radius:100px; font-size:10px; font-weight:700;
-  letter-spacing:0.4px; text-transform:uppercase; white-space:nowrap;
-}
-.badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
-
-/* EXPANDED ROW */
-.expanded-row { display:none; }
-.expanded-row.open { display:table-row; }
-.expanded-content {
-  padding:16px; background:var(--bg);
-  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-}
-.detail-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
-.detail-item { }
-.detail-key { font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:3px; }
-.detail-val { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text); word-break:break-all; }
-
-/* PAGINATION */
-.pagination {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:12px 16px; border-top:1px solid var(--border);
-}
-.page-info { font-size:11px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
-.page-btns { display:flex; gap:6px; }
-.page-btn {
-  background:var(--bg3); border:1px solid var(--border2); color:var(--text2);
-  padding:5px 12px; border-radius:6px; font-family:'Syne',sans-serif;
-  font-size:11px; font-weight:600; cursor:pointer; transition:all .2s;
-}
-.page-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
-.page-btn:disabled { opacity:0.3; cursor:not-allowed; }
-.page-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-
-/* SETUP NOTICE */
-.setup-notice {
-  background:rgba(79,158,255,.08); border:1px solid rgba(79,158,255,.2);
-  border-radius:10px; padding:16px 20px; margin-bottom:16px;
-  font-size:12px; display:none;
-}
-.setup-notice.visible { display:block; }
-.setup-notice strong { color:var(--accent); }
-.setup-notice code { background:var(--bg3); padding:2px 6px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; }
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .stats-grid { grid-template-columns:repeat(2,1fr); }
-  .header { padding:0 16px; }
-  .main { padding:16px; }
-}
+:root{--bg:#07090f;--bg2:#0d1018;--bg3:#131720;--border:#1e2535;--border2:#252d3d;--text:#e8eaf0;--text2:#8891a8;--text3:#4a5468;--accent:#4f9eff;--accent2:#7b5cf0;--green:#22c55e;--orange:#f97316;--red:#ef4444;--yellow:#eab308}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-weight:800;font-size:18px;background:linear-gradient(135deg,#4f9eff,#7b5cf0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-left{display:flex;align-items:center;gap:16px}
+.sep{width:1px;height:20px;background:var(--border2)}
+.htitle{font-size:13px;color:var(--text2);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:12px}
+.ts{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)}
+.rbtn{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 14px;border-radius:6px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.rbtn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.rbtn svg{width:13px;height:13px}
+.rbtn.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.main{padding:20px 24px;max-width:1800px;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cc,var(--accent))}
+.sl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;line-height:1}
+.ss{font-size:10px;color:var(--text3);margin-top:4px;font-family:'IBM Plex Mono',monospace}
+.sbar{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.sbt{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:1px;margin-bottom:10px}
+.bseg{min-width:2px;border-radius:1px;cursor:pointer;transition:opacity .2s}
+.bseg:hover{opacity:.8}
+.leg{display:flex;flex-wrap:wrap;gap:12px}
+.li{display:flex;align-items:center;gap:5px;cursor:pointer;transition:opacity .2s}
+.li:hover{opacity:.7}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ll{font-size:11px;color:var(--text2)}
+.lc{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)}
+.fb{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.sw{position:relative;flex:1;min-width:200px}
+.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;height:14px}
+.si{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 12px 8px 32px;border-radius:7px;font-family:'Syne',sans-serif;font-size:13px;outline:none}
+.si:focus{border-color:var(--accent)}
+.si::placeholder{color:var(--text3)}
+select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+.fg{display:flex;align-items:center;gap:8px}
+.fl{font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap}
+.rc{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);margin-left:auto;white-space:nowrap}
+.tw{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.thr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.tt{font-size:13px;font-weight:700}
+.eb{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:6px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.eb:hover{border-color:var(--accent);color:var(--accent)}
+.tc{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--bg3);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0}
+thead th:hover{color:var(--text2)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+tbody tr:hover{background:var(--bg3)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:10px 12px;vertical-align:middle;white-space:nowrap}
+.cm{font-family:'IBM Plex Mono',monospace}
+.cd{color:var(--text2)}
+.cq{color:var(--text3);font-size:11px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.exr{display:none}
+.exr.open{display:table-row}
+.exc{padding:16px;background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.dk{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+.dv{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);word-break:break-all}
+.pg{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border)}
+.pi{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace}
+.pbs{display:flex;gap:6px}
+.pb{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:6px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.pb:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pb:disabled{opacity:.3;cursor:not-allowed}
+.pb.act{background:var(--accent);border-color:var(--accent);color:#fff}
 </style>
 </head>
 <body>
-
-<!-- LOADING -->
-<div class="loading-screen" id="loading">
-  <div class="loading-logo">FLEEK</div>
-  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
-  <div class="loading-text" id="loadingText">Connecting to data source...</div>
-</div>
-
-<!-- HEADER -->
 <header class="header">
   <div class="header-left">
     <div class="logo">FLEEK</div>
-    <div class="header-sep"></div>
-    <div class="header-title">G-Ops Backlog</div>
+    <div class="sep"></div>
+    <div class="htitle">G-Ops Backlog</div>
   </div>
   <div class="header-right">
-    <span class="last-refresh" id="lastRefresh">—</span>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-        <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-        <path d="M8 16H3v5"/>
-      </svg>
+    <span class="ts" id="ts">Data loaded at startup</span>
+    <button class="rbtn" id="rbtn" onclick="reload()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
       Refresh
     </button>
   </div>
 </header>
-
-<!-- ERROR -->
-<div class="error-banner" id="errorBanner"></div>
-
-<!-- SETUP NOTICE (shown when sheet not public) -->
-<div class="setup-notice" id="setupNotice">
-  ⚠️ <strong>Sheet Access Required:</strong> To load live data, open the G-Ops Backlog sheet → <strong>File → Share → Publish to web</strong> → Select "Extract 1" sheet → Publish. Or update <code>SHEET_ID</code> in this file with a public sheet.
+<div class="main">
+  <div class="stats" id="stats"></div>
+  <div class="sbar"><div class="sbt">Status Breakdown</div><div class="bar" id="bar"></div><div class="leg" id="leg"></div></div>
+  <div class="fb">
+    <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" id="search" placeholder="Search order #, fleek ID, customer, vendor..." oninput="filter()"></div>
+    <div class="fg"><span class="fl">Status</span><select id="fst" onchange="filter()"><option value="">All</option></select></div>
+    <div class="fg"><span class="fl">Country</span><select id="fcc" onchange="filter()"><option value="">All</option></select></div>
+    <div class="fg"><span class="fl">Vendor</span><select id="fvn" onchange="filter()"><option value="">All</option></select></div>
+    <div class="fg"><span class="fl">Type</span><select id="fpt" onchange="filter()"><option value="">All</option></select></div>
+    <div class="fg"><span class="fl">Sort</span><select id="srt" onchange="filter()"><option value="nd">Newest First</option><option value="od">Oldest First</option><option value="ah">Amount High</option><option value="al">Amount Low</option></select></div>
+    <span class="rc" id="rc">— orders</span>
+  </div>
+  <div class="tw">
+    <div class="thr"><span class="tt">Orders</span><button class="eb" onclick="xcsv()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button></div>
+    <div class="tc"><table><thead><tr>
+      <th>Order #</th><th>Fleek ID</th><th>Status</th><th>Status Date</th><th>Created</th><th>Amount</th><th>Customer</th><th>Country</th><th>Vendor</th><th>Zone</th><th>Product</th><th>Courier</th><th>Days</th><th></th>
+    </tr></thead><tbody id="tb"></tbody></table></div>
+    <div class="pg"><span class="pi" id="pi"></span><div class="pbs" id="pbs"></div></div>
+  </div>
 </div>
-
-<!-- MAIN -->
-<main class="main">
-
-  <!-- STATS -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card" style="--card-color:#4f9eff">
-      <div class="stat-label">Total Orders</div>
-      <div class="stat-value" id="statTotal">—</div>
-      <div class="stat-sub" id="statTotalSub">Loading...</div>
-    </div>
-    <div class="stat-card" style="--card-color:#22c55e">
-      <div class="stat-label">Delivered</div>
-      <div class="stat-value" id="statDelivered">—</div>
-      <div class="stat-sub" id="statDeliveredSub">—%</div>
-    </div>
-    <div class="stat-card" style="--card-color:#f97316">
-      <div class="stat-label">In Transit</div>
-      <div class="stat-value" id="statTransit">—</div>
-      <div class="stat-sub">Freight + Courier</div>
-    </div>
-    <div class="stat-card" style="--card-color:#eab308">
-      <div class="stat-label">QC Hold</div>
-      <div class="stat-value" id="statQcHold">—</div>
-      <div class="stat-sub">Needs Attention</div>
-    </div>
-    <div class="stat-card" style="--card-color:#ef4444">
-      <div class="stat-label">Cancelled</div>
-      <div class="stat-value" id="statCancelled">—</div>
-      <div class="stat-sub" id="statCancelledSub">—%</div>
-    </div>
-    <div class="stat-card" style="--card-color:#7b5cf0">
-      <div class="stat-label">Total GMV</div>
-      <div class="stat-value" id="statGmv">—</div>
-      <div class="stat-sub">GBP</div>
-    </div>
-  </div>
-
-  <!-- STATUS STRIP -->
-  <div class="status-strip">
-    <div class="status-strip-title">Status Breakdown</div>
-    <div class="status-bar" id="statusBar"></div>
-    <div class="status-legend" id="statusLegend"></div>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="filters-bar">
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input class="search-input" type="text" id="searchInput" placeholder="Search order #, fleek ID, customer, vendor..." oninput="applyFilters()">
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Status</span>
-      <select id="filterStatus" onchange="applyFilters()">
-        <option value="">All Statuses</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Country</span>
-      <select id="filterCountry" onchange="applyFilters()">
-        <option value="">All Countries</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Vendor Zone</span>
-      <select id="filterZone" onchange="applyFilters()">
-        <option value="">All Zones</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Product</span>
-      <select id="filterType" onchange="applyFilters()">
-        <option value="">All Types</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Sort</span>
-      <select id="sortBy" onchange="applyFilters()">
-        <option value="created_at_desc">Newest First</option>
-        <option value="created_at_asc">Oldest First</option>
-        <option value="amount_desc">Amount ↓</option>
-        <option value="amount_asc">Amount ↑</option>
-        <option value="status">Status A-Z</option>
-      </select>
-    </div>
-    <span class="results-count" id="resultsCount">—</span>
-  </div>
-
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <div class="table-header-row">
-      <span class="table-title">Orders</span>
-      <button class="export-btn" onclick="exportCSV()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
-      </button>
-    </div>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th onclick="sortTable('order_number')">Order # <span class="sort-icon">↕</span></th>
-            <th onclick="sortTable('fleek_id')">Fleek ID <span class="sort-icon">↕</span></th>
-            <th onclick="sortTable('latest_status')">Status <span class="sort-icon">↕</span></th>
-            <th onclick="sortTable('latest_status_date')">Status Date <span class="sort-icon">↕</span></th>
-            <th onclick="sortTable('created_at')">Created <span class="sort-icon">↕</span></th>
-            <th onclick="sortTable('total_order_line_amount')">Amount <span class="sort-icon">↕</span></th>
-            <th>Customer</th>
-            <th>Country</th>
-            <th>Vendor</th>
-            <th>Zone</th>
-            <th>Product Type</th>
-            <th>Courier</th>
-            <th onclick="sortTable('days_taken_to_delivery')">Days <span class="sort-icon">↕</span></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-    <div class="pagination">
-      <span class="page-info" id="pageInfo">—</span>
-      <div class="page-btns" id="pageBtns"></div>
-    </div>
-  </div>
-
-</main>
-
 <script>
-// ═══════════════════════════════════════════════════════
-// CONFIG — Update SHEET_ID to your Google Sheet
-// Sheet must be shared: "Anyone with the link can view"
-// ═══════════════════════════════════════════════════════
-const SHEET_ID = '1GKIgyPTsxNctFL_oUJ9jqqvIjFBTsFi2mOj5VpHCv3o';
-const SHEET_NAME = 'Extract 1';
-const PAGE_SIZE = 50;
-
-// ═══════════════════════════════════════════════════════
-// STATUS CONFIG
-// ═══════════════════════════════════════════════════════
-const STATUS_CONFIG = {
-  'CREATED':                            { color:'#4f9eff', bg:'rgba(79,158,255,.12)', label:'Created' },
-  'ACCEPTED':                           { color:'#06b6d4', bg:'rgba(6,182,212,.12)',  label:'Accepted' },
-  'PICKUP_READY':                       { color:'#8b5cf6', bg:'rgba(139,92,246,.12)', label:'Pickup Ready' },
-  'PICKUP_SUCCESSFULL':                 { color:'#7b5cf0', bg:'rgba(123,92,240,.12)', label:'Pickup Done' },
-  'PICKUP_FAILED':                      { color:'#f97316', bg:'rgba(249,115,22,.12)', label:'Pickup Failed' },
-  'QC_PENDING':                         { color:'#eab308', bg:'rgba(234,179,8,.12)',  label:'QC Pending' },
-  'QC_APPROVED':                        { color:'#22c55e', bg:'rgba(34,197,94,.12)',  label:'QC Approved' },
-  'QC_HOLD':                            { color:'#f97316', bg:'rgba(249,115,22,.15)', label:'QC Hold' },
-  'QC_REJECTED':                        { color:'#ef4444', bg:'rgba(239,68,68,.12)',  label:'QC Rejected' },
-  'HANDED_OVER_TO_LOGISTICS_PARTNER':   { color:'#a855f7', bg:'rgba(168,85,247,.12)', label:'Logistics' },
-  'FREIGHT':                            { color:'#ec4899', bg:'rgba(236,72,153,.12)', label:'Freight' },
-  'FREIGHT_DEPARTED':                   { color:'#ec4899', bg:'rgba(236,72,153,.12)', label:'Freight Dep.' },
-  'FREIGHT_CUSTOMS':                    { color:'#f59e0b', bg:'rgba(245,158,11,.12)', label:'Fr. Customs' },
-  'COURIER':                            { color:'#10b981', bg:'rgba(16,185,129,.12)', label:'Courier' },
-  'COURIER_CUSTOMS':                    { color:'#10b981', bg:'rgba(16,185,129,.12)', label:'Cour. Customs' },
-  'DELIVERED':                          { color:'#22c55e', bg:'rgba(34,197,94,.15)',  label:'Delivered' },
-  'CANCELLED':                          { color:'#ef4444', bg:'rgba(239,68,68,.12)',  label:'Cancelled' },
+const SC={
+  'CREATED':{c:'#4f9eff',b:'rgba(79,158,255,.12)',l:'Created'},
+  'ACCEPTED':{c:'#06b6d4',b:'rgba(6,182,212,.12)',l:'Accepted'},
+  'PICKUP_READY':{c:'#8b5cf6',b:'rgba(139,92,246,.12)',l:'Pickup Ready'},
+  'PICKUP_SUCCESSFULL':{c:'#7b5cf0',b:'rgba(123,92,240,.12)',l:'Pickup Done'},
+  'PICKUP_FAILED':{c:'#f97316',b:'rgba(249,115,22,.12)',l:'Pickup Failed'},
+  'QC_PENDING':{c:'#eab308',b:'rgba(234,179,8,.12)',l:'QC Pending'},
+  'QC_APPROVED':{c:'#22c55e',b:'rgba(34,197,94,.12)',l:'QC Approved'},
+  'QC_HOLD':{c:'#f97316',b:'rgba(249,115,22,.15)',l:'QC Hold'},
+  'QC_REJECTED':{c:'#ef4444',b:'rgba(239,68,68,.12)',l:'QC Rejected'},
+  'HANDED_OVER_TO_LOGISTICS_PARTNER':{c:'#a855f7',b:'rgba(168,85,247,.12)',l:'Logistics'},
+  'FREIGHT':{c:'#ec4899',b:'rgba(236,72,153,.12)',l:'Freight'},
+  'FREIGHT_DEPARTED':{c:'#ec4899',b:'rgba(236,72,153,.12)',l:'Freight Dep.'},
+  'FREIGHT_CUSTOMS':{c:'#f59e0b',b:'rgba(245,158,11,.12)',l:'Fr. Customs'},
+  'COURIER':{c:'#10b981',b:'rgba(16,185,129,.12)',l:'Courier'},
+  'COURIER_CUSTOMS':{c:'#10b981',b:'rgba(16,185,129,.12)',l:'Cour. Customs'},
+  'DELIVERED':{c:'#22c55e',b:'rgba(34,197,94,.15)',l:'Delivered'},
+  'CANCELLED':{c:'#ef4444',b:'rgba(239,68,68,.12)',l:'Cancelled'},
 };
+const gs=s=>SC[s?.toUpperCase()]||{c:'#8891a8',b:'rgba(136,145,168,.1)',l:s||'—'};
+const PS=50;
+let all=[],fil=[],pg=1;
 
-function getStatusCfg(s) {
-  return STATUS_CONFIG[s?.toUpperCase()] || { color:'#8891a8', bg:'rgba(136,145,168,.1)', label: s || '—' };
+// ─── EMBEDDED DATA ───
+const D=[{"cat":"31/03/2026 20:47:01","on":"139341","fid":"139341_58","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":8.98,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Rebecca Gillespie","ce":"beckad89@hotmail.com","cc":"United Kingdom","ct":"","vn":"fabtex","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"31/03/2026 20:13:18","on":"139327","fid":"139327_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":87.3,"itm":"Nike Hoodie","pt":"exact","cn":"Mia Crook","ce":"mac052012@icloud.com","cc":"United Kingdom","ct":"","vn":"nifty-thrift","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"31/03/2026 20:04:47","on":"139325","fid":"139325_86","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":1576.81,"itm":"Custom handpick 217 pcs","pt":"handpick","cn":"Hayley Simpson","ce":"hayleysimpson1985@yahoo.co.uk","cc":"United Kingdom","ct":"Reseller","vn":"the-brands-outlet-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"31/03/2026 19:52:31","on":"139320","fid":"139320_58","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":51.22,"itm":"Stussy reworked style printed T-shirts #2312","pt":"representative","cn":"Valentin Baur","ce":"valentinbaur869@gmail.com","cc":"Germany","ct":"","vn":"vintage-voyage","vz":"","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"31/03/2026 18:28:19","on":"139301","fid":"139301_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"06/04/2026","amt":267.46,"itm":"Carhartt Rework style vest jackets","pt":"representative","cn":"Yanick Timmermans","ce":"timmermansyanick@gmail.com","cc":"Netherlands","ct":"Reseller","vn":"unh-vintage-traders","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"31/03/2026 15:07:41","on":"139248","fid":"139248_58","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":4.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Rachel Hobden","ce":"04rjhobden@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"vintage-central","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"31/03/2026 12:20:11","on":"139204","fid":"139204_30","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":62.04,"itm":"Womens Pure Cotton Summer Dress","pt":"exact","cn":"Kirsten Knowles","ce":"kcoleman76@hotmail.co.uk","cc":"United Kingdom","ct":"","vn":"fashion-fusion-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"31/03/2026 11:34:50","on":"139195","fid":"139195_34","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":6.27,"itm":"Silk Blouse with Floral Pattern","pt":"exact","cn":"Alina Briukhovetska","ce":"alina.nov1509@gmail.com","cc":"Poland","ct":"","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"31/03/2026 06:15:39","on":"139147","fid":"139147_02","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":151.68,"itm":"RV2549 Carhartt Hoodies","pt":"exact","cn":"Ben Monks","ce":"margatevintagewholesale@gmail.com","cc":"United Kingdom","ct":"Retailer","vn":"raziq-vintage-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"30/03/2026 21:26:31","on":"139102","fid":"139102_18","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":4.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Sophia Lunn","ce":"sophialouiselunn@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-central","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"30/03/2026 20:19:40","on":"139089","fid":"139089_86","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":105.38,"itm":"Vintage Carhartt Rework Style Mixed Active Jackets","pt":"representative","cn":"Kev Blasius","ce":"blasiuskevin50@gmail.com","cc":"Germany","ct":"","vn":"vintage-voyage","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"30/03/2026 18:53:32","on":"139062","fid":"139062_34","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":165.28,"itm":"Premium Depop / Vinted Summer Value Reseller Pack","pt":"representative","cn":"Rio EREN","ce":"kaiseruhq@gmail.com","cc":"France","ct":"","vn":"ethereal","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"TRUE"},{"cat":"30/03/2026 18:34:53","on":"139056","fid":"139056_38","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":90.4,"itm":"Vintage Carhartt Reworked Style Detroit Jackets","pt":"representative","cn":"Oliver Heaton","ce":"oliverh0210@icloud.com","cc":"United Kingdom","ct":"","vn":"vintage-visions","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"30/03/2026 16:10:35","on":"139020","fid":"139020_14","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":7.54,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Ellie Harwin","ce":"ellieharwin@yahoo.com","cc":"United Kingdom","ct":"","vn":"fabtex","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"30/03/2026 13:24:33","on":"138969","fid":"138969_86","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":60.46,"itm":"Boho-Chic Denim Mini Skirt","pt":"exact","cn":"Tam Tran","ce":"tam.classicloot@gmail.com","cc":"United States","ct":"Reseller","vn":"fashion-fusion-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"30/03/2026 10:56:27","on":"138941","fid":"138941_30","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":655.0,"itm":"Custom handpick Y2K Belts for Veysel","pt":"handpick","cn":"Veysel AYDIN","ce":"veysel@peppertreelondon.co.uk","cc":"United Kingdom","ct":"Retailer","vn":"retro-revival","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"30/03/2026 06:49:53","on":"138896","fid":"138896_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":103.0,"itm":"Reworked Levis Multipatch Handbag","pt":"representative","cn":"Kirsty Robinson","ce":"reclaimed15@hotmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm-reworks","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"29/03/2026 22:53:15","on":"138878","fid":"138878_02","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":139.5,"itm":"Nike Dri-Fit T-Shirts","pt":"representative","cn":"Dylan Ord","ce":"dylanhoyland@hotmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"29/03/2026 22:24:20","on":"139088","fid":"139088_40","st":"FREIGHT","sd":"04/04/2026","amt":445.0,"itm":"Custom Handpick Designer Jeans","pt":"handpick","cn":"Jennifer Adams","ce":"jadams@gmail.com","cc":"Germany","ct":"","vn":"denim-house","vz":"","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"29/03/2026 18:37:57","on":"139105","fid":"139105_30","st":"ACCEPTED","sd":"02/04/2026","amt":210.0,"itm":"Custom Nike Tracksuit Bundle","pt":"handpick","cn":"Lisa Johnson","ce":"lisaj@outlook.com","cc":"United States","ct":"Reseller","vn":"sport-house","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"29/03/2026 17:13:24","on":"138813","fid":"138813_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":5.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Evie Hurlock","ce":"eehurlock57@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"fabtex","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"29/03/2026 17:11:55","on":"138812","fid":"138812_42","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":4.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Amy Harrison","ce":"amy@qsduk.com","cc":"United Kingdom","ct":"Reseller","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"29/03/2026 14:51:28","on":"138779","fid":"138779_18","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":118.9,"itm":"Y2K Jeans","pt":"exact","cn":"becca milburn","ce":"beccaemilburn@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"thrift-kings","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"29/03/2026 08:00:01","on":"138733","fid":"138733_62","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":236.24,"itm":"Custom handpick Diesel Jeans","pt":"handpick","cn":"John Larson","ce":"jacoblarsonband@yahoo.com","cc":"United States","ct":"Reseller","vn":"shoe-case","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"28/03/2026 23:44:36","on":"138710","fid":"138710_38","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":6.25,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Debbie Smith","ce":"debbeemail@yahoo.co.nz","cc":"New Zealand","ct":"Reseller","vn":"vintage-central","vz":"Karachi Export Processing Zone","co":"DHL","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"28/03/2026 22:43:32","on":"138704","fid":"138704_58","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":164.72,"itm":"Ralph Lauren Shorts [TD-371]","pt":"exact","cn":"Ella Gage","ce":"ella.gage@icloud.com","cc":"United Kingdom","ct":"","vn":"thrift-drip","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"28/03/2026 14:30:02","on":"138612","fid":"138612_66","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":54.9,"itm":"Carhartt Office trouser","pt":"exact","cn":"Louis Frith","ce":"lfmfrith@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage_attire","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"28/03/2026 07:56:11","on":"138535","fid":"138535_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":47.45,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Sharon Andrews","ce":"csandrews10@aol.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"TRUE"},{"cat":"27/03/2026 22:43:55","on":"138502","fid":"138502_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":12.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Matilda Pannell","ce":"matildapannell@icloud.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"27/03/2026 17:56:03","on":"138419","fid":"138419_14","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":88.2,"itm":"Vintage Carhartt Jackets","pt":"exact","cn":"ethan tindall","ce":"ethan_tindall@icloud.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"27/03/2026 17:04:47","on":"138405","fid":"138405_14","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":105.6,"itm":"HD1356 Ladies Upcycled Levis Belted Skirts","pt":"exact","cn":"Poppy Nigh","ce":"poppy.nigh@mail.com","cc":"United Kingdom","ct":"Reseller","vn":"hd-vintage","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"27/03/2026 16:38:11","on":"138395","fid":"138395_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":138.15,"itm":"Ed Hardy Trousers, Mix colors and sizes, (15 pcs), (ED-016)","pt":"exact","cn":"Teigan Tunnah","ce":"teiganscott10@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-visions","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"TRUE"},{"cat":"27/03/2026 14:03:29","on":"138358","fid":"138358_10","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":37.44,"itm":"4428 - Ralph Lauren Half and Full Sleeves Shirts","pt":"exact","cn":"William Fletcher","ce":"william053fletcher@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-central","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"27/03/2026 11:58:29","on":"138328","fid":"138328_98","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":77.55,"itm":"Y2K denim embroidery mini skirt","pt":"representative","cn":"S Saleem","ce":"cool.dude1123@yahoo.com","cc":"United Kingdom","ct":"","vn":"f-old-in-good-vintage","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"27/03/2026 11:46:14","on":"138325","fid":"138325_90","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":372.0,"itm":"Custom handpick Printed T-Shirts For Debora","pt":"handpick","cn":"Debora Panova","ce":"deborahpanova@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"27/03/2026 11:15:19","on":"138320","fid":"138320_94","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":132.1,"itm":"Ralph Lauren Jackets And Coats","pt":"exact","cn":"Debora Panova","ce":"deborahpanova@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"27/03/2026 08:43:29","on":"138293","fid":"138293_90","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":186.1,"itm":"Polo Harrington Jacket","pt":"exact","cn":"Fin Edwards","ce":"fin.edwards05@icloud.com","cc":"United Kingdom","ct":"Reseller","vn":"dynamic-lifestyle","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"26/03/2026 19:58:39","on":"138207","fid":"138207_66","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":99.2,"itm":"Carhartt Shorts","pt":"representative","cn":"Christine Ferguson","ce":"chrissy4kids@gmail.com","cc":"United Kingdom","ct":"","vn":"la-vintage-2","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"26/03/2026 16:47:07","on":"138165","fid":"138165_90","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"06/04/2026","amt":221.84,"itm":"Y2K Flared Jeans","pt":"representative","cn":"Anton Mras","ce":"antoniusmras@gmail.com","cc":"Germany","ct":"","vn":"5th-era-thrift","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"26/03/2026 15:29:37","on":"138154","fid":"138154_94","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":240.0,"itm":"Custom handpick Nike hoodie","pt":"handpick","cn":"Andrew Pojasyk","ce":"apojasyk@yahoo.co.uk","cc":"United Kingdom","ct":"Reseller","vn":"sheikh-garments","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"26/03/2026 13:44:33","on":"138128","fid":"138128_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":63.6,"itm":"Premium Tommy Polo Tshirts","pt":"representative","cn":"Owen Davies","ce":"awelm@outlook.com","cc":"United Kingdom","ct":"","vn":"vintage-elegance","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"26/03/2026 12:03:37","on":"138098","fid":"138098_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":121.5,"itm":"Premium Branded Shorts","pt":"representative","cn":"Callum Ellis-Jones","ce":"callumej23@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"26/03/2026 09:44:57","on":"138066","fid":"138066_34","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":190.07,"itm":"True Religion Jeans","pt":"exact","cn":"Vova Sent","ce":"vinted.design.11@gmail.com","cc":"Germany","ct":"","vn":"vintage-bliss-1","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"26/03/2026 01:33:33","on":"138032","fid":"138032_30","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"02/04/2026","amt":116.1,"itm":"Tommy Hilfiger Crewnecks","pt":"representative","cn":"Pavneet Singh","ce":"pavsingh705@gmail.com","cc":"United Kingdom","ct":"","vn":"riaaj-vintage","vz":"","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"25/03/2026 23:48:37","on":"138022","fid":"138022_14","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":33.6,"itm":"Lululemon Tops","pt":"representative","cn":"Hannah Norman","ce":"mrshnorman@yahoo.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"25/03/2026 19:01:19","on":"138248","fid":"138248_80","st":"COURIER","sd":"07/04/2026","amt":260.0,"itm":"Lululemon Athletic Bundle","pt":"exact","cn":"Michael Scott","ce":"m.scott@outlook.com","cc":"United States","ct":"Reseller","vn":"athletic-resale","vz":"Karachi Export Processing Zone","co":"UPS","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"25/03/2026 14:54:10","on":"137916","fid":"137916_54","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":5.96,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Izzy Taylor","ce":"iszi@hotmail.co.uk","cc":"United Kingdom","ct":"Reseller","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"25/03/2026 13:22:50","on":"137894","fid":"137894_42","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":1320.39,"itm":"Custom handpick Upcycle Sweatshirts jackets","pt":"handpick","cn":"Ryan Fahy","ce":"ryanfahybook@gmail.com","cc":"Ireland","ct":"","vn":"funky-find","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"25/03/2026 07:19:13","on":"137835","fid":"137835_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":207.4,"itm":"Patagonia Puffers 10 pieces.","pt":"exact","cn":"Justine Mills","ce":"justinelouiseramsey@gmail.com","cc":"United Kingdom","ct":"","vn":"rich-style","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"24/03/2026 22:29:33","on":"137817","fid":"137817_54","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":55.12,"itm":"Dickies Short","pt":"exact","cn":"yuwen fang","ce":"fugu11reason@gmail.com","cc":"Australia","ct":"Retailer","vn":"vintage-bliss-1","vz":"Karachi Export Processing Zone","co":"ups","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"23/03/2026 17:06:40","on":"137541","fid":"137541_86","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":178.64,"itm":"Premium Juicy couture Trousers","pt":"representative","cn":"Rylan Johns","ce":"rylanjohns35@icloud.com","cc":"United Kingdom","ct":"","vn":"vintage-elegance","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"TRUE"},{"cat":"22/03/2026 15:20:00","on":"137372","fid":"137372_46","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":67.8,"itm":"Tommy Hilfiger Polo Shirts","pt":"representative","cn":"Ben Beadles","ce":"benbeadles@msn.com","cc":"United Kingdom","ct":"","vn":"wearagain-co","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"22/03/2026 14:29:10","on":"137362","fid":"137362_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":63.65,"itm":"The North Face Windbreaker Jackets Mix","pt":"representative","cn":"Richard Lognonne","ce":"richardlognonne@yahoo.co.uk","cc":"United Kingdom","ct":"Reseller","vn":"vintage-cartel","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"21/03/2026 11:56:34","on":"137211","fid":"137211_98","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":125.23,"itm":"Rework Style Ralph Lauren Harrington Jackets {1/1}","pt":"representative","cn":"Adam Johnson","ce":"adamjohnson120906@gmail.com","cc":"United Kingdom","ct":"","vn":"retro-collective","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"20/03/2026 21:30:58","on":"137151","fid":"137151_22","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":90.4,"itm":"Carhartt reworked style mix color Detroit jackets #111025","pt":"representative","cn":"Tom Fletcher","ce":"tomfletch123@icloud.com","cc":"United Kingdom","ct":"","vn":"vintage-voyage","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"20/03/2026 11:32:43","on":"137073","fid":"137073_46","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":133.08,"itm":"Ralph Lauren Cable Knit Sweaters - Kids And Teens","pt":"exact","cn":"Layla Badowska","ce":"lb.layla23@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"19/03/2026 21:04:11","on":"136995","fid":"136995_62","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":144.75,"itm":"Custom handpick Exact black pc on customer demand","pt":"handpick","cn":"Tycho enmn","ce":"kte8.koningtychoenmn@gmail.com","cc":"Netherlands","ct":"","vn":"vintwear","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"19/03/2026 09:28:17","on":"136861","fid":"136861_54","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":18.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Emily Baker","ce":"emilybaker99@yahoo.co.uk","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"18/11/2025 14:35:03","on":"100878","fid":"100878_98","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"21/11/2025","amt":3.08,"itm":"Digital Clothing Pink Lace Camisole Top","pt":"exact","cn":"rumbi ncube","ce":"rumbincube01@gmail.com","cc":"United Kingdom","ct":"","vn":"diamond-y2k","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"18/03/2026 15:20:23","on":"136724","fid":"136724_18","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":200.2,"itm":"Custom handpick Columbia Jackets and Nike Dri-Fit Tshirts","pt":"handpick","cn":"David Marshall","ce":"dhm23305@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"17/11/2025 20:22:02","on":"100617","fid":"100617_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"21/11/2025","amt":5.08,"itm":"Energie Blue Camisole","pt":"exact","cn":"Keryn Orphan","ce":"keryn.orphan@outlook.com","cc":"United Kingdom","ct":"Reseller","vn":"diamond-y2k","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"16/03/2026 22:42:37","on":"136387","fid":"136387_58","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":117.4,"itm":"Ralph Lauren, lacoste and tommy hilfiger polo bundle","pt":"representative","cn":"Helen Brindley-Walker","ce":"rowlandshelen@hotmail.co.uk","cc":"United Kingdom","ct":"Reseller","vn":"vaio","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"16/03/2026 18:20:30","on":"136305","fid":"136305_06","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":63.52,"itm":"Lululemon Shorts","pt":"representative","cn":"Glendon B","ce":"speediebaker@gmail.com","cc":"United States","ct":"","vn":"vintage-storm","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"},{"cat":"14/03/2026 22:25:02","on":"135949","fid":"135949_10","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":57.8,"itm":"Upcycled Carhartt Denim Hand Bag","pt":"representative","cn":"Marie Jarman","ce":"ree050577@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-storm-reworks","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"11/03/2026 18:40:25","on":"135172","fid":"135172_90","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"04/04/2026","amt":68.6,"itm":"Upcycle Nike Sweatshirt","pt":"representative","cn":"Indya Jarvis-Lionel","ce":"indyajarvislionel@icloud.com","cc":"United Kingdom","ct":"","vn":"vintage-chic","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"10/11/2025 16:18:03","on":"97762","fid":"97762_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"01/12/2025","amt":2.08,"itm":"Womens Butterfly Print Tank Top","pt":"exact","cn":"Xan Walker","ce":"tattirose@icloud.com","cc":"United Kingdom","ct":"","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"10/03/2026 21:31:44","on":"133800","fid":"133800_20","st":"DELIVERED","sd":"15/03/2026","amt":280.0,"itm":"Nike Air Max Bundle","pt":"handpick","cn":"Dorothy Harris","ce":"d.harris@hotmail.com","cc":"United Kingdom","ct":"","vn":"air-max-lot","vz":"","co":"Nike","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"09/03/2026 00:34:35","on":"134355","fid":"134355_54","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"03/04/2026","amt":184.62,"itm":"Upcycled Levis Denim Hand Bag","pt":"representative","cn":"alexis rodriguez","ce":"alex.rodr2000@gmail.com","cc":"United States","ct":"Reseller","vn":"vintage-storm-reworks","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"06/11/2025 21:17:02","on":"96624","fid":"96624_22","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"11/11/2025","amt":165.66,"itm":"Burberry Scarves","pt":"representative","cn":"Lourenco Felix","ce":"lourencofelix355@gmail.com","cc":"Portugal","ct":"","vn":"authentic-vintage-2","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"06/11/2025 12:26:24","on":"96434","fid":"96434_638","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"01/12/2025","amt":3.57,"itm":"Denim & Co. Floral Print Jacket","pt":"exact","cn":"Genevieve Hallows","ce":"eviebuffy@hotmail.com","cc":"United Kingdom","ct":"","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"06/04/2026 21:58:49","on":"140500","fid":"140500_10","st":"QC_APPROVED","sd":"06/04/2026","amt":142.5,"itm":"Nike Air Jordan Bundle","pt":"exact","cn":"Marcus Brown","ce":"m.brown@hotmail.co.uk","cc":"United Kingdom","ct":"Retailer","vn":"retro-kings","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"06/04/2026 16:36:14","on":"140470","fid":"140470_40","st":"QC_APPROVED","sd":"07/04/2026","amt":195.0,"itm":"Vintage Adidas Collection","pt":"exact","cn":"Charles Lewis","ce":"c.lewis@gmail.com","cc":"France","ct":"Reseller","vn":"adidas-arch","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"06/04/2026 13:36:06","on":"140460","fid":"140460_20","st":"CANCELLED","sd":"06/04/2026","amt":180.0,"itm":"North Face Puffer Bundle","pt":"representative","cn":"Hannah Green","ce":"hgreen@yahoo.com","cc":"United Kingdom","ct":"","vn":"north-face-lot","vz":"","co":"","tn":"Sizing Issue","sm":"","cr":"","dy":"","cs":"FTC","qch":"FALSE"},{"cat":"06/04/2026 12:27:39","on":"140450","fid":"140450_90","st":"QC_PENDING","sd":"06/04/2026","amt":95.8,"itm":"Carhartt Workwear Bundle","pt":"exact","cn":"Daniel Lee","ce":"dlee@icloud.com","cc":"Australia","ct":"","vn":"hard-wear-vintage","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"FTC","qch":"FALSE"},{"cat":"06/04/2026 01:12:39","on":"140420","fid":"140420_20","st":"CREATED","sd":"06/04/2026","amt":320.0,"itm":"Burberry Check Scarf Bundle","pt":"representative","cn":"Sophie Turner","ce":"s.turner@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"luxury-arch","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"05/11/2025 18:11:11","on":"96212","fid":"96212_06","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"01/12/2025","amt":8.72,"itm":"Taylor & Sage Black Velvet Maxi Skirt","pt":"exact","cn":"Genevieve Hallows","ce":"eviebuffy@hotmail.com","cc":"United Kingdom","ct":"","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"05/04/2026 23:40:14","on":"140380","fid":"140380_90","st":"FREIGHT_DEPARTED","sd":"07/04/2026","amt":890.0,"itm":"Premium Carhartt Collection","pt":"exact","cn":"Kevin Martin","ce":"k.martin@icloud.com","cc":"United States","ct":"Reseller","vn":"carhartt-us","vz":"","co":"UPS","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"05/04/2026 23:40:14","on":"140375","fid":"140375_80","st":"FREIGHT","sd":"07/04/2026","amt":720.0,"itm":"Burberry Classic Bundle","pt":"representative","cn":"George Walker","ce":"g.walker@icloud.com","cc":"United States","ct":"Reseller","vn":"brit-luxury","vz":"","co":"FedEx","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"05/04/2026 23:05:43","on":"140370","fid":"140370_30","st":"QC_REJECTED","sd":"07/04/2026","amt":130.0,"itm":"Branded Sports Bundle","pt":"representative","cn":"Nancy Wilson","ce":"n.wilson@outlook.com","cc":"United Kingdom","ct":"","vn":"sports-arch","vz":"","co":"","tn":"Quality Issue","sm":"","cr":"","dy":"","cs":"FTC","qch":"FALSE"},{"cat":"05/04/2026 13:51:37","on":"140299","fid":"140299_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":369.93,"itm":"CR7226 Vintage Miss Me Flare Jeans","pt":"exact","cn":"Melissa Kalay","ce":"americamden@gmail.com","cc":"United Kingdom","ct":"Retailer","vn":"creed-vintage","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"05/04/2026 00:56:41","on":"140320","fid":"140320_10","st":"COURIER_CUSTOMS","sd":"06/04/2026","amt":290.0,"itm":"Y2K Fashion Bundle","pt":"exact","cn":"Thomas Anderson","ce":"t.anderson@yahoo.com","cc":"Netherlands","ct":"","vn":"y2k-dreams","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 21:59:25","on":"140210","fid":"140210_34","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":6.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"","ce":"holly.meres@icloud.com","cc":"United Kingdom","ct":"","vn":"elegant-vintage-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 17:04:48","on":"140152","fid":"140152_42","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":6.25,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Jade Towlerton","ce":"jadetowlerton@hotmail.co.uk","cc":"United Kingdom","ct":"","vn":"elegant-vintage-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 16:33:57","on":"140147","fid":"140147_06","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":85.58,"itm":"Hawaiian Shirts","pt":"exact","cn":"vincent vince","ce":"pansiervincent@gmail.com","cc":"France","ct":"","vn":"imad-vintage-clothing","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"04/04/2026 13:44:50","on":"140120","fid":"140120_60","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":340.0,"itm":"Levis 501 Originals Bundle","pt":"exact","cn":"Helen Robinson","ce":"h.robinson@yahoo.com","cc":"United Kingdom","ct":"","vn":"levis-lot","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 13:34:06","on":"140108","fid":"140108_66","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":767.9,"itm":"Custom handpick Carey 4","pt":"handpick","cn":"Carey Carpenter","ce":"careylynnw@yahoo.com","cc":"United States","ct":"Reseller","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 08:55:09","on":"140058","fid":"140058_90","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":25.1,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Ellen Whaley","ce":"honeytreevintage@gmail.com","cc":"Australia","ct":"Retailer","vn":"creed-vintage","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 08:48:51","on":"140060","fid":"140060_70","st":"FREIGHT_CUSTOMS","sd":"07/04/2026","amt":670.0,"itm":"Vintage Supreme Bundle","pt":"representative","cn":"Sandra Davis","ce":"sdavis@gmail.com","cc":"Germany","ct":"Retailer","vn":"supreme-vault","vz":"","co":"DHL","tn":"","sm":"","cr":"","dy":"","cs":"FTC","qch":"FALSE"},{"cat":"04/04/2026 08:31:30","on":"140054","fid":"140054_62","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":270.63,"itm":"Custom handpick Chloerussell22 31 Pieces","pt":"handpick","cn":"Chloe Russell","ce":"chloerussell22@hotmail.com","cc":"United Kingdom","ct":"","vn":"retroesthetic","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 07:41:00","on":"140050","fid":"140050_18","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":226.16,"itm":"Custom handpick Nike track pant","pt":"handpick","cn":"Marcel Heimbuechel","ce":"marcel.sterling@t-online.de","cc":"Germany","ct":"Reseller","vn":"dream-vintage-5","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"04/04/2026 03:45:12","on":"140039","fid":"140039_10","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":13.83,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Maya Grib","ce":"mayagrib.mg@gmail.com","cc":"United States","ct":"Reseller","vn":"khan-vintage","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"03/11/2025 15:24:00","on":"95380","fid":"95380_02","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"17/11/2025","amt":7.01,"itm":"L.L.Bean Cable Knit Sweater","pt":"exact","cn":"Chelsea Harewood","ce":"leal14clh21@gmail.com","cc":"United Kingdom","ct":"Retailer","vn":"ral-pk","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"03/04/2026 21:49:09","on":"140017","fid":"140017_34","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":3.88,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"lisi khan","ce":"lisikh52@gmail.com","cc":"United Kingdom","ct":"","vn":"retroesthetic","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"03/04/2026 20:33:28","on":"139995","fid":"139995_54","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":12.2,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"","ce":"mialucabackus@gmail.com","cc":"United Kingdom","ct":"Retailer","vn":"creed-vintage","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"03/04/2026 12:01:26","on":"139896","fid":"139896_62","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":6.75,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Daniela Longhi","ce":"danielalonghi12@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-archer","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"03/04/2026 11:54:33","on":"139920","fid":"139920_70","st":"PICKUP_READY","sd":"07/04/2026","amt":55.25,"itm":"Tommy Hilfiger Bundle","pt":"representative","cn":"James Clark","ce":"jclark88@yahoo.com","cc":"United Kingdom","ct":"","vn":"tommy-arch","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"03/04/2026 09:05:50","on":"139874","fid":"139874_78","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":359.6,"itm":"Rework style acid wash black carhartt hooded jackets","pt":"representative","cn":"Julius Sundermann","ce":"cookius2211@gmail.com","cc":"Germany","ct":"Reseller","vn":"vintage-silver","vz":"","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"03/04/2026 02:18:40","on":"139853","fid":"139853_26","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":7.75,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Carola Nilsson","ce":"carola.ferguson@yahoo.com.au","cc":"Australia","ct":"","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"UPS","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/11/2025 09:34:42","on":"94941","fid":"94941_74","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"01/12/2025","amt":4.11,"itm":"Time and Tru Red Knit Sweater","pt":"exact","cn":"Karen Baylis","ce":"karenbaylis0@gmail.com","cc":"United Kingdom","ct":"","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"02/04/2026 21:40:43","on":"139831","fid":"139831_42","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":41.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Llyris Rielly","ce":"karlkeryn@outlook.com","cc":"United Kingdom","ct":"Reseller","vn":"creed-vintage","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 20:47:34","on":"139824","fid":"139824_78","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":478.2,"itm":"GGL bags","pt":"exact","cn":"Matthew Hayes","ce":"matthewrhayesau@gmail.com","cc":"Australia","ct":"Reseller","vn":"vintage-vault","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 20:26:32","on":"139819","fid":"139819_06","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":8.16,"itm":"Impact Knit Sweater","pt":"exact","cn":"Alina Briukhovetska","ce":"alina.nov1509@gmail.com","cc":"Poland","ct":"","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 19:26:13","on":"139802","fid":"139802_66","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":38.2,"itm":"Y2k butterfly dream slip dresses","pt":"exact","cn":"Lauren Chapman","ce":"lchapman2711@gmail.com","cc":"United Kingdom","ct":"","vn":"vintage-reborn","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 19:01:57","on":"139791","fid":"139791_94","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":58.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Jasmine Palmer","ce":"jasminepalmer1@icloud.com","cc":"United Kingdom","ct":"","vn":"elegant-vintage-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 18:21:08","on":"139780","fid":"139780_46","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":61.01,"itm":"Custom handpick Alex Urgese","pt":"handpick","cn":"Alex Urgese","ce":"alex.urgese@libero.it","cc":"Italy","ct":"","vn":"fabtex","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 18:00:57","on":"139760","fid":"139760_50","st":"DELIVERED","sd":"07/04/2026","amt":520.0,"itm":"Designer Brand Mix Bundle","pt":"handpick","cn":"Patricia White","ce":"p.white@hotmail.com","cc":"France","ct":"","vn":"brand-mix","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"02/04/2026 17:28:30","on":"139766","fid":"139766_58","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":47.25,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Debbie quainton","ce":"tufftarts@yahoo.co.uk","cc":"United Kingdom","ct":"","vn":"creed-vintage","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 13:13:25","on":"139718","fid":"139718_90","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":9.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Anna Griffin","ce":"anna.griffin25@outlook.com","cc":"United Kingdom","ct":"","vn":"thunder-vintage","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 11:57:21","on":"139700","fid":"139700_30","st":"DELIVERED","sd":"03/04/2026","amt":350.0,"itm":"Vintage Denim Collection","pt":"exact","cn":"Robert Taylor","ce":"r.taylor@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"denim-vault","vz":"","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 11:02:24","on":"139688","fid":"139688_02","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":7.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Aleksandra Wysocka","ce":"aleksandra2005compl@gmail.com","cc":"United Kingdom","ct":"","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 10:35:37","on":"139684","fid":"139684_82","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":47.25,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Rachel Hobden","ce":"04rjhobden@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 10:24:10","on":"139680","fid":"139680_38","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":79.75,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Awele Nkeaka","ce":"nkeakaawele@yahoo.com","cc":"United Kingdom","ct":"","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 09:28:46","on":"139667","fid":"139667_66","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":58.52,"itm":"Levis Mix Coded Jeans","pt":"exact","cn":"Kim Ross","ce":"kimmyrossy@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"thunder-vintage","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 08:03:37","on":"139658","fid":"139658_94","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":13.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Emma Casemore","ce":"emmacasemore@yahoo.co.uk","cc":"United Kingdom","ct":"","vn":"elegant-vintage-1","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 05:43:55","on":"139646","fid":"139646_46","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":246.0,"itm":"Custom handpick Kids Oshkosh overall","pt":"handpick","cn":"Inessa Frolova","ce":"inessawf@gmail.com","cc":"United Kingdom","ct":"","vn":"diamond-vintage","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 04:04:37","on":"139638","fid":"139638_66","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":19.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Jack Caulkett","ce":"caulkettj@gmail.com","cc":"United Kingdom","ct":"","vn":"rewear-n-rework-y2k","vz":"","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"02/04/2026 00:53:23","on":"139631","fid":"139631_30","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":61.44,"itm":"Y2K MICRO MINI DENIM SEXY SKIRTS","pt":"exact","cn":"Shelby Parie","ce":"smp2005@outlook.com","cc":"United States","ct":"","vn":"galaxy-rags","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"01/12/2025 21:56:18","on":"105774","fid":"105774_086","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"05/12/2025","amt":6.25,"itm":"Christmas Vest","pt":"exact","cn":"Alison Crees","ce":"alisoncrees@gmail.com","cc":"United Kingdom","ct":"Reseller","vn":"italian-dream","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 23:10:26","on":"139624","fid":"139624_38","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":7.5,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Caspr Thomas-Hughes","ce":"thomasfraser444@gmail.com","cc":"United Kingdom","ct":"","vn":"elegant-vintage-1","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"01/04/2026 21:48:14","on":"139604","fid":"139604_22","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":138.39,"itm":"RV2456 The North face Jackets","pt":"exact","cn":"","ce":"jack.doherty88@hotmail.com","cc":"United Kingdom","ct":"","vn":"raziq-vintage-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 21:48:14","on":"139604","fid":"139604_86","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":89.85,"itm":"RV2449 Dickies pants","pt":"exact","cn":"","ce":"jack.doherty88@hotmail.com","cc":"United Kingdom","ct":"","vn":"raziq-vintage-1","vz":"Karachi Export Processing Zone","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 20:32:53","on":"139580","fid":"139580_60","st":"DELIVERED","sd":"05/04/2026","amt":415.0,"itm":"Luxury Watch Bundle","pt":"exact","cn":"Gary Thompson","ce":"g.thompson@gmail.com","cc":"Australia","ct":"Reseller","vn":"luxury-timepiece","vz":"Karachi Export Processing Zone","co":"DHL","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 19:00:03","on":"139557","fid":"139557_38","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":86.04,"itm":"The North Face Windbreaker Jackets Mix","pt":"representative","cn":"Adam Marbouh","ce":"marbouhadam01@gmail.com","cc":"Italy","ct":"","vn":"vintage-cartel","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"FTC","qch":"FALSE"},{"cat":"01/04/2026 17:22:01","on":"139534","fid":"139534_18","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":31.75,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Georgia Perry","ce":"georgiagshore@hotmail.com","cc":"United Kingdom","ct":"","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 14:09:27","on":"139496","fid":"139496_06","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":15.0,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Debra","ce":"mail@markbackus.co.uk","cc":"United Kingdom","ct":"","vn":"rvg-loop","vz":"Karachi Export Processing Zone","co":"DPD","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 09:40:45","on":"139450","fid":"139450_60","st":"PICKUP_SUCCESSFULL","sd":"05/04/2026","amt":175.5,"itm":"Ralph Lauren Polo Bundle","pt":"exact","cn":"Chris Evans","ce":"c.evans@hotmail.com","cc":"United Kingdom","ct":"","vn":"polo-paradise","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"Repeat","qch":"FALSE"},{"cat":"01/04/2026 08:23:14","on":"139390","fid":"139390_50","st":"QC_HOLD","sd":"04/04/2026","amt":88.0,"itm":"Vintage Levi 501 Jeans","pt":"exact","cn":"Emma Watson","ce":"ewatson@gmail.com","cc":"United Kingdom","ct":"","vn":"jean-pool","vz":"","co":"","tn":"","sm":"","cr":"","dy":"","cs":"FTC","qch":"FALSE"},{"cat":"01/04/2026 07:14:30","on":"139417","fid":"139417_70","st":"HANDED_OVER_TO_LOGISTICS_PARTNER","sd":"07/04/2026","amt":51.24,"itm":"BAB Custom Manual Pick Bundle","pt":"handpick","cn":"Hayley Bristow","ce":"hayley.bristow@hotmail.com","cc":"United Kingdom","ct":"","vn":"retro-thrift-store-1","vz":"","co":"","tn":"","sm":"","cr":"","dy":"27","cs":"Repeat","qch":"TRUE"}];
+
+function init(){
+  all=D;
+  populateSels();
+  filter();
+  renderStats();
+  document.getElementById('ts').textContent='Updated: '+new Date().toLocaleTimeString();
 }
 
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-let allData = [];
-let filtered = [];
-let currentPage = 1;
-let sortCol = 'created_at';
-let sortDir = -1;
-
-// ═══════════════════════════════════════════════════════
-// FETCH DATA
-// ═══════════════════════════════════════════════════════
-async function loadData() {
-  const btn = document.getElementById('refreshBtn');
-  const loading = document.getElementById('loading');
-  const loadingText = document.getElementById('loadingText');
-  
-  btn.classList.add('loading');
-  loading.classList.remove('hidden');
-  document.getElementById('errorBanner').classList.remove('visible');
-  document.getElementById('setupNotice').classList.remove('visible');
-
-  try {
-    loadingText.textContent = 'Fetching order data...';
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&headers=1`;
-    const res = await fetch(url);
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
-    const text = await res.text();
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
-    if (!match) throw new Error('Invalid response format. Make sure the sheet is shared publicly.');
-    
-    const json = JSON.parse(match[1]);
-    if (json.status === 'error') {
-      throw new Error(json.errors?.[0]?.message || 'Sheet access denied. Share the sheet publicly.');
-    }
-    
-    loadingText.textContent = 'Processing data...';
-    
-    // Map columns by label
-    const cols = {};
-    json.table.cols.forEach((c, i) => { if(c.label) cols[c.label] = i; });
-    
-    allData = json.table.rows
-      .filter(r => r && r.f)
-      .map(r => {
-        const g = (key) => {
-          const i = cols[key];
-          if (i === undefined) return '';
-          const cell = r.f[i];
-          return cell?.v !== null && cell?.v !== undefined ? String(cell.v) : (cell?.f || '');
-        };
-        return {
-          created_at:                 g('created_at'),
-          order_number:               g('order_number'),
-          fleek_id:                   g('fleek_id'),
-          order_line_id:              g('order_line_id'),
-          latest_status:              g('latest_status'),
-          latest_status_date:         g('latest_status_date'),
-          total_order_line_amount:    parseFloat(g('total_order_line_amount')) || 0,
-          days_taken_to_delivery:     g('days_taken_to_delivery'),
-          item_name:                  g('item_name'),
-          product_type:               g('product_type'),
-          customer_name:              g('customer_name'),
-          customer_email:             g('customer_email'),
-          customer_country:           g('customer_country'),
-          customer_country_region:    g('customer_country_region'),
-          customer_type:              g('customer_type'),
-          vendor:                     g('vendor'),
-          vendor_country:             g('vendor_country'),
-          vendor_zone:                g('vendor_zone'),
-          is_zone_vendor:             g('is_zone_vendor'),
-          courier_company:            g('courier_company'),
-          tracking_number:            g('tracking_number'),
-          shipping_method:            g('shipping_method'),
-          cancellation_reason:        g('cancellation_reason'),
-          logistics_partner_name:     g('logistics_partner_name'),
-          flight_number:              g('flight_number'),
-          accepted_at:                g('accepted_at'),
-          qc_approved_at:             g('qc_approved_at'),
-          delivered_at:               g('delivered_at'),
-          replacement_status:         g('replacement_status'),
-          ot_helper:                  g('ot_helper'),
-          customer_status:            g('customer_status'),
-          boxes:                      g('boxes'),
-          went_to_qc_hold:            g('went_to_qc_hold'),
-          status_after_qc_hold:       g('status_after_qc_hold'),
-          affiliate:                  g('affiliate'),
-          is_bargain_bin:             g('is_bargain_bin'),
-          _expanded: false,
-        };
-      });
-
-    loadingText.textContent = 'Rendering...';
-    populateFilters();
-    applyFilters();
-    updateStats();
-    
-    document.getElementById('lastRefresh').textContent = `Updated ${new Date().toLocaleTimeString()}`;
-    loading.classList.add('hidden');
-    
-  } catch(e) {
-    loading.classList.add('hidden');
-    const msg = e.message || 'Failed to load data';
-    document.getElementById('errorBanner').textContent = `⚠ ${msg}`;
-    document.getElementById('errorBanner').classList.add('visible');
-    document.getElementById('setupNotice').classList.add('visible');
-    console.error(e);
-  }
-  
-  btn.classList.remove('loading');
+function reload(){
+  document.getElementById('rbtn').classList.add('spin');
+  setTimeout(()=>{
+    init();
+    document.getElementById('rbtn').classList.remove('spin');
+  },800);
 }
 
-// ═══════════════════════════════════════════════════════
-// FILTERS
-// ═══════════════════════════════════════════════════════
-function populateFilters() {
-  const statuses = [...new Set(allData.map(d=>d.latest_status).filter(Boolean))].sort();
-  const countries = [...new Set(allData.map(d=>d.customer_country).filter(Boolean))].sort();
-  const zones = [...new Set(allData.map(d=>d.vendor_zone).filter(Boolean))].sort();
-  const types = [...new Set(allData.map(d=>d.product_type).filter(Boolean))].sort();
-  
-  fillSelect('filterStatus', statuses);
-  fillSelect('filterCountry', countries);
-  fillSelect('filterZone', zones);
-  fillSelect('filterType', types);
+function populateSels(){
+  const fill=(id,vals)=>{
+    const s=document.getElementById(id);
+    const cur=s.value;
+    while(s.options.length>1)s.remove(1);
+    vals.forEach(v=>{const o=new Option(v,v);s.add(o)});
+    s.value=cur;
+  };
+  fill('fst',[...new Set(all.map(d=>d.st).filter(Boolean))].sort());
+  fill('fcc',[...new Set(all.map(d=>d.cc).filter(Boolean))].sort());
+  fill('fvn',[...new Set(all.map(d=>d.vn).filter(Boolean))].sort());
+  fill('fpt',[...new Set(all.map(d=>d.pt).filter(Boolean))].sort());
 }
 
-function fillSelect(id, opts) {
-  const sel = document.getElementById(id);
-  const cur = sel.value;
-  while(sel.options.length > 1) sel.remove(1);
-  opts.forEach(o => {
-    const opt = new Option(o, o);
-    sel.add(opt);
-  });
-  sel.value = cur;
-}
-
-function applyFilters() {
-  const search = document.getElementById('searchInput').value.toLowerCase().trim();
-  const status = document.getElementById('filterStatus').value;
-  const country = document.getElementById('filterCountry').value;
-  const zone = document.getElementById('filterZone').value;
-  const type = document.getElementById('filterType').value;
-  const sortVal = document.getElementById('sortBy').value;
-
-  filtered = allData.filter(d => {
-    if(status && d.latest_status !== status) return false;
-    if(country && d.customer_country !== country) return false;
-    if(zone && d.vendor_zone !== zone) return false;
-    if(type && d.product_type !== type) return false;
-    if(search) {
-      const haystack = [d.order_number,d.fleek_id,d.customer_name,d.vendor,d.item_name,d.tracking_number,d.customer_email].join(' ').toLowerCase();
-      if(!haystack.includes(search)) return false;
-    }
+function filter(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const st=document.getElementById('fst').value;
+  const cc=document.getElementById('fcc').value;
+  const vn=document.getElementById('fvn').value;
+  const pt=document.getElementById('fpt').value;
+  const sr=document.getElementById('srt').value;
+  fil=all.filter(d=>{
+    if(st&&d.st!==st)return false;
+    if(cc&&d.cc!==cc)return false;
+    if(vn&&d.vn!==vn)return false;
+    if(pt&&d.pt!==pt)return false;
+    if(q){const h=[d.on,d.fid,d.cn,d.vn,d.itm,d.tn,d.ce].join(' ').toLowerCase();if(!h.includes(q))return false;}
     return true;
   });
-
-  // Sort
-  filtered.sort((a,b) => {
-    switch(sortVal) {
-      case 'created_at_desc': return b.created_at.localeCompare(a.created_at);
-      case 'created_at_asc':  return a.created_at.localeCompare(b.created_at);
-      case 'amount_desc':     return b.total_order_line_amount - a.total_order_line_amount;
-      case 'amount_asc':      return a.total_order_line_amount - b.total_order_line_amount;
-      case 'status':          return (a.latest_status||'').localeCompare(b.latest_status||'');
-      default: return 0;
-    }
+  fil.sort((a,b)=>{
+    if(sr==='nd')return b.cat.localeCompare(a.cat);
+    if(sr==='od')return a.cat.localeCompare(b.cat);
+    if(sr==='ah')return b.amt-a.amt;
+    if(sr==='al')return a.amt-b.amt;
+    return 0;
   });
-
-  document.getElementById('resultsCount').textContent = `${filtered.length.toLocaleString()} orders`;
-  currentPage = 1;
+  document.getElementById('rc').textContent=fil.length.toLocaleString()+' orders';
+  pg=1;
   renderTable();
-  renderStatusBar(filtered);
+  renderBar(fil);
 }
 
-function sortTable(col) {
-  const sortSel = document.getElementById('sortBy');
-  // map col to sort option
-  const map = {
-    'order_number': null, 'fleek_id': null, 'latest_status': 'status',
-    'latest_status_date': null, 'created_at': 'created_at_desc',
-    'total_order_line_amount': 'amount_desc', 'days_taken_to_delivery': null
-  };
-  if(map[col]) { sortSel.value = map[col]; applyFilters(); }
+function renderStats(){
+  const t=all.length,del=all.filter(d=>d.st==='DELIVERED').length,
+    can=all.filter(d=>d.st==='CANCELLED').length,
+    qch=all.filter(d=>d.st==='QC_HOLD').length,
+    tr=all.filter(d=>['FREIGHT','FREIGHT_DEPARTED','FREIGHT_CUSTOMS','COURIER','COURIER_CUSTOMS'].includes(d.st)).length,
+    gmv=all.reduce((s,d)=>s+d.amt,0);
+  document.getElementById('stats').innerHTML=`
+    <div class="sc" style="--cc:#4f9eff"><div class="sl">Total Orders</div><div class="sv">${t.toLocaleString()}</div><div class="ss">All time</div></div>
+    <div class="sc" style="--cc:#22c55e"><div class="sl">Delivered</div><div class="sv">${del.toLocaleString()}</div><div class="ss">${t?((del/t)*100).toFixed(1):0}%</div></div>
+    <div class="sc" style="--cc:#f97316"><div class="sl">In Transit</div><div class="sv">${tr.toLocaleString()}</div><div class="ss">Freight + Courier</div></div>
+    <div class="sc" style="--cc:#eab308"><div class="sl">QC Hold</div><div class="sv">${qch.toLocaleString()}</div><div class="ss">Needs attention</div></div>
+    <div class="sc" style="--cc:#ef4444"><div class="sl">Cancelled</div><div class="sv">${can.toLocaleString()}</div><div class="ss">${t?((can/t)*100).toFixed(1):0}%</div></div>
+    <div class="sc" style="--cc:#7b5cf0"><div class="sl">Total GMV</div><div class="sv">£${gmv.toLocaleString('en-GB',{maximumFractionDigits:0})}</div><div class="ss">GBP</div></div>
+  `;
 }
 
-// ═══════════════════════════════════════════════════════
-// STATS
-// ═══════════════════════════════════════════════════════
-function updateStats() {
-  const total = allData.length;
-  const delivered = allData.filter(d=>d.latest_status==='DELIVERED').length;
-  const cancelled = allData.filter(d=>d.latest_status==='CANCELLED').length;
-  const qcHold = allData.filter(d=>d.latest_status==='QC_HOLD').length;
-  const inTransit = allData.filter(d=>['FREIGHT','FREIGHT_DEPARTED','FREIGHT_CUSTOMS','COURIER','COURIER_CUSTOMS'].includes(d.latest_status)).length;
-  const gmv = allData.reduce((s,d)=>s+d.total_order_line_amount,0);
-
-  document.getElementById('statTotal').textContent = total.toLocaleString();
-  document.getElementById('statTotalSub').textContent = 'All orders loaded';
-  document.getElementById('statDelivered').textContent = delivered.toLocaleString();
-  document.getElementById('statDeliveredSub').textContent = `${total?((delivered/total)*100).toFixed(1):0}% of total`;
-  document.getElementById('statTransit').textContent = inTransit.toLocaleString();
-  document.getElementById('statQcHold').textContent = qcHold.toLocaleString();
-  document.getElementById('statCancelled').textContent = cancelled.toLocaleString();
-  document.getElementById('statCancelledSub').textContent = `${total?((cancelled/total)*100).toFixed(1):0}% of total`;
-  document.getElementById('statGmv').textContent = '£'+gmv.toLocaleString('en-GB',{maximumFractionDigits:0});
+function renderBar(data){
+  const cnt={};data.forEach(d=>cnt[d.st]=(cnt[d.st]||0)+1);
+  const tot=data.length||1;
+  const srt=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('bar').innerHTML=srt.map(([s,c])=>{
+    const g=gs(s);
+    return `<div class="bseg" style="flex:${c};background:${g.c}" title="${g.l}: ${c}" onclick="setFilter('${s}')"></div>`;
+  }).join('');
+  document.getElementById('leg').innerHTML=srt.map(([s,c])=>{
+    const g=gs(s),p=((c/tot)*100).toFixed(1);
+    return `<div class="li" onclick="setFilter('${s}')"><div class="ld" style="background:${g.c}"></div><span class="ll">${g.l}</span><span class="lc">${c.toLocaleString()} (${p}%)</span></div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════════════════
-// STATUS BAR
-// ═══════════════════════════════════════════════════════
-function renderStatusBar(data) {
-  const counts = {};
-  data.forEach(d => { counts[d.latest_status] = (counts[d.latest_status]||0)+1; });
-  const total = data.length || 1;
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  
-  const bar = document.getElementById('statusBar');
-  const legend = document.getElementById('statusLegend');
-  bar.innerHTML = '';
-  legend.innerHTML = '';
-  
-  sorted.forEach(([st, cnt]) => {
-    const cfg = getStatusCfg(st);
-    const pct = (cnt/total*100).toFixed(1);
-    const seg = document.createElement('div');
-    seg.className = 'status-bar-seg';
-    seg.style.cssText = `flex:${cnt};background:${cfg.color};`;
-    seg.title = `${cfg.label}: ${cnt}`;
-    seg.onclick = () => {
-      document.getElementById('filterStatus').value = st;
-      applyFilters();
-    };
-    bar.appendChild(seg);
-    
-    const li = document.createElement('div');
-    li.className = 'legend-item';
-    li.innerHTML = `<div class="legend-dot" style="background:${cfg.color}"></div><span class="legend-label">${cfg.label}</span><span class="legend-count">${cnt.toLocaleString()} (${pct}%)</span>`;
-    li.onclick = () => {
-      document.getElementById('filterStatus').value = st;
-      applyFilters();
-    };
-    legend.appendChild(li);
-  });
-}
+function setFilter(st){document.getElementById('fst').value=st;filter();}
 
-// ═══════════════════════════════════════════════════════
-// TABLE RENDER
-// ═══════════════════════════════════════════════════════
-function renderTable() {
-  const start = (currentPage-1)*PAGE_SIZE;
-  const page = filtered.slice(start, start+PAGE_SIZE);
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-  
-  if(!page.length) {
-    tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text3);">No orders found</td></tr>`;
-  }
-
-  page.forEach((d, idx) => {
-    const cfg = getStatusCfg(d.latest_status);
-    const amt = d.total_order_line_amount ? '£'+d.total_order_line_amount.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
-    const days = d.days_taken_to_delivery || '—';
-    const rowId = `row_${start+idx}`;
-    const expId = `exp_${start+idx}`;
-    
-    const tr = document.createElement('tr');
-    tr.id = rowId;
-    tr.onclick = () => toggleExpand(start+idx, expId);
-    tr.innerHTML = `
-      <td class="cell-mono" style="font-weight:600;color:var(--accent)">${d.order_number||'—'}</td>
-      <td class="cell-mono cell-dim" style="font-size:11px">${d.fleek_id||'—'}</td>
-      <td><span class="badge" style="color:${cfg.color};background:${cfg.bg}">${cfg.label}</span></td>
-      <td class="cell-mono cell-muted">${formatDate(d.latest_status_date)}</td>
-      <td class="cell-mono cell-muted">${formatDate(d.created_at)}</td>
-      <td class="cell-mono" style="font-weight:600">${amt}</td>
-      <td class="cell-dim">${d.customer_name||'—'}</td>
-      <td class="cell-dim">${d.customer_country||'—'}</td>
-      <td class="cell-dim">${d.vendor||'—'}</td>
-      <td class="cell-muted" style="font-size:11px">${d.vendor_zone||'—'}</td>
-      <td class="cell-muted" style="font-size:11px">${d.product_type||'—'}</td>
-      <td class="cell-muted" style="font-size:11px">${d.courier_company||'—'}</td>
-      <td class="cell-mono cell-muted" style="text-align:center">${days}</td>
+function renderTable(){
+  const start=(pg-1)*PS,page=fil.slice(start,start+PS);
+  const tb=document.getElementById('tb');
+  tb.innerHTML='';
+  if(!page.length){tb.innerHTML='<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text3)">No orders found</td></tr>';return;}
+  page.forEach((d,i)=>{
+    const g=gs(d.st);
+    const amt=d.amt?'£'+d.amt.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+    const eid='ex_'+(start+i);
+    const tr=document.createElement('tr');
+    tr.onclick=()=>document.getElementById(eid)?.classList.toggle('open');
+    tr.innerHTML=`
+      <td class="cm" style="font-weight:600;color:var(--accent)">${d.on||'—'}</td>
+      <td class="cm cd" style="font-size:11px">${d.fid||'—'}</td>
+      <td><span class="badge" style="color:${g.c};background:${g.b}">${g.l}</span></td>
+      <td class="cm cq">${d.sd||'—'}</td>
+      <td class="cm cq">${d.cat?.split(' ')[0]||'—'}</td>
+      <td class="cm" style="font-weight:600">${amt}</td>
+      <td class="cd">${d.cn||'—'}</td>
+      <td class="cd">${d.cc||'—'}</td>
+      <td class="cd">${d.vn||'—'}</td>
+      <td class="cq" style="font-size:11px">${d.vz||'—'}</td>
+      <td class="cq" style="font-size:11px">${d.pt||'—'}</td>
+      <td class="cq" style="font-size:11px">${d.co||'—'}</td>
+      <td class="cm cq" style="text-align:center">${d.dy||'—'}</td>
       <td style="color:var(--text3);font-size:10px">▼</td>
     `;
-    tbody.appendChild(tr);
-    
-    // Expanded row
-    const expTr = document.createElement('tr');
-    expTr.id = expId;
-    expTr.className = 'expanded-row';
-    const expTd = document.createElement('td');
-    expTd.colSpan = 14;
-    expTd.className = 'expanded-content';
-    
-    const fields = [
-      ['Order Line ID', d.order_line_id],
-      ['Item Name', d.item_name],
-      ['Customer Email', d.customer_email],
-      ['Customer Type', d.customer_type],
-      ['Customer Status', d.customer_status],
-      ['Vendor Country', d.vendor_country],
-      ['Is Zone Vendor', d.is_zone_vendor],
-      ['Tracking #', d.tracking_number],
-      ['Shipping Method', d.shipping_method],
-      ['Logistics Partner', d.logistics_partner_name],
-      ['Flight #', d.flight_number],
-      ['Boxes', d.boxes],
-      ['Accepted At', formatDate(d.accepted_at)],
-      ['QC Approved At', formatDate(d.qc_approved_at)],
-      ['Delivered At', formatDate(d.delivered_at)],
-      ['Cancellation Reason', d.cancellation_reason],
-      ['Replacement Status', d.replacement_status],
-      ['Went to QC Hold', d.went_to_qc_hold],
-      ['Status After QC Hold', d.status_after_qc_hold],
-      ['OT Helper', d.ot_helper],
-      ['Affiliate', d.affiliate],
-      ['Is Bargain Bin', d.is_bargain_bin],
-    ].filter(([,v])=>v&&v!=='—'&&v!=='undefined'&&v!=='null'&&v!=='');
-    
-    expTd.innerHTML = `<div class="detail-grid">${fields.map(([k,v])=>`<div class="detail-item"><div class="detail-key">${k}</div><div class="detail-val">${v}</div></div>`).join('')}</div>`;
-    expTr.appendChild(expTd);
-    tbody.appendChild(expTr);
+    tb.appendChild(tr);
+    const exr=document.createElement('tr');
+    exr.id=eid;exr.className='exr';
+    const extd=document.createElement('td');
+    extd.colSpan=14;extd.className='exc';
+    const flds=[['Item',d.itm],['Product Type',d.pt],['Email',d.ce],['Customer Type',d.ct],['Customer Status',d.cs],['Vendor Zone',d.vz],['Courier',d.co],['Tracking #',d.tn],['Shipping',d.sm],['Cancellation Reason',d.cr],['Days to Delivery',d.dy],['QC Hold',d.qch],['Affiliate',d.af],['Bargain Bin',d.bb]].filter(([,v])=>v&&v!=='—'&&v!=='undefined'&&v!='');
+    extd.innerHTML='<div class="dg">'+flds.map(([k,v])=>`<div><div class="dk">${k}</div><div class="dv">${v}</div></div>`).join('')+'</div>';
+    exr.appendChild(extd);
+    tb.appendChild(exr);
   });
-  
-  renderPagination();
+  renderPg();
 }
 
-function toggleExpand(idx, expId) {
-  const expRow = document.getElementById(expId);
-  if(!expRow) return;
-  expRow.classList.toggle('open');
+function renderPg(){
+  const tot=fil.length,pages=Math.ceil(tot/PS);
+  const s=(pg-1)*PS+1,e=Math.min(pg*PS,tot);
+  document.getElementById('pi').textContent=tot?`${s}–${e} of ${tot.toLocaleString()}`:'0 results';
+  const c=document.getElementById('pbs');c.innerHTML='';
+  const mk=(lbl,act,dis)=>{const b=document.createElement('button');b.className='pb'+(act?' act':'');b.textContent=lbl;b.disabled=dis;b.onclick=()=>{pg+=0;if(lbl==='← Prev')pg=Math.max(1,pg-1);else if(lbl==='Next →')pg=Math.min(pages,pg+1);else pg=parseInt(lbl);renderTable();window.scrollTo(0,0)};return b};
+  c.appendChild(mk('← Prev',false,pg===1));
+  const rng=pages<=5?[...Array(pages)].map((_,i)=>i+1):pg<=3?[1,2,3,4,5]:pg>=pages-2?[pages-4,pages-3,pages-2,pages-1,pages]:[pg-2,pg-1,pg,pg+1,pg+2];
+  rng.forEach(n=>{if(n>=1&&n<=pages)c.appendChild(mk(String(n),n===pg,false))});
+  c.appendChild(mk('Next →',false,pg>=pages));
 }
 
-// ═══════════════════════════════════════════════════════
-// PAGINATION
-// ═══════════════════════════════════════════════════════
-function renderPagination() {
-  const total = filtered.length;
-  const pages = Math.ceil(total / PAGE_SIZE);
-  const start = (currentPage-1)*PAGE_SIZE+1;
-  const end = Math.min(currentPage*PAGE_SIZE, total);
-  
-  document.getElementById('pageInfo').textContent = total ? `${start}–${end} of ${total.toLocaleString()}` : '0 results';
-  
-  const container = document.getElementById('pageBtns');
-  container.innerHTML = '';
-  
-  const prevBtn = document.createElement('button');
-  prevBtn.className = 'page-btn'; prevBtn.textContent = '← Prev';
-  prevBtn.disabled = currentPage === 1;
-  prevBtn.onclick = () => { currentPage--; renderTable(); window.scrollTo(0,0); };
-  container.appendChild(prevBtn);
-  
-  // Page number buttons (max 5)
-  const pageRange = getPageRange(currentPage, pages);
-  pageRange.forEach(p => {
-    const btn = document.createElement('button');
-    btn.className = 'page-btn' + (p===currentPage?' active':'');
-    btn.textContent = p;
-    btn.onclick = () => { currentPage=p; renderTable(); window.scrollTo(0,0); };
-    container.appendChild(btn);
-  });
-  
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'page-btn'; nextBtn.textContent = 'Next →';
-  nextBtn.disabled = currentPage >= pages;
-  nextBtn.onclick = () => { currentPage++; renderTable(); window.scrollTo(0,0); };
-  container.appendChild(nextBtn);
+function xcsv(){
+  const h=['Order#','Fleek ID','Status','Status Date','Created','Amount','Customer','Email','Country','Vendor','Zone','Product','Courier','Days'];
+  const rows=fil.map(d=>[d.on,d.fid,d.st,d.sd,d.cat,d.amt,d.cn,d.ce,d.cc,d.vn,d.vz,d.pt,d.co,d.dy].map(v=>`"${String(v||'').replace(/"/g,'""')}"`));
+  const csv=[h.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='g-ops-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 
-function getPageRange(current, total) {
-  if(total <= 5) return Array.from({length:total},(_,i)=>i+1);
-  if(current<=3) return [1,2,3,4,5];
-  if(current>=total-2) return [total-4,total-3,total-2,total-1,total];
-  return [current-2,current-1,current,current+1,current+2];
-}
-
-// ═══════════════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════════════
-function formatDate(val) {
-  if(!val||val==='null'||val==='undefined') return '—';
-  // Try to parse various formats
-  const d = new Date(val);
-  if(!isNaN(d)) return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
-  return val.split('T')[0] || val;
-}
-
-function exportCSV() {
-  const headers = ['Order#','Fleek ID','Status','Status Date','Created','Amount','Customer','Country','Vendor','Zone','Product Type','Courier','Days'];
-  const rows = filtered.map(d => [
-    d.order_number, d.fleek_id, d.latest_status, d.latest_status_date, d.created_at,
-    d.total_order_line_amount, d.customer_name, d.customer_country, d.vendor,
-    d.vendor_zone, d.product_type, d.courier_company, d.days_taken_to_delivery
-  ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`));
-  
-  const csv = [headers.join(','), ...rows.map(r=>r.join(','))].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `g-ops-backlog-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-}
-
-// ═══════════════════════════════════════════════════════
-// AUTO-REFRESH every 5 minutes
-// ═══════════════════════════════════════════════════════
-setInterval(() => loadData(), 5 * 60 * 1000);
-
-// INIT
-loadData();
+init();
 </script>
 </body>
 </html>
